@@ -1,0 +1,1787 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudentMind Connect - Hỗ trợ Tâm lý Sinh viên</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=tjk2BeWmNfld7TDggzfS2k7CHMBcE3r-QR_rSXQ_IuRdKrn0HV2eaS_XdyOYOg_12yYlvxVWegTHI41RG1MmaMWmUMZYMIzrSA1B_QQh0V0Kh6yhXmyoLitq0fJSmFiE_SNzdO9CplWEwsqEW83WF420PtVkDZrSh6QWysHvWegL5orvJslw8hfGLj_5Cp_cnN4BYClq6FoMq-VC-p8DKCAhrdrrdtHvwW-QXijHj0xlgYSSpW598aT2UpIOrXX-ZB1ZSY_hZ8GE0pb3HapXnA" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jZG4uZGlzY29yZGFwcC5jb20vYXR0YWNobWVudHMvMTI1MDgxNjA3OTM3MTE3Nzk5OC8xNDMzODE1NDc5NzA0NzUyMjc4L2luZGV4Lmh0bWw_ZXg9NjkwNjEwMzkmaXM9NjkwNGJlYjkmaG09M2JjNWQ1OGM2ZjUxN2RiNDE3MWQyZDQ1MmYzYzg5MzVkZmQxMjVkZjg1MGEyOTMyOTQ4ZWM5NzcxNmEwMGI0ZiY"/><style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --gray: #6b7280;
+            --light: #f9fafb;
+            --white: #ffffff;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .btn-cta {
+            background: var(--gradient-1);
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark);
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 80px;
+            padding: 5rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero-content .highlight {
+            background: linear-gradient(to right, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        .hero-image {
+            position: relative;
+        }
+
+        .hero-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .floating-card {
+            position: absolute;
+            background: white;
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .floating-card-1 {
+            top: 10%;
+            right: -10%;
+            animation-delay: 0s;
+        }
+
+        .floating-card-2 {
+            bottom: 20%;
+            left: -10%;
+            animation-delay: 1s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Features Section */
+        .features {
+            padding: 5rem 2rem;
+            background: white;
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 4rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            color: var(--gray);
+        }
+
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--light);
+            padding: 2rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--gradient-1);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-1);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-icon i {
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .feature-card p {
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* Quick Test Section */
+        .quick-test {
+            padding: 5rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+        }
+
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .test-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .test-header h2 {
+            font-size: 2rem;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            background: var(--light);
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-1);
+            width: 0;
+            transition: width 0.5s ease;
+        }
+
+        .question-card {
+            display: none;
+        }
+
+        .question-card.active {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .question-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            color: var(--dark);
+        }
+
+        .answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .answer-option {
+            background: var(--light);
+            padding: 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .answer-option:hover {
+            background: white;
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .answer-option.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .test-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        .test-navigation button {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-prev {
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .btn-next {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-next:hover, .btn-prev:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Chatbot Section */
+        .chatbot-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+        }
+
+        .chatbot-toggle {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .chatbot-toggle i {
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .chatbot-window {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 380px;
+            height: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chatbot-window.active {
+            display: flex;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chatbot-header {
+            background: var(--gradient-1);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-header h3 {
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chatbot-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            background: var(--light);
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .message.bot .message-avatar {
+            background: var(--gradient-1);
+            color: white;
+        }
+
+        .message.user .message-avatar {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 0.8rem 1.2rem;
+            border-radius: 15px;
+            line-height: 1.4;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: var(--dark);
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.user .message-content {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            gap: 4px;
+            padding: 0.8rem 1.2rem;
+            background: white;
+            border-radius: 15px;
+            border-bottom-left-radius: 5px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--gray);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .chatbot-input {
+            padding: 1rem;
+            border-top: 1px solid var(--light);
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 1px solid var(--light);
+            border-radius: 25px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .chatbot-input input:focus {
+            border-color: var(--primary);
+        }
+
+        .chatbot-input button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-input button:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
+        }
+
+        /* Expert Matching Section */
+        .experts {
+            padding: 5rem 2rem;
+            background: white;
+        }
+
+        .experts-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .expert-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .expert-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .expert-avatar {
+            width: 100%;
+            height: 200px;
+            background: var(--gradient-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .expert-avatar i {
+            font-size: 4rem;
+            color: white;
+        }
+
+        .expert-status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.3rem 0.8rem;
+            background: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .expert-status.online {
+            background: var(--success);
+            color: white;
+        }
+
+        .expert-status.offline {
+            background: var(--gray);
+            color: white;
+        }
+
+        .expert-info {
+            padding: 1.5rem;
+        }
+
+        .expert-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .expert-specialties {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .specialty-tag {
+            padding: 0.3rem 0.8rem;
+            background: var(--light);
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: var(--primary);
+        }
+
+        .expert-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .expert-rating .stars {
+            color: #fbbf24;
+        }
+
+        .btn-connect {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-connect:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Resources Section */
+        .resources {
+            padding: 5rem 2rem;
+            background: var(--light);
+        }
+
+        .resources-categories {
+            max-width: 1200px;
+            margin: 0 auto 3rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            padding: 0.8rem 1.5rem;
+            background: white;
+            border: 2px solid var(--light);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .category-btn.active,
+        .category-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .resources-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .resource-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .resource-image {
+            width: 100%;
+            height: 200px;
+            background: var(--gradient-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .resource-image i {
+            font-size: 3rem;
+            color: white;
+        }
+
+        .resource-content {
+            padding: 1.5rem;
+        }
+
+        .resource-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .resource-content h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .resource-content p {
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .resource-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: gap 0.3s ease;
+        }
+
+        .resource-link:hover {
+            gap: 1rem;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            padding: 5rem 2rem;
+            background: white;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+        }
+
+        .dashboard-sidebar {
+            background: var(--light);
+            padding: 2rem;
+            border-radius: 15px;
+            height: fit-content;
+        }
+
+        .dashboard-menu {
+            list-style: none;
+        }
+
+        .dashboard-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-menu a {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem;
+            color: var(--dark);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-menu a:hover,
+        .dashboard-menu a.active {
+            background: white;
+            color: var(--primary);
+        }
+
+        .dashboard-content {
+            background: var(--light);
+            padding: 2rem;
+            border-radius: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon.primary { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+        .stat-icon.success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .stat-icon.warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .stat-icon.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+        .stat-info h4 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .stat-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .mood-tracker {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .mood-tracker h3 {
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+
+        .mood-chart {
+            height: 300px;
+            background: var(--light);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 3rem 2rem 1rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .hero-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+            
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-sidebar {
+                display: none;
+            }
+            
+            .chatbot-window {
+                width: 100%;
+                max-width: 380px;
+                right: 0;
+                left: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class="fas fa-brain"></i>
+                StudentMind Connect
+            </a>
+            <ul class="nav-links">
+                <li><a href="#home">Trang chủ</a></li>
+                <li><a href="#features">Tính năng</a></li>
+                <li><a href="#test">Đánh giá</a></li>
+                <li><a href="#experts">Chuyên gia</a></li>
+                <li><a href="#resources">Tài nguyên</a></li>
+                <li><a href="#dashboard">Dashboard</a></li>
+            </ul>
+            <a href="#" class="btn-cta">Bắt đầu ngay</a>
+            <div class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1>Chăm sóc <span class="highlight">Sức khỏe Tâm lý</span> cho Sinh viên Việt Nam</h1>
+                <p>Nền tảng hỗ trợ tâm lý toàn diện, an toàn và thân thiện. Kết nối ngay với chuyên gia, đánh giá sức khỏe tâm lý và nhận hỗ trợ 24/7 qua AI Chatbot.</p>
+                <div class="hero-buttons">
+                    <a href="#test" class="btn-primary">
+                        <i class="fas fa-clipboard-check"></i>
+                        Đánh giá ngay
+                    </a>
+                    <a href="#" class="btn-secondary">
+                        <i class="fas fa-comments"></i>
+                        Chat với AI
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="floating-card floating-card-1">
+                    <strong>24/7</strong> Hỗ trợ
+                </div>
+                <div class="floating-card floating-card-2">
+                    <strong>100%</strong> Bảo mật
+                </div>
+                <div style="width: 100%; height: 400px; background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-users" style="font-size: 6rem; color: rgba(255,255,255,0.8);"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2>Tính năng nổi bật</h2>
+            <p>Giải pháp toàn diện cho sức khỏe tâm lý sinh viên</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h3>Bảo mật tuyệt đối</h3>
+                <p>Chế độ ẩn danh hoàn toàn, mã hóa end-to-end đảm bảo thông tin riêng tư của bạn.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>AI Chatbot 24/7</h3>
+                <p>Hỗ trợ tức thì mọi lúc mọi nơi với chatbot AI thông minh, thân thiện.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h3>Chuyên gia tâm lý</h3>
+                <p>Kết nối với đội ngũ chuyên gia tâm lý chuyên nghiệp, giàu kinh nghiệm.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h3>Đánh giá nhanh</h3>
+                <p>Bài test tâm lý được thiết kế khoa học, giúp nhận diện sớm các vấn đề.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h3>Kho tài nguyên</h3>
+                <p>Thư viện bài viết, video, bài tập thực hành phong phú về sức khỏe tâm lý.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Theo dõi tiến trình</h3>
+                <p>Dashboard cá nhân giúp theo dõi và cải thiện sức khỏe tâm lý theo thời gian.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Test Section -->
+    <section class="quick-test" id="test">
+        <div class="test-container">
+            <div class="test-header">
+                <h2>Đánh giá Sức khỏe Tâm lý</h2>
+                <p>Bài test nhanh giúp bạn nhận diện các dấu hiệu stress, lo âu hoặc trầm cảm</p>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="question-card active" data-question="1">
+                <h3>Trong tuần qua, bạn có thường xuyên cảm thấy lo lắng hoặc căng thẳng không?</h3>
+                <div class="answer-options">
+                    <div class="answer-option" onclick="selectAnswer(this)">
+                        Không bao giờ
+                    </div>
+                    <div class="answer-option" onclick="selectAnswer(this)">
+                        Đôi khi
+                    </div>
+                    <div class="answer-option" onclick="selectAnswer(this)">
+                        Thường xuyên
+                    </div>
+                    <div class="answer-option" onclick="selectAnswer(this)">
+                        Luôn luôn
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-card" data-question="2">
+                <h3>Bạn có gặp khó khăn trong việc tập trung vào học tập hoặc công việc không?</h3>
+                <div class="answer-options">
+                    <div class="answer-option" onclick="selectAnswer(this)">
+                        Không gặp khó khăn
+                    </div>
+                    <div class="answer-option" onclick="selectAnswer(this)">
+                        Ít khi
+                    </div>
+                    <div class="answer-option" onclick="selectAnswer(this)">
+                        Thỉnh thoảng
+                    </div>
+                    <div class="answer-option" onclick="selectAnswer(this)">
+                        Rất thường xuyên
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-card" data-question="3">
+                <h3>Chất lượng giấc ngủ của bạn như thế nào?</h3>
+                <div class="answer-options">
+                    <div class="answer-option" onclick="selectAnswer(this)">
+                        Rất tốt
+                    </div>
+                    <div class="answer-option" onclick="selectAnswer(this)">
+                        Bình thường
+                    </div>
+                    <div class="answer-option" onclick="selectAnswer(this)">
+                        Không tốt
+                    </div>
+                    <div class="answer-option" onclick="selectAnswer(this)">
+                        Rất tệ, thường mất ngủ
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-navigation">
+                <button class="btn-prev" onclick="prevQuestion()">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </button>
+                <button class="btn-next" onclick="nextQuestion()">
+                    Tiếp theo <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experts Section -->
+    <section class="experts" id="experts">
+        <div class="section-header">
+            <h2>Đội ngũ Chuyên gia</h2>
+            <p>Kết nối với các chuyên gia tâm lý phù hợp với nhu cầu của bạn</p>
+        </div>
+        <div class="experts-grid">
+            <div class="expert-card">
+                <div class="expert-avatar">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="expert-status online">
+                        <span class="status-dot"></span> Đang online
+                    </span>
+                </div>
+                <div class="expert-info">
+                    <h3>TS. Nguyễn Văn A</h3>
+                    <div class="expert-specialties">
+                        <span class="specialty-tag">Stress học tập</span>
+                        <span class="specialty-tag">Lo âu</span>
+                    </div>
+                    <div class="expert-rating">
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <span>5.0 (124 đánh giá)</span>
+                    </div>
+                    <button class="btn-connect">Kết nối ngay</button>
+                </div>
+            </div>
+
+            <div class="expert-card">
+                <div class="expert-avatar">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="expert-status online">
+                        <span class="status-dot"></span> Đang online
+                    </span>
+                </div>
+                <div class="expert-info">
+                    <h3>ThS. Trần Thị B</h3>
+                    <div class="expert-specialties">
+                        <span class="specialty-tag">Trầm cảm</span>
+                        <span class="specialty-tag">Tâm lý xã hội</span>
+                    </div>
+                    <div class="expert-rating">
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <span>4.8 (98 đánh giá)</span>
+                    </div>
+                    <button class="btn-connect">Kết nối ngay</button>
+                </div>
+            </div>
+
+            <div class="expert-card">
+                <div class="expert-avatar">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="expert-status offline">
+                        <span class="status-dot"></span> Offline
+                    </span>
+                </div>
+                <div class="expert-info">
+                    <h3>BS. Lê Văn C</h3>
+                    <div class="expert-specialties">
+                        <span class="specialty-tag">Rối loạn giấc ngủ</span>
+                        <span class="specialty-tag">Áp lực thi cử</span>
+                    </div>
+                    <div class="expert-rating">
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <span>4.9 (156 đánh giá)</span>
+                    </div>
+                    <button class="btn-connect" disabled>Đặt lịch hẹn</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Resources Section -->
+    <section class="resources" id="resources">
+        <div class="section-header">
+            <h2>Kho Tài nguyên</h2>
+            <p>Khám phá các bài viết, video và công cụ hỗ trợ sức khỏe tâm lý</p>
+        </div>
+        <div class="resources-categories">
+            <button class="category-btn active">Tất cả</button>
+            <button class="category-btn">Stress & Lo âu</button>
+            <button class="category-btn">Trầm cảm</button>
+            <button class="category-btn">Giấc ngủ</button>
+            <button class="category-btn">Kỹ năng sống</button>
+        </div>
+        <div class="resources-grid">
+            <article class="resource-card">
+                <div class="resource-image">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="resource-content">
+                    <div class="resource-meta">
+                        <span><i class="fas fa-tag"></i> Stress học tập</span>
+                        <span><i class="fas fa-clock"></i> 5 phút đọc</span>
+                    </div>
+                    <h3>5 cách quản lý stress hiệu quả cho sinh viên</h3>
+                    <p>Khám phá các phương pháp đơn giản nhưng hiệu quả để giảm stress trong quá trình học tập...</p>
+                    <a href="#" class="resource-link">
+                        Đọc thêm <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </article>
+
+            <article class="resource-card">
+                <div class="resource-image">
+                    <i class="fas fa-bed"></i>
+                </div>
+                <div class="resource-content">
+                    <div class="resource-meta">
+                        <span><i class="fas fa-tag"></i> Giấc ngủ</span>
+                        <span><i class="fas fa-clock"></i> 7 phút đọc</span>
+                    </div>
+                    <h3>Cải thiện chất lượng giấc ngủ cho sinh viên</h3>
+                    <p>Những mẹo thực tế giúp bạn có giấc ngủ ngon và sâu hơn, tỉnh táo cho ngày mới...</p>
+                    <a href="#" class="resource-link">
+                        Đọc thêm <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </article>
+
+            <article class="resource-card">
+                <div class="resource-image">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div class="resource-content">
+                    <div class="resource-meta">
+                        <span><i class="fas fa-tag"></i> Tâm lý</span>
+                        <span><i class="fas fa-clock"></i> 10 phút đọc</span>
+                    </div>
+                    <h3>Nhận diện dấu hiệu trầm cảm ở sinh viên</h3>
+                    <p>Làm thế nào để phát hiện sớm và hỗ trợ kịp thời cho bản thân và bạn bè...</p>
+                    <a href="#" class="resource-link">
+                        Đọc thêm <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section class="dashboard" id="dashboard">
+        <div class="section-header">
+            <h2>Dashboard Cá nhân</h2>
+            <p>Theo dõi và quản lý sức khỏe tâm lý của bạn</p>
+        </div>
+        <div class="dashboard-container">
+            <div class="dashboard-sidebar">
+                <ul class="dashboard-menu">
+                    <li><a href="#" class="active"><i class="fas fa-chart-line"></i> Tổng quan</a></li>
+                    <li><a href="#"><i class="fas fa-calendar"></i> Lịch hẹn</a></li>
+                    <li><a href="#"><i class="fas fa-history"></i> Lịch sử</a></li>
+                    <li><a href="#"><i class="fas fa-file-alt"></i> Kết quả đánh giá</a></li>
+                    <li><a href="#"><i class="fas fa-cog"></i> Cài đặt</a></li>
+                </ul>
+            </div>
+            <div class="dashboard-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>75</h4>
+                            <p>Điểm tâm trạng</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>12</h4>
+                            <p>Phiên tư vấn</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>28</h4>
+                            <p>Bài viết đã đọc</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon danger">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>5</h4>
+                            <p>Thành tựu</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mood-tracker">
+                    <h3>Biểu đồ Tâm trạng 30 ngày</h3>
+                    <div class="mood-chart">
+                        <i class="fas fa-chart-area" style="font-size: 3rem;"></i>
+                        <p>Biểu đồ tâm trạng sẽ hiển thị ở đây</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chatbot -->
+    <div class="chatbot-container">
+        <div class="chatbot-toggle" onclick="toggleChatbot()">
+            <i class="fas fa-comments"></i>
+        </div>
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <h3>
+                    <i class="fas fa-robot"></i> AI Assistant
+                </h3>
+                <div class="chatbot-status">
+                    <span class="status-dot"></span>
+                    Online
+                </div>
+            </div>
+            <div class="chatbot-messages" id="chatMessages">
+                <div class="message bot">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        Xin chào! Mình là trợ lý AI của StudentMind Connect. Mình có thể hỗ trợ bạn về các vấn đề tâm lý, stress học tập, hoặc kết nối bạn với chuyên gia phù hợp. Bạn cảm thấy thế nào hôm nay?
+                    </div>
+                </div>
+            </div>
+            <div class="chatbot-input">
+                <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." onkeypress="handleChatInput(event)">
+                <button onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>StudentMind Connect</h3>
+                <p>Nền tảng hỗ trợ sức khỏe tâm lý hàng đầu cho sinh viên Việt Nam</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Truy cập nhanh</h3>
+                <ul>
+                    <li><a href="#test">Đánh giá tâm lý</a></li>
+                    <li><a href="#experts">Tìm chuyên gia</a></li>
+                    <li><a href="#resources">Tài nguyên</a></li>
+                    <li><a href="#dashboard">Dashboard</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Hỗ trợ</h3>
+                <ul>
+                    <li><a href="#">Hướng dẫn sử dụng</a></li>
+                    <li><a href="#">Câu hỏi thường gặp</a></li>
+                    <li><a href="#">Chính sách bảo mật</a></li>
+                    <li><a href="#">Điều khoản sử dụng</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Liên hệ khẩn cấp</h3>
+                <ul>
+                    <li><i class="fas fa-phone"></i> Hotline: 1900 xxxx</li>
+                    <li><i class="fas fa-envelope"></i> support@studentmind.vn</li>
+                    <li><i class="fas fa-clock"></i> Hỗ trợ 24/7</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 StudentMind Connect. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Quick Test functionality
+        let currentQuestion = 1;
+        const totalQuestions = 3;
+
+        function selectAnswer(element) {
+            const options = element.parentElement.querySelectorAll('.answer-option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < totalQuestions) {
+                document.querySelector(`.question-card[data-question="${currentQuestion}"]`).classList.remove('active');
+                currentQuestion++;
+                document.querySelector(`.question-card[data-question="${currentQuestion}"]`).classList.add('active');
+                updateProgress();
+            } else {
+                showTestResults();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 1) {
+                document.querySelector(`.question-card[data-question="${currentQuestion}"]`).classList.remove('active');
+                currentQuestion--;
+                document.querySelector(`.question-card[data-question="${currentQuestion}"]`).classList.add('active');
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = `${(currentQuestion / totalQuestions) * 100}%`;
+        }
+
+        function showTestResults() {
+            alert('Cảm ơn bạn đã hoàn thành bài đánh giá! Kết quả sẽ được gửi đến dashboard của bạn.');
+            currentQuestion = 1;
+            document.querySelectorAll('.question-card').forEach(card => card.classList.remove('active'));
+            document.querySelector('.question-card[data-question="1"]').classList.add('active');
+            document.querySelectorAll('.answer-option').forEach(opt => opt.classList.remove('selected'));
+            updateProgress();
+        }
+
+        // Chatbot functionality
+        function toggleChatbot() {
+            const chatWindow = document.getElementById('chatbotWindow');
+            chatWindow.classList.toggle('active');
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage(message, 'user');
+                input.value = '';
+                
+                // Show typing indicator
+                showTypingIndicator();
+                
+                // Simulate AI response
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    const responses = [
+                        "Mình hiểu cảm xúc của bạn. Bạn có thể chia sẻ thêm để mình hỗ trợ tốt hơn không?",
+                        "Đó là một vấn đề phổ biến ở sinh viên. Bạn có muốn mình kết nối bạn với chuyên gia phù hợp không?",
+                        "Mình có một số bài viết hữu ích về vấn đề này. Bạn có muốn xem không?",
+                        "Cảm ơn bạn đã chia sẻ. Dựa trên những gì bạn nói, mình nghĩ bạn nên thử các kỹ thuật thư giãn."
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage(randomResponse, 'bot');
+                }, 1500);
+            }
+        }
+
+        function handleChatInput(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = sender === 'bot' ? 'AI' : 'You';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.textContent = text;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot typing-message';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">AI</div>
+                <div class="typing-indicator">
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                </div>
+            `;
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingMessage = document.querySelector('.typing-message');
+            if (typingMessage) {
+                typingMessage.remove();
+            }
+        }
+
+        // Category filter for resources
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                // Add filtering logic here
+            });
+        });
+
+        // Initialize progress bar
+        updateProgress();
+    </script>
+</body>
+</html>
