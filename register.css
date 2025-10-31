@@ -1,84 +1,103 @@
 .register-section {
-  padding: 150px 0 100px 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 100px 15px;
 }
 
+/* REGISTER CARD */
 .register-box {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.92);
   border-radius: 20px;
-  padding: 50px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
+  padding: 50px 100px;
+  width: 420px;
+  max-width: 100%;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
+/* HEADINGS */
 .register-box h2 {
-  color: #2a2a2a;
+  color: #1f1f1f;
   font-weight: 700;
-  margin-bottom: 10px;
-  font-size: 36px;
+  margin-bottom: 8px;
+  font-size: 34px;
+  text-align: center;
 }
 
 .register-box p {
   color: #666;
   margin-bottom: 30px;
+  text-align: center;
 }
 
+/* FORM ELEMENTS */
 .register-box .form-group {
   margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .register-box label {
   color: #2a2a2a;
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-weight: 600;
+  margin-bottom: 6px;
   display: block;
+  font-size: 14px;
+  margin-left: 0px;
 }
 
 .register-box input,
 .register-box select {
   width: 100%;
-  padding: 15px 20px;
-  border: 2px solid #e0e0e0;
+  padding: 14px 0px;
+  border: 2px solid #e5e5e5;
   border-radius: 10px;
-  font-size: 14px;
-  transition: all 0.3s;
+  font-size: 15px;
+  transition: all 0.25s;
   background: #fff;
+}
+
+.register-box input {
+  text-indent: 15px;
 }
 
 .register-box input:focus,
 .register-box select:focus {
   border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.register-box .checkbox-group {
+/* CHECKBOX GROUP */
+.checkbox-group {
   display: flex;
   align-items: center;
+  gap: 10px;
   margin-bottom: 25px;
+  font-size: 14px;
 }
 
-.register-box .checkbox-group input[type="checkbox"] {
-  width: auto;
-  margin-right: 10px;
-}
-
-.register-box .checkbox-group label {
-  margin-bottom: 0;
+.checkbox-group label {
+  color: #555;
   font-weight: 400;
-  color: #666;
 }
 
-.register-box .checkbox-group a {
+.checkbox-group a {
   color: #667eea;
   text-decoration: none;
 }
 
-.register-box .checkbox-group a:hover {
+.checkbox-group a:hover {
   text-decoration: underline;
 }
 
+/* BUTTON */
 .register-btn {
   width: 100%;
   padding: 15px;
@@ -94,10 +113,11 @@
 }
 
 .register-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(118, 75, 162, 0.4);
 }
 
+/* DIVIDER */
 .divider {
   text-align: center;
   margin: 25px 0;
@@ -108,8 +128,8 @@
   background: rgba(255, 255, 255, 0.95);
   padding: 0 15px;
   color: #999;
-  position: relative;
   z-index: 1;
+  position: relative;
 }
 
 .divider::before {
@@ -122,6 +142,7 @@
   background: #e0e0e0;
 }
 
+/* SOCIAL BUTTONS */
 .social-register {
   display: flex;
   gap: 15px;
@@ -134,25 +155,26 @@
   border: 2px solid #e0e0e0;
   border-radius: 10px;
   background: #fff;
-  cursor: pointer;
-  transition: all 0.3s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   font-weight: 500;
   color: #2a2a2a;
+  transition: all 0.3s;
 }
 
 .social-btn:hover {
   border-color: #667eea;
-  background: #f8f9ff;
+  background: #f3f4ff;
 }
 
+/* LOGIN LINK */
 .login-link {
   text-align: center;
   margin-top: 25px;
   color: #666;
+  font-size: 14px;
 }
 
 .login-link a {
@@ -165,8 +187,9 @@
   text-decoration: underline;
 }
 
+/* PASSWORD STRENGTH */
 .password-strength {
-  height: 4px;
+  height: 5px;
   border-radius: 2px;
   margin-top: 8px;
   background: #e0e0e0;
