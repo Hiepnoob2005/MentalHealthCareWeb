@@ -14,209 +14,7 @@
   <!-- Bootstrap core CSS -->
   <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Additional CSS Files -->
-  <link rel="stylesheet" href="assets/css/fontawesome.css">
-  <link rel="stylesheet" href="assets/css/templatemo-space-dynamic.css">
-  <link rel="stylesheet" href="assets/css/animated.css">
-  <link rel="stylesheet" href="assets/css/owl.css">
-
-  <style>
-    .register-section {
-      padding: 150px 0 100px 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-    }
-
-    .register-box {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 20px;
-      padding: 50px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(10px);
-    }
-
-    .register-box h2 {
-      color: #2a2a2a;
-      font-weight: 700;
-      margin-bottom: 10px;
-      font-size: 36px;
-    }
-
-    .register-box p {
-      color: #666;
-      margin-bottom: 30px;
-    }
-
-    .register-box .form-group {
-      margin-bottom: 25px;
-    }
-
-    .register-box label {
-      color: #2a2a2a;
-      font-weight: 500;
-      margin-bottom: 8px;
-      display: block;
-    }
-
-    .register-box input,
-    .register-box select {
-      width: 100%;
-      padding: 15px 20px;
-      border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      font-size: 14px;
-      transition: all 0.3s;
-      background: #fff;
-    }
-
-    .register-box input:focus,
-    .register-box select:focus {
-      border-color: #667eea;
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .register-box .checkbox-group {
-      display: flex;
-      align-items: center;
-      margin-bottom: 25px;
-    }
-
-    .register-box .checkbox-group input[type="checkbox"] {
-      width: auto;
-      margin-right: 10px;
-    }
-
-    .register-box .checkbox-group label {
-      margin-bottom: 0;
-      font-weight: 400;
-      color: #666;
-    }
-
-    .register-box .checkbox-group a {
-      color: #667eea;
-      text-decoration: none;
-    }
-
-    .register-box .checkbox-group a:hover {
-      text-decoration: underline;
-    }
-
-    .register-btn {
-      width: 100%;
-      padding: 15px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border: none;
-      border-radius: 10px;
-      color: #fff;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      margin-bottom: 20px;
-    }
-
-    .register-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-    }
-
-    .divider {
-      text-align: center;
-      margin: 25px 0;
-      position: relative;
-    }
-
-    .divider span {
-      background: rgba(255, 255, 255, 0.95);
-      padding: 0 15px;
-      color: #999;
-      position: relative;
-      z-index: 1;
-    }
-
-    .divider::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: #e0e0e0;
-    }
-
-    .social-register {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 25px;
-    }
-
-    .social-btn {
-      flex: 1;
-      padding: 12px;
-      border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      background: #fff;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-weight: 500;
-      color: #2a2a2a;
-    }
-
-    .social-btn:hover {
-      border-color: #667eea;
-      background: #f8f9ff;
-    }
-
-    .login-link {
-      text-align: center;
-      margin-top: 25px;
-      color: #666;
-    }
-
-    .login-link a {
-      color: #667eea;
-      font-weight: 600;
-      text-decoration: none;
-    }
-
-    .login-link a:hover {
-      text-decoration: underline;
-    }
-
-    .password-strength {
-      height: 4px;
-      border-radius: 2px;
-      margin-top: 8px;
-      background: #e0e0e0;
-      overflow: hidden;
-    }
-
-    .password-strength-bar {
-      height: 100%;
-      width: 0;
-      transition: all 0.3s;
-    }
-
-    .strength-weak {
-      width: 33%;
-      background: #ff4757;
-    }
-
-    .strength-medium {
-      width: 66%;
-      background: #ffa502;
-    }
-
-    .strength-strong {
-      width: 100%;
-      background: #26de81;
-    }
-  </style>
+  <link rel="stylesheet" href="register.css">
 </head>
 
 <body>
@@ -363,6 +161,7 @@
     </div>
   </section>
 
+<<<<<<< HEAD
   <script>
     function checkPasswordStrength() {
       const password = document.getElementById('password').value;
@@ -417,6 +216,10 @@
       return false;
     }
   </script>
+=======
+  <!-- Scripts -->
+  <script src="register.js"></script>
+>>>>>>> 04f7648c662e90c207f23e2700a72641102f8824
 
 </body>
 </html>
