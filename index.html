@@ -6,7 +6,7 @@
     <title>StudentMind Connect - Hỗ trợ Tâm lý Sinh viên</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=tjk2BeWmNfld7TDggzfS2k7CHMBcE3r-QR_rSXQ_IuRdKrn0HV2eaS_XdyOYOg_12yYlvxVWegTHI41RG1MmaMWmUMZYMIzrSA1B_QQh0V0Kh6yhXmyoLitq0fJSmFiE_SNzdO9CplWEwsqEW83WF420PtVkDZrSh6QWysHvWegL5orvJslw8hfGLj_5Cp_cnN4BYClq6FoMq-VC-p8DKCAhrdrrdtHvwW-QXijHj0xlgYSSpW598aT2UpIOrXX-ZB1ZSY_hZ8GE0pb3HapXnA" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jZG4uZGlzY29yZGFwcC5jb20vYXR0YWNobWVudHMvMTI1MDgxNjA3OTM3MTE3Nzk5OC8xNDMzODE1NDc5NzA0NzUyMjc4L2luZGV4Lmh0bWw_ZXg9NjkwNjEwMzkmaXM9NjkwNGJlYjkmaG09M2JjNWQ1OGM2ZjUxN2RiNDE3MWQyZDQ1MmYzYzg5MzVkZmQxMjVkZjg1MGEyOTMyOTQ4ZWM5NzcxNmEwMGI0ZiY"/><style>
+    <style>
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
@@ -1135,6 +1135,205 @@
                 left: auto;
             }
         }
+
+        /* Login Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--dark);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .modal-content {
+            flex: 1;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .modal-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+
+        .modal-logo i {
+            font-size: 2rem;
+        }
+
+        .modal-content h2 {
+            font-size: 1.8rem;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .modal-subtitle {
+            color: var(--gray);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .modal-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .modal-footer p {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .modal-footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .modal-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .modal-image {
+            width: 400px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 2rem;
+        }
+
+        .illustration-content {
+            text-align: center;
+            z-index: 1;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .modal-container {
+                flex-direction: column;
+                max-height: 95vh;
+            }
+
+            .modal-image {
+                display: none;
+            }
+
+            .modal-content {
+                padding: 2rem;
+            }
+
+            .modal-content h2 {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1575,6 +1774,47 @@
         </div>
     </div>
 
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeLoginModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-content">
+                <div class="modal-logo">
+                    <i class="fas fa-brain"></i>
+                    <span>StudentMind Connect</span>
+                </div>
+                <h2>Gửi yêu cầu tư vấn miễn phí</h2>
+                <p class="modal-subtitle">38.000+ doanh nghiệp & cửa hàng đã tin dùng</p>
+                
+                <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+                    <div class="form-group">
+                        <input type="text" id="fullName" placeholder="Họ và tên *" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" id="phoneNumber" placeholder="Số điện thoại *" pattern="[0-9]{10}" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="message" placeholder="Lời nhắc kèm (tùy chọn)" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">GỬI YÊU CẦU</button>
+                </form>
+                
+                <div class="modal-footer">
+                    <p>Bằng việc gửi yêu cầu, bạn đồng ý với <a href="#">điều khoản sử dụng</a> và <a href="#">chính sách bảo mật</a> của chúng tôi</p>
+                </div>
+            </div>
+            <div class="modal-image">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23667eea;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23764ba2;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='400' fill='url(%23grad)'/%3E%3Cg transform='translate(200,200)'%3E%3Ccircle r='80' fill='white' opacity='0.3'/%3E%3Ccircle r='60' fill='white' opacity='0.3'/%3E%3Ccircle r='40' fill='white' opacity='0.3'/%3E%3C/g%3E%3C/svg%3E" alt="Illustration">
+                <div class="illustration-content">
+                    <i class="fas fa-users" style="font-size: 5rem; color: white;"></i>
+                    <p style="color: white; margin-top: 1rem; font-size: 1.1rem;">Kết nối với chuyên gia tâm lý</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer>
         <div class="footer-content">
@@ -1643,6 +1883,81 @@
             } else {
                 navbar.classList.remove('scrolled');
             }
+        });
+
+        // Login Modal Functions
+        function openLoginModal() {
+            const modal = document.getElementById('loginModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+        }
+
+        function closeLoginModal() {
+            const modal = document.getElementById('loginModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Re-enable scrolling
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('loginModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLoginModal();
+            }
+        });
+
+        // Handle login form submission
+        function handleLoginSubmit(event) {
+            event.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const message = document.getElementById('message').value;
+            
+            // Validate phone number (Vietnamese phone format)
+            const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+            if (!phoneRegex.test(phoneNumber)) {
+                alert('Vui lòng nhập số điện thoại hợp lệ!');
+                return;
+            }
+            
+            // Here you would normally send the data to your server
+            console.log('Form data:', { fullName, phoneNumber, message });
+            
+            // Show success message
+            alert(`Cảm ơn ${fullName}! Chúng tôi đã nhận được yêu cầu của bạn. Chúng tôi sẽ liên hệ với bạn qua số ${phoneNumber} trong thời gian sớm nhất.`);
+            
+            // Reset form and close modal
+            document.getElementById('loginForm').reset();
+            closeLoginModal();
+        }
+
+        // Add event listeners to all "Bắt đầu ngay" buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Main CTA button in navbar
+            const navCTA = document.querySelector('.btn-cta');
+            if (navCTA) {
+                navCTA.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openLoginModal();
+                });
+            }
+            
+            // Hero section "Đánh giá ngay" button - also opens login first
+            const heroAssessBtn = document.querySelector('.btn-primary');
+            if (heroAssessBtn) {
+                heroAssessBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openLoginModal();
+                });
+            }
+            
+            // Connect buttons on expert cards
+            document.querySelectorAll('.btn-connect:not([disabled])').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openLoginModal();
+                });
+            });
         });
 
         // Quick Test functionality
