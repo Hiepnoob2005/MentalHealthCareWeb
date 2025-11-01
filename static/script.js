@@ -176,19 +176,22 @@ function sendMessage() {
     // Show typing indicator
     showTypingIndicator();
 
-    // Simulate AI response
-    setTimeout(() => {
-      removeTypingIndicator();
-      const responses = [
-        "Mình hiểu cảm xúc của bạn. Bạn có thể chia sẻ thêm để mình hỗ trợ tốt hơn không?",
-        "Đó là một vấn đề phổ biến ở sinh viên. Bạn có muốn mình kết nối bạn với chuyên gia phù hợp không?",
-        "Mình có một số bài viết hữu ích về vấn đề này. Bạn có muốn xem không?",
-        "Cảm ơn bạn đã chia sẻ. Dựa trên những gì bạn nói, mình nghĩ bạn nên thử các kỹ thuật thư giãn.",
-      ];
-      const randomResponse =
-        responses[Math.floor(Math.random() * responses.length)];
-      addMessage(randomResponse, "bot");
-    }, 1500);
+    // Send message to Flask backend
+    fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        removeTypingIndicator();
+        addMessage(data.reply, "bot");
+      })
+      .catch((err) => {
+        removeTypingIndicator();
+        addMessage("Xin lỗi, có lỗi kết nối. Hãy thử lại nhé.", "bot");
+        console.error(err);
+      });
   }
 }
 
