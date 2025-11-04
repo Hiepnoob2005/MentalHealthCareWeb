@@ -8,30 +8,23 @@ import os
 import logging
 import uuid # Thư viện để tạo ID duy nhất cho phiên chat
 from dotenv import load_dotenv
+from flask import render_template
 
 # Cấu hình cơ bản
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 # Cho phép tất cả các nguồn gốc (origins) để dễ dàng kiểm tra từ frontend (index.html)
-# Trong môi trường production, bạn nên giới hạn chỉ cho phép domain của mình. 
+# Trong môi trường production, bạn nên giới hạn chỉ cho phép domain của mình.
+
+CORS(app) 
+
 # --- Cấu hình Gemini ---
 
 load_dotenv()
 api_key_value = os.getenv("GEMINI_API_KEY") or os.getenv("OPENAI_API_KEY")
 
-if not api_key_value:
-    print("FATAL ERROR: KHÔNG TÌM THẤY API KEY TRONG MÔI TRƯỜNG! Tính năng AI sẽ không hoạt động.")
-    client = None
-else:
-    try:
-        genai.api_key = api_key_value
-        client = genai.Client(api_key=api_key_value)
-        MODEL_NAME = 'gemini-2.5-flash'
-        print("✅ Khởi tạo Gemini Client thành công.")
-    except Exception as e:
-        print(f"❌ Lỗi khởi tạo Gemini Client: {e}")
-        client = None
+client = genai.Client(api_key=GOOGLE_API_KEY)
 
 app = Flask(__name__)
 CORS(app)
@@ -68,13 +61,7 @@ def get_or_create_chat_session(conversation_id):
     if conversation_id not in chat_sessions:
         logging.info(f"Tạo phiên chat mới: {conversation_id}")
         # Khởi tạo mô hình và Chat session
-        model = genai.GenerativeModel(
-            model_name="gemini-pro",
-            generation_config=GENERATION_CONFIG,
-            safety_settings=SAFETY_SETTINGS,
-            system_instruction=SYSTEM_INSTRUCTION # Sử dụng System Instruction
-        )
-        chat = model.start_chat()
+        client = genai.Client(api_key=GOOGLE_API_KEY)
         chat_sessions[conversation_id] = chat
     return chat_sessions[conversation_id]
 
@@ -90,28 +77,27 @@ def chat():
         return jsonify({"error": "Message and conversationId are required"}), 400
 
     try:
-        # Lấy hoặc tạo phiên chat (duy trì lịch sử)
-        chat = get_or_create_chat_session(conversation_id)
-        
-        # Gửi tin nhắn và nhận phản hồi
-        response = chat.send_message(user_message)
-        
-        # Kiểm tra phản hồi
-        if not response.text:
-             # Xử lý trường hợp bị chặn hoặc lỗi nội dung
-            return jsonify({
-                "reply": "Xin lỗi, nội dung của bạn đã bị chặn vì lý do an toàn. Hãy thử diễn đạt lại."
-            })
-            
-        return jsonify({"reply": response.text})
+            # Gọi API Gemini đúng cú pháp
+        response = client.models.generate_content(
+            model="models/gemini-2.5-flash",
+            contents=user_message
+        )
+
+        reply = response.text.strip() if hasattr(response, "text") and response.text else "Xin lỗi, AI chưa thể phản hồi."
+        return jsonify({"reply": reply})
 
     except Exception as e:
-        logging.error(f"Gemini API error: {str(e)}")
-        return jsonify({"reply": "Xin lỗi, có lỗi xảy ra khi xử lý yêu cầu của bạn."}), 500
+        import traceback
+        traceback.print_exc()
+        return jsonify({"reply": f"Xin lỗi, có lỗi xảy ra khi xử lý: {str(e)}"}), 500
 
 @app.route("/health", methods=["GET"])
 def health_check():
     return jsonify({"status": "healthy", "model": "gemini-pro"})
+
+@app.route("/")
+def home():
+    return render_template("index.html")
 
 if __name__ == "__main__":
     # Đặt cổng là 5000 (mặc định của Flask)
