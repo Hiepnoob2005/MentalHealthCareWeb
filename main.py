@@ -16,11 +16,15 @@ logging.basicConfig(level=logging.INFO)
 
 # Cho phép tất cả các nguồn gốc (origins) để dễ dàng kiểm tra từ frontend (index.html)
 # Trong môi trường production, bạn nên giới hạn chỉ cho phép domain của mình.
+
+CORS(app) 
+
 # --- Cấu hình Gemini ---
 
 load_dotenv()
 api_key_value = os.getenv("GEMINI_API_KEY") or os.getenv("OPENAI_API_KEY")
-client = genai.Client(api_key=api_key_value)
+
+client = genai.Client(api_key=GOOGLE_API_KEY)
 
 app = Flask(__name__)
 CORS(app)
