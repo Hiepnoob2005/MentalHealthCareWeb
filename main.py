@@ -1,6 +1,9 @@
 from google import genai
 from flask import Flask, request, jsonify
 from flask_cors import CORS # Thêm CORS để frontend có thể gọi API
+from flask import send_from_directory
+import webbrowser
+import threading
 import os
 import logging
 import uuid # Thư viện để tạo ID duy nhất cho phiên chat
@@ -10,19 +13,28 @@ from dotenv import load_dotenv
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
-app = Flask(__name__)
 # Cho phép tất cả các nguồn gốc (origins) để dễ dàng kiểm tra từ frontend (index.html)
-# Trong môi trường production, bạn nên giới hạn chỉ cho phép domain của mình.
-CORS(app) 
-
+# Trong môi trường production, bạn nên giới hạn chỉ cho phép domain của mình. 
 # --- Cấu hình Gemini ---
 
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-if not GOOGLE_API_KEY:
-    raise ValueError("GOOGLE_API_KEY is required")
+load_dotenv()
+api_key_value = os.getenv("GEMINI_API_KEY") or os.getenv("OPENAI_API_KEY")
 
-genai.configure(api_key=GOOGLE_API_KEY)
+if not api_key_value:
+    print("FATAL ERROR: KHÔNG TÌM THẤY API KEY TRONG MÔI TRƯỜNG! Tính năng AI sẽ không hoạt động.")
+    client = None
+else:
+    try:
+        genai.api_key = api_key_value
+        client = genai.Client(api_key=api_key_value)
+        MODEL_NAME = 'gemini-2.5-flash'
+        print("✅ Khởi tạo Gemini Client thành công.")
+    except Exception as e:
+        print(f"❌ Lỗi khởi tạo Gemini Client: {e}")
+        client = None
 
+app = Flask(__name__)
+CORS(app)
 # Cấu hình cho việc tạo nội dung
 GENERATION_CONFIG = {
     "temperature": 0.7,
@@ -96,7 +108,6 @@ def chat():
     except Exception as e:
         logging.error(f"Gemini API error: {str(e)}")
         return jsonify({"reply": "Xin lỗi, có lỗi xảy ra khi xử lý yêu cầu của bạn."}), 500
-
 
 @app.route("/health", methods=["GET"])
 def health_check():
