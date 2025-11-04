@@ -77,15 +77,23 @@
 /* CHECKBOX GROUP */
 .checkbox-group {
   display: flex;
-  align-items: left;
-  gap: 10px;
-  margin-bottom: 25px;
-  font-size: 14px;
+  align-items: center;
+  gap: 6px; /* smaller gap */
+  margin-bottom: 50px; /* less vertical spacing */
+  font-size: 36px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin-left: 0.2rem;          
+  width: 16px;          
+  height: 16px;
 }
 
 .checkbox-group label {
+  display: inline; /* prevents block spacing */
   color: #555;
   font-weight: 400;
+  margin: 0; /* remove any leftover label margin */
 }
 
 .checkbox-group a {
@@ -96,6 +104,8 @@
 .checkbox-group a:hover {
   text-decoration: underline;
 }
+
+
 
 /* BUTTON */
 .register-btn {
