@@ -77,7 +77,7 @@
 /* CHECKBOX GROUP */
 .checkbox-group {
   display: flex;
-  align-items: center;
+  align-items: left;
   gap: 10px;
   margin-bottom: 25px;
   font-size: 14px;

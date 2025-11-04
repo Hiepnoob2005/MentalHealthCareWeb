@@ -314,6 +314,7 @@ function initializeChatbotListeners() {
     const chatInput = document.getElementById("chatInput");
     const sendButton = document.getElementById("sendButton"); 
     const toggleButton = document.getElementById("chatbotToggle"); // Giả định có nút toggle
+    const toggleChatbotBox = document.getElementById("chatbotTogglen")
 
     if (chatInput) {
         chatInput.addEventListener('keypress', handleChatInputKey);
@@ -327,6 +328,10 @@ function initializeChatbotListeners() {
     // Gắn sự kiện cho nút toggle (nếu có)
     if (toggleButton) {
         toggleButton.addEventListener('click', toggleChatbot);
+    }
+
+    if (toggleChatbotBox) {
+        toggleChatbotBox.addEventListener('click', toggleChatbot);
     }
 }
 

@@ -16,15 +16,11 @@ logging.basicConfig(level=logging.INFO)
 
 # Cho phép tất cả các nguồn gốc (origins) để dễ dàng kiểm tra từ frontend (index.html)
 # Trong môi trường production, bạn nên giới hạn chỉ cho phép domain của mình.
-
-CORS(app) 
-
 # --- Cấu hình Gemini ---
 
 load_dotenv()
 api_key_value = os.getenv("GEMINI_API_KEY") or os.getenv("OPENAI_API_KEY")
-
-client = genai.Client(api_key=GOOGLE_API_KEY)
+client = genai.Client(api_key=api_key_value)
 
 app = Flask(__name__)
 CORS(app)
@@ -39,6 +35,7 @@ GENERATION_CONFIG = {
 # Hướng dẫn hệ thống (System Instruction) để định hướng hành vi của AI
 SYSTEM_INSTRUCTION = (
     "Bạn là StudentMind Connect AI, một trợ lý hỗ trợ sức khỏe tâm lý cho sinh viên. "
+    "Chỉ trả lời nhưng câu hỏi liên quan đến sức khỏe tâm lý, tinh thần."
     "Mục tiêu của bạn là lắng nghe, thấu hiểu và đưa ra các phản hồi đồng cảm, hỗ trợ. "
     "Tuyệt đối không đưa ra lời khuyên y tế, chẩn đoán, hoặc cam kết thay thế chuyên gia. "
     "Nếu gặp tình huống khẩn cấp, hãy đề nghị tìm kiếm sự trợ giúp chuyên nghiệp."
@@ -61,7 +58,7 @@ def get_or_create_chat_session(conversation_id):
     if conversation_id not in chat_sessions:
         logging.info(f"Tạo phiên chat mới: {conversation_id}")
         # Khởi tạo mô hình và Chat session
-        client = genai.Client(api_key=GOOGLE_API_KEY)
+        client = genai.Client(api_key=api_key_value)
         chat_sessions[conversation_id] = chat
     return chat_sessions[conversation_id]
 
@@ -98,6 +95,10 @@ def health_check():
 @app.route("/")
 def home():
     return render_template("index.html")
+
+@app.route('/register_page.html')
+def register_page():
+    return render_template('register_page.html')
 
 if __name__ == "__main__":
     # Đặt cổng là 5000 (mặc định của Flask)
