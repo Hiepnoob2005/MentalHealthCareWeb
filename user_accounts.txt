@@ -1,0 +1,2 @@
+Username;Email;PasswordHash
+24127020;oizooi12345@gmail.com;$2b$12$1gYc9QKmQmupidkkVCYozuZD771.PpU2HpKS7zrE/v/WWbPjL41h6

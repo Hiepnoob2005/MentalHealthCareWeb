@@ -1,25 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi"> <!-- Thay đổi lang="en" thành lang="vi" -->
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
     <link rel="preconnect" href="https://fonts.gstatic.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-    <title>Register - Space Dynamic</title>
+    <title>Đăng ký - Space Dynamic</title> <!-- Dịch -->
 
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='register.css') }}"
-    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}" />
   </head>
 
   <body>
@@ -27,168 +18,83 @@
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-lg-6 col-md-8">
-            <div
-              class="register-box wow fadeInUp"
-              data-wow-duration="1s"
-              data-wow-delay="0.2s"
-            >
-              <h2>Create Account</h2>
-              <p>Join Space Dynamic today and start your journey</p>
+            <div class="register-box wow fadeInUp" data-wow-duration="1s" data-wow-delay="0.2s">
+              <h2>Tạo tài khoản</h2> <!-- Dịch -->
+              <p>Tham gia Space Dynamic ngay hôm nay và bắt đầu hành trình của bạn</p> <!-- Dịch -->
 
               <div class="social-register">
-                <button
-                  class="social-btn"
-                  onclick="alert('Google registration coming soon!')"
-                >
+                <button class="social-btn" onclick="alert('Google registration coming soon!')">
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path
-                      d="M19.8 10.2c0-.7-.1-1.4-.2-2H10v3.8h5.5c-.2 1.2-1 2.2-2.1 2.9v2.5h3.4c2-1.8 3-4.5 3-7.2z"
-                      fill="#4285F4"
-                    />
-                    <path
-                      d="M10 20c2.8 0 5.1-.9 6.8-2.5l-3.4-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.7-5.6-4.1H1v2.6C2.7 17.9 6.1 20 10 20z"
-                      fill="#34A853"
-                    />
-                    <path
-                      d="M4.4 11.9c-.4-1.2-.4-2.6 0-3.8V5.5H1C-.3 7.3-.3 12.7 1 14.5l3.4-2.6z"
-                      fill="#FBBC04"
-                    />
-                    <path
-                      d="M10 3.9c1.5 0 2.8.5 3.9 1.5l2.9-2.9C15.1.7 12.8 0 10 0 6.1 0 2.7 2.1 1 5.5l3.4 2.6C5.2 5.6 7.4 3.9 10 3.9z"
-                      fill="#EA4335"
-                    />
-                  </svg>
-                  Google
+                    <path d="M19.8 10.2c0-.7-.1-1.4-.2-2H10v3.8h5.5c-.2 1.2-1 2.2-2.1 2.9v2.5h3.4c2-1.8 3-4.5 3-7.2z" fill="#4285F4" />
+                    <path d="M10 20c2.8 0 5.1-.9 6.8-2.5l-3.4-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.7-5.6-4.1H1v2.6C2.7 17.9 6.1 20 10 20z" fill="#34A853" />
+                    <path d="M4.4 11.9c-.4-1.2-.4-2.6 0-3.8V5.5H1C-.3 7.3-.3 12.7 1 14.5l3.4-2.6z" fill="#FBBC04" />
+                    <path d="M10 3.9c1.5 0 2.8.5 3.9 1.5l2.9-2.9C15.1.7 12.8 0 10 0 6.1 0 2.7 2.1 1 5.5l3.4 2.6C5.2 5.6 7.4 3.9 10 3.9z" fill="#EA4335" />
+                  </svg>Google
                 </button>
-                <button
-                  class="social-btn"
-                  onclick="alert('Facebook registration coming soon!')"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="#1877F2"
-                  >
-                    <path
-                      d="M20 10c0-5.5-4.5-10-10-10S0 4.5 0 10c0 5 3.7 9.1 8.4 9.9v-7H5.9V10h2.5V7.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V10h2.8l-.4 2.9h-2.3v7C16.3 19.1 20 15 20 10z"
-                    />
-                  </svg>
-                  Facebook
+                <button class="social-btn" onclick="alert('Facebook registration coming soon!')">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="#1877F2">
+                    <path d="M20 10c0-5.5-4.5-10-10-10S0 4.5 0 10c0 5 3.7 9.1 8.4 9.9v-7H5.9V10h2.5V7.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V10h2.8l-.4 2.9h-2.3v7C16.3 19.1 20 15 20 10z" />
+                  </svg>Facebook
                 </button>
               </div>
 
               <div class="divider">
-                <span>or register with email</span>
+                <span>hoặc đăng ký bằng email</span> <!-- Dịch -->
               </div>
 
               <form id="registerForm" onsubmit="handleRegister(event)">
-                <div class="row">
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label for="firstName">First Name</label>
-                      <input
-                        type="text"
-                        id="firstName"
-                        name="firstName"
-                        placeholder="John"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label for="lastName">Last Name</label>
-                      <input
-                        type="text"
-                        id="lastName"
-                        name="lastName"
-                        placeholder="Doe"
-                        required
-                      />
-                    </div>
-                  </div>
+                <div class="form-group">
+                  <label for="username">Tên đăng nhập</label> <!-- Dịch -->
+                  <input type="text" id="username" name="username" placeholder="Tên định danh duy nhất của bạn" required /> <!-- Dịch -->
                 </div>
 
                 <div class="form-group">
-                  <label for="email">Email Address</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="john.doe@example.com"
-                    required
-                  />
+                  <label for="email">Địa chỉ Email</label> <!-- Dịch -->
+                  <input type="email" id="email" name="email" placeholder="john.doe@example.com" required />
                 </div>
 
                 <div class="form-group">
-                  <label for="phone">Phone Number</label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    placeholder="+84 123 456 789"
-                    required
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label for="password">Password</label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    placeholder="Create a strong password"
-                    required
-                    oninput="checkPasswordStrength()"
-                  />
+                  <label for="password">Mật khẩu</label> <!-- Dịch -->
+                  <input type="password" id="password" name="password" placeholder="Tạo mật khẩu mạnh (ít nhất 8 ký tự)" required oninput="checkPasswordStrength()" /> <!-- Dịch -->
                   <div class="password-strength">
                     <div class="password-strength-bar" id="strengthBar"></div>
                   </div>
                 </div>
 
                 <div class="form-group">
-                  <label for="confirmPassword">Confirm Password</label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    placeholder="Re-enter your password"
-                    required
-                  />
+                  <label for="confirmPassword">Xác nhận Mật khẩu</label> <!-- Dịch -->
+                  <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Nhập lại mật khẩu của bạn" required /> <!-- Dịch -->
                 </div>
 
                 <div class="form-group">
-                  <label for="userType">I am a</label>
+                  <label for="userType">Tôi là</label> <!-- Dịch -->
                   <select id="userType" name="userType" required>
-                    <option value="">Select your role</option>
-                    <option value="individual">Individual</option>
-                    <option value="business">Business Owner</option>
-                    <option value="agency">Agency</option>
-                    <option value="developer">Developer</option>  
+                    <option value="">Chọn vai trò của bạn</option> <!-- Dịch -->
+                    <option value="individual">Cá nhân</option> <!-- Dịch -->
+                    <option value="business">Chủ doanh nghiệp</option> <!-- Dịch -->
+                    <option value="agency">Đại lý</option> <!-- Dịch -->
+                    <option value="developer">Nhà phát triển</option> <!-- Dịch -->
                   </select>
                 </div>
 
+                <!-- Div hiển thị thông báo lỗi/thành công -->
+                <div id="registerMessage" style="display: none; margin-bottom: 1rem; text-align: center;"></div>
                 <div class="checkbox-group">
                   <input type="checkbox" id="terms" name="terms" required />
                   <label for="terms">
-                    I agree to the <a href="#">Terms of Service</a> and
-                    <a href="#">Privacy Policy</a>
+                    Tôi đồng ý với <a href="#">Điều khoản Dịch vụ</a> và <!-- Dịch -->
+                    <a href="#">Chính sách Bảo mật</a> <!-- Dịch -->
                   </label>
 
                   <input type="checkbox" id="newsletter" name="newsletter" />
-                  <label for="newsletter">
-                    Send me updates, offers, and marketing emails
-                  </label>
+                  <label for="newsletter">Gửi cho tôi các cập nhật, ưu đãi và email tiếp thị</label> <!-- Dịch -->
                 </div>
 
-                <button type="submit" class="register-btn">
-                  Create Account
-                </button>
+                <button type="submit" class="register-btn">Tạo tài khoản</button> <!-- Dịch -->
               </form>
 
               <div class="login-link">
-                Already have an account? <a href="login.html">Sign in here</a>
+                Bạn đã có tài khoản? <a href="/">Đăng nhập tại trang chủ</a> <!-- Dịch -->
               </div>
             </div>
           </div>
@@ -196,6 +102,6 @@
       </div>
     </section>
 
-    <script src="register.js"></script>
+    <script src="{{ url_for('static', filename='register.js') }}"></script>
   </body>
 </html>

@@ -1,555 +1,551 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
+  <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>StudentMind Connect</title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}" />
 
     <!-- JS -->
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script src="{{ url_for('static', filename='register.js') }}"></script>
-</head>
+  </head>
 
-<body>
+  <body>
     <!-- Navigation -->
     <nav class="navbar">
-        <div class="nav-container">
-            <a href="#" class="logo">
-                <i class="fas fa-brain"></i>
-                StudentMind Connect
-            </a>
-            <ul class="nav-links">
-                <li><a href="#home">Trang chủ</a></li>
-                <li><a href="#features">Tính năng</a></li>
-                <li><a href="#test">Đánh giá</a></li>
-                <li><a href="#experts">Chuyên gia</a></li>
-                <li><a href="#resources">Tài nguyên</a></li>
-                <li><a href="#dashboard">Dashboard</a></li>
-            </ul>
-            <a href="#login" class="btn-cta">Bắt đầu ngay</a>
-            <div class="mobile-menu-toggle">
-                <i class="fas fa-bars"></i>
-            </div>
+      <div class="nav-container">
+        <a href="#" class="logo">
+          <i class="fas fa-brain"></i>
+          StudentMind Connect
+        </a>
+        <ul class="nav-links">
+          <li>
+            <a href="#home">Trang chủ</a>
+          </li>
+          <li>
+            <a href="#features">Tính năng</a>
+          </li>
+          <li>
+            <a href="#test">Đánh giá</a>
+          </li>
+          <li>
+            <a href="#experts">Chuyên gia</a>
+          </li>
+          <li>
+            <a href="#resources">Tài nguyên</a>
+          </li>
+          <li>
+            <a href="#dashboard">Dashboard</a>
+          </li>
+        </ul>
+        <a href="#" class="btn-cta" id="navbarCtaButton">Đăng nhập ngay</a>
+        <div class="mobile-menu-toggle">
+          <i class="fas fa-bars"></i>
         </div>
+      </div>
     </nav>
 
     <!-- Hero Section -->
     <section class="hero" id="home">
-        <div class="hero-container">
-            <div class="hero-content">
-                <h1>Chăm sóc <span class="highlight">Sức khỏe Tâm lý</span> cho Sinh viên Việt Nam</h1>
-                <p>Nền tảng hỗ trợ tâm lý toàn diện, an toàn và thân thiện. Kết nối ngay với chuyên gia, đánh giá sức
-                    khỏe tâm lý và nhận hỗ trợ 24/7 qua AI Chatbot.</p>
-                <div class="hero-buttons">
-                    <a href="#test" class="btn-primary">
-                        <i class="fas fa-clipboard-check"></i>
-                        Đánh giá ngay
-                    </a>
-                    <a id="chatbotTogglen" class="btn-secondary">
-                        <i class="fas fa-comments"></i>
-                        Chat với AI
-                    </a>
-                </div>
-            </div>
-            <div class="hero-image">
-                <div class="floating-card floating-card-1">
-                    <strong>24/7</strong> Hỗ trợ
-                </div>
-                <div class="floating-card floating-card-2">
-                    <strong>100%</strong> Bảo mật
-                </div>
-                <div
-                    style="width: 100%; height: 400px; background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-users" style="font-size: 6rem; color: rgba(255,255,255,0.8);"></i>
-                </div>
-            </div>
+      <div class="hero-container">
+        <div class="hero-content">
+          <h1>Chăm sóc <span class="highlight">Sức khỏe Tâm lý</span> cho Sinh viên Việt Nam</h1>
+          <p>Nền tảng hỗ trợ tâm lý toàn diện, an toàn và thân thiện. Kết nối ngay với chuyên gia, đánh giá sức khỏe tâm lý và nhận hỗ trợ 24/7 qua AI Chatbot.</p>
+          <div class="hero-buttons">
+            <a href="#test" class="btn-primary">
+              <i class="fas fa-clipboard-check"></i>
+              Đánh giá ngay
+            </a>
+            <a id="chatbotTogglen" class="btn-secondary">
+              <i class="fas fa-comments"></i>
+              Chat với AI
+            </a>
+          </div>
         </div>
+        <div class="hero-image">
+          <div class="floating-card floating-card-1">
+            <strong>24/7</strong> Hỗ trợ
+          </div>
+          <div class="floating-card floating-card-2">
+            <strong>100%</strong> Bảo mật
+          </div>
+          <div style="width: 100%; height: 400px; background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-users" style="font-size: 6rem; color: rgba(255,255,255,0.8);"></i>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Features Section -->
     <section class="features" id="features">
-        <div class="section-header">
-            <h2>Tính năng nổi bật</h2>
-            <p>Giải pháp toàn diện cho sức khỏe tâm lý sinh viên</p>
+      <div class="section-header">
+        <h2>Tính năng nổi bật</h2>
+        <p>Giải pháp toàn diện cho sức khỏe tâm lý sinh viên</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-user-shield"></i>
+          </div>
+          <h3>Bảo mật tuyệt đối</h3>
+          <p>Chế độ ẩn danh hoàn toàn, mã hóa end-to-end đảm bảo thông tin riêng tư của bạn.</p>
         </div>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-user-shield"></i>
-                </div>
-                <h3>Bảo mật tuyệt đối</h3>
-                <p>Chế độ ẩn danh hoàn toàn, mã hóa end-to-end đảm bảo thông tin riêng tư của bạn.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <h3>AI Chatbot 24/7</h3>
-                <p>Hỗ trợ tức thì mọi lúc mọi nơi với chatbot AI thông minh, thân thiện.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-user-md"></i>
-                </div>
-                <h3>Chuyên gia tâm lý</h3>
-                <p>Kết nối với đội ngũ chuyên gia tâm lý chuyên nghiệp, giàu kinh nghiệm.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-clipboard-list"></i>
-                </div>
-                <h3>Đánh giá nhanh</h3>
-                <p>Bài test tâm lý được thiết kế khoa học, giúp nhận diện sớm các vấn đề.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-book"></i>
-                </div>
-                <h3>Kho tài nguyên</h3>
-                <p>Thư viện bài viết, video, bài tập thực hành phong phú về sức khỏe tâm lý.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <h3>Theo dõi tiến trình</h3>
-                <p>Dashboard cá nhân giúp theo dõi và cải thiện sức khỏe tâm lý theo thời gian.</p>
-            </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-robot"></i>
+          </div>
+          <h3>AI Chatbot 24/7</h3>
+          <p>Hỗ trợ tức thì mọi lúc mọi nơi với chatbot AI thông minh, thân thiện.</p>
         </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-user-md"></i>
+          </div>
+          <h3>Chuyên gia tâm lý</h3>
+          <p>Kết nối với đội ngũ chuyên gia tâm lý chuyên nghiệp, giàu kinh nghiệm.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-clipboard-list"></i>
+          </div>
+          <h3>Đánh giá nhanh</h3>
+          <p>Bài test tâm lý được thiết kế khoa học, giúp nhận diện sớm các vấn đề.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-book"></i>
+          </div>
+          <h3>Kho tài nguyên</h3>
+          <p>Thư viện bài viết, video, bài tập thực hành phong phú về sức khỏe tâm lý.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h3>Theo dõi tiến trình</h3>
+          <p>Dashboard cá nhân giúp theo dõi và cải thiện sức khỏe tâm lý theo thời gian.</p>
+        </div>
+      </div>
     </section>
 
     <!-- Quick Test Section -->
     <section class="quick-test" id="test">
-        <div class="test-container">
-            <div class="test-header">
-                <h2>Đánh giá Sức khỏe Tâm lý</h2>
-                <p>Bài test nhanh giúp bạn nhận diện các dấu hiệu stress, lo âu hoặc trầm cảm</p>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-
-            <div class="question-card active" data-question="1">
-                <h3>Trong tuần qua, bạn có thường xuyên cảm thấy lo lắng hoặc căng thẳng không?</h3>
-                <div class="answer-options">
-                    <div class="answer-option" onclick="selectAnswer(this)">
-                        Không bao giờ
-                    </div>
-                    <div class="answer-option" onclick="selectAnswer(this)">
-                        Đôi khi
-                    </div>
-                    <div class="answer-option" onclick="selectAnswer(this)">
-                        Thường xuyên
-                    </div>
-                    <div class="answer-option" onclick="selectAnswer(this)">
-                        Luôn luôn
-                    </div>
-                </div>
-            </div>
-
-            <div class="question-card" data-question="2">
-                <h3>Bạn có gặp khó khăn trong việc tập trung vào học tập hoặc công việc không?</h3>
-                <div class="answer-options">
-                    <div class="answer-option" onclick="selectAnswer(this)">
-                        Không gặp khó khăn
-                    </div>
-                    <div class="answer-option" onclick="selectAnswer(this)">
-                        Ít khi
-                    </div>
-                    <div class="answer-option" onclick="selectAnswer(this)">
-                        Thỉnh thoảng
-                    </div>
-                    <div class="answer-option" onclick="selectAnswer(this)">
-                        Rất thường xuyên
-                    </div>
-                </div>
-            </div>
-
-            <div class="question-card" data-question="3">
-                <h3>Chất lượng giấc ngủ của bạn như thế nào?</h3>
-                <div class="answer-options">
-                    <div class="answer-option" onclick="selectAnswer(this)">
-                        Rất tốt
-                    </div>
-                    <div class="answer-option" onclick="selectAnswer(this)">
-                        Bình thường
-                    </div>
-                    <div class="answer-option" onclick="selectAnswer(this)">
-                        Không tốt
-                    </div>
-                    <div class="answer-option" onclick="selectAnswer(this)">
-                        Rất tệ, thường mất ngủ
-                    </div>
-                </div>
-            </div>
-
-            <div class="test-navigation">
-                <button class="btn-prev" onclick="prevQuestion()">
-                    <i class="fas fa-arrow-left"></i> Quay lại
-                </button>
-                <button class="btn-next" onclick="nextQuestion()">
-                    Tiếp theo <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
+      <div class="test-container">
+        <div class="test-header">
+          <h2>Đánh giá Sức khỏe Tâm lý</h2>
+          <p>Bài test nhanh giúp bạn nhận diện các dấu hiệu stress, lo âu hoặc trầm cảm</p>
         </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="question-card active" data-question="1">
+          <h3>Trong tuần qua, bạn có thường xuyên cảm thấy lo lắng hoặc căng thẳng không?</h3>
+          <div class="answer-options">
+            <div class="answer-option" onclick="selectAnswer(this)">Không bao giờ</div>
+            <div class="answer-option" onclick="selectAnswer(this)">Đôi khi</div>
+            <div class="answer-option" onclick="selectAnswer(this)">Thường xuyên</div>
+            <div class="answer-option" onclick="selectAnswer(this)">Luôn luôn</div>
+          </div>
+        </div>
+
+        <div class="question-card" data-question="2">
+          <h3>Bạn có gặp khó khăn trong việc tập trung vào học tập hoặc công việc không?</h3>
+          <div class="answer-options">
+            <div class="answer-option" onclick="selectAnswer(this)">Không gặp khó khăn</div>
+            <div class="answer-option" onclick="selectAnswer(this)">Ít khi</div>
+            <div class="answer-option" onclick="selectAnswer(this)">Thỉnh thoảng</div>
+            <div class="answer-option" onclick="selectAnswer(this)">Rất thường xuyên</div>
+          </div>
+        </div>
+
+        <div class="question-card" data-question="3">
+          <h3>Chất lượng giấc ngủ của bạn như thế nào?</h3>
+          <div class="answer-options">
+            <div class="answer-option" onclick="selectAnswer(this)">Rất tốt</div>
+            <div class="answer-option" onclick="selectAnswer(this)">Bình thường</div>
+            <div class="answer-option" onclick="selectAnswer(this)">Không tốt</div>
+            <div class="answer-option" onclick="selectAnswer(this)">Rất tệ, thường mất ngủ</div>
+          </div>
+        </div>
+
+        <div class="test-navigation">
+          <button class="btn-prev" onclick="prevQuestion()"><i class="fas fa-arrow-left"></i> Quay lại</button>
+          <button class="btn-next" onclick="nextQuestion()">Tiếp theo <i class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
     </section>
 
     <!-- Experts Section -->
     <section class="experts" id="experts">
-        <div class="section-header">
-            <h2>Đội ngũ Chuyên gia</h2>
-            <p>Kết nối với các chuyên gia tâm lý phù hợp với nhu cầu của bạn</p>
+      <div class="section-header">
+        <h2>Đội ngũ Chuyên gia</h2>
+        <p>Kết nối với các chuyên gia tâm lý phù hợp với nhu cầu của bạn</p>
+      </div>
+      <div class="experts-grid">
+        <div class="expert-card">
+          <div class="expert-avatar">
+            <i class="fas fa-user-circle"></i>
+            <span class="expert-status online"><span class="status-dot"></span> Đang online</span>
+          </div>
+          <div class="expert-info">
+            <h3>TS. Nguyễn Văn A</h3>
+            <div class="expert-specialties">
+              <span class="specialty-tag">Stress học tập</span>
+              <span class="specialty-tag">Lo âu</span>
+            </div>
+            <div class="expert-rating">
+              <div class="stars">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+              <span>5.0 (124 đánh giá)</span>
+            </div>
+            <button class="btn-connect">Kết nối ngay</button>
+          </div>
         </div>
-        <div class="experts-grid">
-            <div class="expert-card">
-                <div class="expert-avatar">
-                    <i class="fas fa-user-circle"></i>
-                    <span class="expert-status online">
-                        <span class="status-dot"></span> Đang online
-                    </span>
-                </div>
-                <div class="expert-info">
-                    <h3>TS. Nguyễn Văn A</h3>
-                    <div class="expert-specialties">
-                        <span class="specialty-tag">Stress học tập</span>
-                        <span class="specialty-tag">Lo âu</span>
-                    </div>
-                    <div class="expert-rating">
-                        <div class="stars">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <span>5.0 (124 đánh giá)</span>
-                    </div>
-                    <button class="btn-connect">Kết nối ngay</button>
-                </div>
-            </div>
 
-            <div class="expert-card">
-                <div class="expert-avatar">
-                    <i class="fas fa-user-circle"></i>
-                    <span class="expert-status online">
-                        <span class="status-dot"></span> Đang online
-                    </span>
-                </div>
-                <div class="expert-info">
-                    <h3>ThS. Trần Thị B</h3>
-                    <div class="expert-specialties">
-                        <span class="specialty-tag">Trầm cảm</span>
-                        <span class="specialty-tag">Tâm lý xã hội</span>
-                    </div>
-                    <div class="expert-rating">
-                        <div class="stars">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                        </div>
-                        <span>4.8 (98 đánh giá)</span>
-                    </div>
-                    <button class="btn-connect">Kết nối ngay</button>
-                </div>
+        <div class="expert-card">
+          <div class="expert-avatar">
+            <i class="fas fa-user-circle"></i>
+            <span class="expert-status online"><span class="status-dot"></span> Đang online</span>
+          </div>
+          <div class="expert-info">
+            <h3>ThS. Trần Thị B</h3>
+            <div class="expert-specialties">
+              <span class="specialty-tag">Trầm cảm</span>
+              <span class="specialty-tag">Tâm lý xã hội</span>
             </div>
-
-            <div class="expert-card">
-                <div class="expert-avatar">
-                    <i class="fas fa-user-circle"></i>
-                    <span class="expert-status offline">
-                        <span class="status-dot"></span> Offline
-                    </span>
-                </div>
-                <div class="expert-info">
-                    <h3>BS. Lê Văn C</h3>
-                    <div class="expert-specialties">
-                        <span class="specialty-tag">Rối loạn giấc ngủ</span>
-                        <span class="specialty-tag">Áp lực thi cử</span>
-                    </div>
-                    <div class="expert-rating">
-                        <div class="stars">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <span>4.9 (156 đánh giá)</span>
-                    </div>
-                    <button class="btn-connect" disabled>Đặt lịch hẹn</button>
-                </div>
+            <div class="expert-rating">
+              <div class="stars">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star-half-alt"></i>
+              </div>
+              <span>4.8 (98 đánh giá)</span>
             </div>
+            <button class="btn-connect">Kết nối ngay</button>
+          </div>
         </div>
+
+        <div class="expert-card">
+          <div class="expert-avatar">
+            <i class="fas fa-user-circle"></i>
+            <span class="expert-status offline"><span class="status-dot"></span> Offline</span>
+          </div>
+          <div class="expert-info">
+            <h3>BS. Lê Văn C</h3>
+            <div class="expert-specialties">
+              <span class="specialty-tag">Rối loạn giấc ngủ</span>
+              <span class="specialty-tag">Áp lực thi cử</span>
+            </div>
+            <div class="expert-rating">
+              <div class="stars">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+              <span>4.9 (156 đánh giá)</span>
+            </div>
+            <button class="btn-connect" disabled>Đặt lịch hẹn</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Resources Section -->
     <section class="resources" id="resources">
-        <div class="section-header">
-            <h2>Kho Tài nguyên</h2>
-            <p>Khám phá các bài viết, video và công cụ hỗ trợ sức khỏe tâm lý</p>
-        </div>
-        <div class="resources-categories">
-            <button class="category-btn active">Tất cả</button>
-            <button class="category-btn">Stress & Lo âu</button>
-            <button class="category-btn">Trầm cảm</button>
-            <button class="category-btn">Giấc ngủ</button>
-            <button class="category-btn">Kỹ năng sống</button>
-        </div>
-        <div class="resources-grid">
-            <article class="resource-card">
-                <div class="resource-image">
-                    <i class="fas fa-brain"></i>
-                </div>
-                <div class="resource-content">
-                    <div class="resource-meta">
-                        <span><i class="fas fa-tag"></i> Stress học tập</span>
-                        <span><i class="fas fa-clock"></i> 5 phút đọc</span>
-                    </div>
-                    <h3>5 cách quản lý stress hiệu quả cho sinh viên</h3>
-                    <p>Khám phá các phương pháp đơn giản nhưng hiệu quả để giảm stress trong quá trình học tập...</p>
-                    <a href="#" class="resource-link">
-                        Đọc thêm <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </article>
+      <div class="section-header">
+        <h2>Kho Tài nguyên</h2>
+        <p>Khám phá các bài viết, video và công cụ hỗ trợ sức khỏe tâm lý</p>
+      </div>
+      <div class="resources-categories">
+        <button class="category-btn active">Tất cả</button>
+        <button class="category-btn">Stress & Lo âu</button>
+        <button class="category-btn">Trầm cảm</button>
+        <button class="category-btn">Giấc ngủ</button>
+        <button class="category-btn">Kỹ năng sống</button>
+      </div>
+      <div class="resources-grid">
+        <article class="resource-card">
+          <div class="resource-image">
+            <i class="fas fa-brain"></i>
+          </div>
+          <div class="resource-content">
+            <div class="resource-meta">
+              <span><i class="fas fa-tag"></i> Stress học tập</span>
+              <span><i class="fas fa-clock"></i> 5 phút đọc</span>
+            </div>
+            <h3>5 cách quản lý stress hiệu quả cho sinh viên</h3>
+            <p>Khám phá các phương pháp đơn giản nhưng hiệu quả để giảm stress trong quá trình học tập...</p>
+            <a href="#" class="resource-link">Đọc thêm <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </article>
 
-            <article class="resource-card">
-                <div class="resource-image">
-                    <i class="fas fa-bed"></i>
-                </div>
-                <div class="resource-content">
-                    <div class="resource-meta">
-                        <span><i class="fas fa-tag"></i> Giấc ngủ</span>
-                        <span><i class="fas fa-clock"></i> 7 phút đọc</span>
-                    </div>
-                    <h3>Cải thiện chất lượng giấc ngủ cho sinh viên</h3>
-                    <p>Những mẹo thực tế giúp bạn có giấc ngủ ngon và sâu hơn, tỉnh táo cho ngày mới...</p>
-                    <a href="#" class="resource-link">
-                        Đọc thêm <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </article>
+        <article class="resource-card">
+          <div class="resource-image">
+            <i class="fas fa-bed"></i>
+          </div>
+          <div class="resource-content">
+            <div class="resource-meta">
+              <span><i class="fas fa-tag"></i> Giấc ngủ</span>
+              <span><i class="fas fa-clock"></i> 7 phút đọc</span>
+            </div>
+            <h3>Cải thiện chất lượng giấc ngủ cho sinh viên</h3>
+            <p>Những mẹo thực tế giúp bạn có giấc ngủ ngon và sâu hơn, tỉnh táo cho ngày mới...</p>
+            <a href="#" class="resource-link">Đọc thêm <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </article>
 
-            <article class="resource-card">
-                <div class="resource-image">
-                    <i class="fas fa-heart"></i>
-                </div>
-                <div class="resource-content">
-                    <div class="resource-meta">
-                        <span><i class="fas fa-tag"></i> Tâm lý</span>
-                        <span><i class="fas fa-clock"></i> 10 phút đọc</span>
-                    </div>
-                    <h3>Nhận diện dấu hiệu trầm cảm ở sinh viên</h3>
-                    <p>Làm thế nào để phát hiện sớm và hỗ trợ kịp thời cho bản thân và bạn bè...</p>
-                    <a href="#" class="resource-link">
-                        Đọc thêm <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </article>
-        </div>
+        <article class="resource-card">
+          <div class="resource-image">
+            <i class="fas fa-heart"></i>
+          </div>
+          <div class="resource-content">
+            <div class="resource-meta">
+              <span><i class="fas fa-tag"></i> Tâm lý</span>
+              <span><i class="fas fa-clock"></i> 10 phút đọc</span>
+            </div>
+            <h3>Nhận diện dấu hiệu trầm cảm ở sinh viên</h3>
+            <p>Làm thế nào để phát hiện sớm và hỗ trợ kịp thời cho bản thân và bạn bè...</p>
+            <a href="#" class="resource-link">Đọc thêm <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </article>
+      </div>
     </section>
 
     <!-- Dashboard Section -->
     <section class="dashboard" id="dashboard">
-        <div class="section-header">
-            <h2>Dashboard Cá nhân</h2>
-            <p>Theo dõi và quản lý sức khỏe tâm lý của bạn</p>
+      <div class="section-header">
+        <h2>Dashboard Cá nhân</h2>
+        <p>Theo dõi và quản lý sức khỏe tâm lý của bạn</p>
+      </div>
+      <div class="dashboard-container">
+        <div class="dashboard-sidebar">
+          <ul class="dashboard-menu">
+            <li>
+              <a href="#" class="active"><i class="fas fa-chart-line"></i> Tổng quan</a>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-calendar"></i> Lịch hẹn</a>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-history"></i> Lịch sử</a>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-file-alt"></i> Kết quả đánh giá</a>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-cog"></i> Cài đặt</a>
+            </li>
+          </ul>
         </div>
-        <div class="dashboard-container">
-            <div class="dashboard-sidebar">
-                <ul class="dashboard-menu">
-                    <li><a href="#" class="active"><i class="fas fa-chart-line"></i> Tổng quan</a></li>
-                    <li><a href="#"><i class="fas fa-calendar"></i> Lịch hẹn</a></li>
-                    <li><a href="#"><i class="fas fa-history"></i> Lịch sử</a></li>
-                    <li><a href="#"><i class="fas fa-file-alt"></i> Kết quả đánh giá</a></li>
-                    <li><a href="#"><i class="fas fa-cog"></i> Cài đặt</a></li>
-                </ul>
+        <div class="dashboard-content">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon primary">
+                <i class="fas fa-smile"></i>
+              </div>
+              <div class="stat-info">
+                <h4>75</h4>
+                <p>Điểm tâm trạng</p>
+              </div>
             </div>
-            <div class="dashboard-content">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon primary">
-                            <i class="fas fa-smile"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h4>75</h4>
-                            <p>Điểm tâm trạng</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon success">
-                            <i class="fas fa-comments"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h4>12</h4>
-                            <p>Phiên tư vấn</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon warning">
-                            <i class="fas fa-book-open"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h4>28</h4>
-                            <p>Bài viết đã đọc</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon danger">
-                            <i class="fas fa-trophy"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h4>5</h4>
-                            <p>Thành tựu</p>
-                        </div>
-                    </div>
-                </div>
+            <div class="stat-card">
+              <div class="stat-icon success">
+                <i class="fas fa-comments"></i>
+              </div>
+              <div class="stat-info">
+                <h4>12</h4>
+                <p>Phiên tư vấn</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon warning">
+                <i class="fas fa-book-open"></i>
+              </div>
+              <div class="stat-info">
+                <h4>28</h4>
+                <p>Bài viết đã đọc</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon danger">
+                <i class="fas fa-trophy"></i>
+              </div>
+              <div class="stat-info">
+                <h4>5</h4>
+                <p>Thành tựu</p>
+              </div>
+            </div>
+          </div>
 
-                <div class="mood-tracker">
-                    <h3>Biểu đồ Tâm trạng 30 ngày</h3>
-                    <div class="mood-chart">
-                        <i class="fas fa-chart-area" style="font-size: 3rem;"></i>
-                        <p>Biểu đồ tâm trạng sẽ hiển thị ở đây</p>
-                    </div>
-                </div>
+          <div class="mood-tracker">
+            <h3>Biểu đồ Tâm trạng 30 ngày</h3>
+            <div class="mood-chart">
+              <i class="fas fa-chart-area" style="font-size: 3rem;"></i>
+              <p>Biểu đồ tâm trạng sẽ hiển thị ở đây</p>
             </div>
+          </div>
         </div>
+      </div>
     </section>
 
     <!-- Chatbot -->
     <div class="chatbot-container">
-        <div class="chatbot-toggle" onclick="toggleChatbot()">
-            <i class="fa-regular fa-message"></i>
-        </div>
-        <div class="chatbot-window" id="chatbotWindow">
-            <div class="chatbot-header">
-                <div class="chatbot-misc"> 
-                    <h3> <i class="fas fa-robot"></i> AI Assistant </h3>
-                    <div class="chatbot-status">
-                        <span class="status-dot"></span>
-                        Online
-                    </div>
-                </div>
+      <div class="chatbot-toggle" onclick="toggleChatbot()">
+        <i class="fa-regular fa-message"></i>
+      </div>
+      <div class="chatbot-window" id="chatbotWindow">
+        <div class="chatbot-header">
+          <div class="chatbot-misc">
+            <h3><i class="fas fa-robot"></i> AI Assistant</h3>
+            <div class="chatbot-status">
+              <span class="status-dot"></span>
+              Online
+            </div>
+          </div>
 
-                <button class="chatbot-cancel" onclick="toggleChatbot()">✖</button>
-            </div>
-            <div class="chatbot-messages" id="chatMessages">
-                <div class="message bot">
-                    <div class="message-avatar">AI</div>
-                    <div class="message-content">
-                        Xin chào! Mình là trợ lý AI của StudentMind Connect. Mình có thể hỗ trợ bạn về các vấn đề tâm
-                        lý, stress học tập, hoặc kết nối bạn với chuyên gia phù hợp. Bạn cảm thấy thế nào hôm nay?
-                    </div>
-                </div>
-            </div>
-            <div class="chatbot-input">
-                <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." onkeypress="handleChatInput(event)">
-                <button onclick="handleSendMessage()">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
+          <button class="chatbot-cancel" onclick="toggleChatbot()">✖</button>
         </div>
+        <div class="chatbot-messages" id="chatMessages">
+          <div class="message bot">
+            <div class="message-avatar">AI</div>
+            <div class="message-content">Xin chào! Mình là trợ lý AI của StudentMind Connect. Mình có thể hỗ trợ bạn về các vấn đề tâm lý, stress học tập, hoặc kết nối bạn với chuyên gia phù hợp. Bạn cảm thấy thế nào hôm nay?</div>
+          </div>
+        </div>
+        <div class="chatbot-input">
+          <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." onkeypress="handleChatInputKey(event)" />
+          <button onclick="handleSendMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
     </div>
 
     <!-- Login Modal -->
     <div class="modal-overlay" id="loginModal">
-        <div class="modal-container">
-            <button class="modal-close" onclick="closeLoginModal()">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="modal-content">
-                <div class="modal-logo">
-                    <i class="fas fa-brain"></i>
-                    <span>StudentMind Connect</span>
-                </div>
-                <h2>Đăng nhập để được gửi yêu cầu tư vấn miễn phí</h2>
-                <p class="modal-subtitle">38.000+ doanh nghiệp & cửa hàng đã tin dùng</p>
+      <div class="modal-container">
+        <button class="modal-close" onclick="closeLoginModal()"><i class="fas fa-times"></i></button>
+        <div class="modal-content">
+          <div class="modal-logo">
+            <i class="fas fa-brain"></i>
+            <span>StudentMind Connect</span>
+          </div>
+          <h2>Đăng nhập tài khoản</h2>
+          <p class="modal-subtitle">Chào mừng trở lại! Đăng nhập để tiếp tục.</p>
 
-                <form id="loginForm" onsubmit="handleLoginSubmit(event)">
-                    <div class="form-group">
-                        <input type="text" id="fullName" placeholder="Tên đăng nhập *" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="tel" id="password" placeholder="Mật khẩu *" required>
-                    </div>
-                    <button type="submit" class="btn-submit">Đăng nhập</button>
-                </form>
+          <form id="loginForm">
+            <div class="form-group">
+              <!-- SỬA Ở ĐÂY: id và name là "username" -->
+              <input type="text" id="username" name="username" placeholder="Tên đăng nhập *" required />
+            </div>
+            <div class="form-group">
+              <!-- SỬA Ở ĐÂY: id và name là "password" -->
+              <input type="password" id="password" name="password" placeholder="Mật khẩu *" required />
+            </div>
 
-                <div class="modal-footer">
-                    <p>Bằng việc gửi yêu cầu, bạn đồng ý với <a href="#">điều khoản sử dụng</a> và <a href="#">chính
-                            sách bảo mật</a> của chúng tôi</p>
-                </div>
-                <div class="modal-footer">
-                    <a href="/register_page.html"> Bạn chưa có tài khoản? Đăng ký ngay!</a></p>
-                </div>
-            </div>
-            <div class="modal-image">
-                <div class="illustration-content">
-                    <i class="fas fa-users" style="font-size: 5rem; color: white;"></i>
-                    <p style="color: white; margin-top: 1rem; font-size: 1.1rem;">Kết nối với chuyên gia tâm lý</p>
-                </div>
-            </div>
+            <!-- THÊM Ở ĐÂY: Div hiển thị thông báo lỗi/thành công -->
+            <div id="loginMessage" style="display: none; margin-bottom: 1rem; color: red; text-align: center;"></div>
+
+            <button type="submit" class="btn-submit">Đăng nhập</button>
+          </form>
+
+          <div class="modal-footer">
+            <p>
+              Bằng việc đăng nhập, bạn đồng ý với <a href="#">điều khoản sử dụng</a> và <a href="#">chính sách bảo mật</a> của chúng tôi.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <p>
+              <a href="/register_page.html">Bạn chưa có tài khoản? Đăng ký ngay!</a>
+            </p>
+          </div>
         </div>
+        <div class="modal-image">
+          <div class="illustration-content">
+            <i class="fas fa-users" style="font-size: 5rem; color: white;"></i>
+            <p style="color: white; margin-top: 1rem; font-size: 1.1rem;">Kết nối với chuyên gia tâm lý</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Footer -->
     <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>StudentMind Connect</h3>
-                <p>Nền tảng hỗ trợ sức khỏe tâm lý hàng đầu cho sinh viên Việt Nam</p>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                </div>
-            </div>
-            <div class="footer-section">
-                <h3>Truy cập nhanh</h3>
-                <ul>
-                    <li><a href="#test">Đánh giá tâm lý</a></li>
-                    <li><a href="#experts">Tìm chuyên gia</a></li>
-                    <li><a href="#resources">Tài nguyên</a></li>
-                    <li><a href="#dashboard">Dashboard</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3>Hỗ trợ</h3>
-                <ul>
-                    <li><a href="#">Hướng dẫn sử dụng</a></li>
-                    <li><a href="#">Câu hỏi thường gặp</a></li>
-                    <li><a href="#">Chính sách bảo mật</a></li>
-                    <li><a href="#">Điều khoản sử dụng</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3>Liên hệ khẩn cấp</h3>
-                <ul>
-                    <li><i class="fas fa-phone"></i> Hotline: 1900 xxxx</li>
-                    <li><i class="fas fa-envelope"></i> support@studentmind.vn</li>
-                    <li><i class="fas fa-clock"></i> Hỗ trợ 24/7</li>
-                </ul>
-            </div>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>StudentMind Connect</h3>
+          <p>Nền tảng hỗ trợ sức khỏe tâm lý hàng đầu cho sinh viên Việt Nam</p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+          </div>
         </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 StudentMind Connect. All rights reserved.</p>
+        <div class="footer-section">
+          <h3>Truy cập nhanh</h3>
+          <ul>
+            <li>
+              <a href="#test">Đánh giá tâm lý</a>
+            </li>
+            <li>
+              <a href="#experts">Tìm chuyên gia</a>
+            </li>
+            <li>
+              <a href="#resources">Tài nguyên</a>
+            </li>
+            <li>
+              <a href="#dashboard">Dashboard</a>
+            </li>
+          </ul>
         </div>
-    </footer>
-<<<<<<< HEAD
-
-    <script src="register.js">
-    </script>
-=======
-    
-  <script src="script.js"></script>
->>>>>>> df09a2836fe8e3cb29becd2c16ea618d636d7374
-</body>
+        <div class="footer-section">
+          <h3>Hỗ trợ</h3>
+          <ul>
+            <li>
+              <a href="#">Hướng dẫn sử dụng</a>
+            </li>
+            <li>
+              <a href="#">Câu hỏi thường gặp</a>
+            </li>
+            <li>
+              <a href="#">Chính sách bảo mật</a>
+            </li>
+            <li>
+              <a href="#">Điều khoản sử dụng</a>
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Liên hệ khẩn cấp</h3>
+          <ul>
+            <li>
+              <i class="fas fa-phone"></i> Hotline: 1900 xxxx
+            </li>
+            <li>
+              <i class="fas fa-envelope"></i> support@studentmind.vn
+            </li>
+            <li>
+              <i class="fas fa-clock"></i> Hỗ trợ 24/7
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 StudentMind Connect. All rights reserved.</p>
+      </div>
+    </footer><<<<<<< HEAD<script src="register.js"></script>=======<script src="script.js"></script>>>>>>>> df09a2836fe8e3cb29becd2c16ea618d636d7374
+  </body>
 </html>
