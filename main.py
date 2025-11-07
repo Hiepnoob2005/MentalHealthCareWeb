@@ -11,6 +11,8 @@ import logging
 import uuid # Thư viện để tạo ID duy nhất cho phiên chat
 from dotenv import load_dotenv
 from flask import render_template
+import json
+import datetime
 
 # Cấu hình cơ bản
 load_dotenv()
@@ -28,6 +30,11 @@ app = Flask(__name__)
 # RẤT QUAN TRỌNG: Cần có Secret Key cho Flask-Login
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'mot-chuoi-bi-mat-rat-kho-doan-12345')
 CORS(app)
+
+CHAT_HISTORY_DIR = "chat_history"
+if not os.path.exists(CHAT_HISTORY_DIR):
+    os.makedirs(CHAT_HISTORY_DIR)
+    logging.info(f"Đã tạo thư mục {CHAT_HISTORY_DIR}")
 
 bcrypt = Bcrypt(app) 
 USER_FILE = "user_accounts.txt" # File lưu tài khoản
@@ -84,6 +91,146 @@ def get_or_create_chat_session(conversation_id):
         chat_sessions[conversation_id] = gemini_model.start_chat(history=[]) 
         
     return chat_sessions[conversation_id]
+
+def summarize_chat_with_ai(history_messages):
+    """
+    Sử dụng Gemini để tóm tắt lịch sử chat theo các key.
+    history_messages: Một list các dict [{"role": "user", "text": "..."}, ...]
+    """
+    
+    # 1. Chuyển list lịch sử thành một chuỗi văn bản
+    formatted_history = ""
+    for msg in history_messages:
+        role = "Sinh viên" if msg['role'] == 'user' else "AI Hỗ trợ"
+        formatted_history += f"{role}: {msg['text']}\n"
+
+    # 2. Tạo "Mệnh Lệnh Tóm Tắt" (Meta-Prompt)
+    META_PROMPT = f"""
+    Bạn là một trợ lý phân tích hội thoại. Dưới đây là lịch sử chat giữa một 'Sinh viên' và 'AI Hỗ trợ' tâm lý.
+    Dựa vào nội dung, hãy phân tích và trích xuất 'topic' (chủ đề chính), 'issue' (vấn đề cốt lõi người dùng gặp phải), và 'symptoms' (các triệu chứng được đề cập).
+
+    QUY TẮC:
+    1. HÃY CHỈ TRẢ LỜI BẰNG MỘT ĐỐI TƯỢNG JSON HỢP LỆ.
+    2. Nếu không đủ thông tin để xác định một trường, hãy dùng giá trị "Chưa xác định".
+    3. Giữ nội dung tóm tắt ngắn gọn.
+
+    Ví dụ JSON đầu ra:
+    {{
+      "topic": "Stress thi cử",
+      "issue": "Người dùng lo lắng và áp lực về kỳ thi sắp tới.",
+      "symptoms": "Mất ngủ, khó tập trung."
+    }}
+
+    --- LỊCH SỬ CHAT ĐỂ PHÂN TÍCH ---
+    {formatted_history}
+    --- KẾT THÚC LỊCH SỬ CHAT ---
+
+    JSON PHÂN TÍCH:
+    """
+
+    try:
+        # 3. Gọi API (dùng 'generate_content' cho tác vụ một lần)
+        # Chúng ta tái sử dụng 'gemini_model' đã khởi tạo
+        response = gemini_model.generate_content(
+            META_PROMPT,
+            # Dùng config riêng cho việc tóm tắt, nhiệt độ thấp để chính xác
+            generation_config=genai.types.GenerationConfig(temperature=0.2), 
+            safety_settings=SAFETY_SETTINGS 
+        )
+
+        # 4. Xử lý và Parse JSON từ phản hồi của AI
+        raw_response_text = response.text.strip()
+        
+        # AI có thể trả về JSON trong khối '```json ... ```'
+        if raw_response_text.startswith("```json"):
+            raw_response_text = raw_response_text[7:-3].strip()
+        
+        summary_data = json.loads(raw_response_text)
+        
+        # Đảm bảo các key luôn tồn tại
+        return {
+            "topic": summary_data.get("topic", "Chưa xác định"),
+            "issue": summary_data.get("issue", "Chưa xác định"),
+            "symptoms": summary_data.get("symptoms", "Chưa xác định")
+        }
+
+    except json.JSONDecodeError as e:
+        logging.error(f"Lỗi JSONDecodeError khi tóm tắt: {e}")
+        logging.error(f"Phản hồi thô từ AI (lỗi JSON): {raw_response_text}")
+        return {"topic": "Lỗi định dạng JSON", "issue": "Lỗi", "symptoms": "Lỗi"}
+    except Exception as e:
+        logging.error(f"Lỗi nghiêm trọng khi gọi API tóm tắt: {e}")
+        # Ghi lại traceback để debug
+        import traceback
+        traceback.print_exc()
+        return {"topic": "Lỗi API tóm tắt", "issue": "Lỗi", "symptoms": "Lỗi"}
+    
+def save_chat_history_and_summarize(conversation_id, history):
+    """
+    Lưu lịch sử chat VÀ gọi AI để tóm tắt.
+    (Hàm này nên được chạy trong một thread riêng)
+    """
+    try:
+        now = datetime.datetime.now()
+        file_path = os.path.join(CHAT_HISTORY_DIR, f"{conversation_id}.json")
+        
+        # 1. Chuyển đổi history sang list dictionary
+        messages = []
+        for msg in history:
+            if msg.parts:
+                messages.append({"role": msg.role, "text": msg.parts[0].text})
+
+        # 2. [MỚI] Gọi AI để lấy tóm tắt
+        summary_data = {
+            "topic": "Chưa xác định",
+            "issue": "Chưa xác định",
+            "symptoms": "Chưa xác định"
+        }
+        
+        # Chỉ tóm tắt nếu cuộc chat có ý nghĩa (ví dụ: hơn 2 tin nhắn)
+        if len(messages) > 2: 
+            logging.info(f"Đang gọi AI để tóm tắt (ConvID: {conversation_id})...")
+            summary_data = summarize_chat_with_ai(messages)
+        
+        # 3. [MỚI] Đọc file cũ để không ghi đè tóm tắt cũ nếu AI thất bại
+        if os.path.exists(file_path):
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    existing_data = json.load(f)
+                
+                # Chỉ cập nhật nếu AI trả về kết quả mới
+                if summary_data["topic"] == "Chưa xác định":
+                    summary_data["topic"] = existing_data.get("topic", "Chưa xác định")
+                if summary_data["issue"] == "Chưa xác định":
+                     summary_data["issue"] = existing_data.get("issue", "Chưa xác định")
+                if summary_data["symptoms"] == "Chưa xác định":
+                     summary_data["symptoms"] = existing_data.get("symptoms", "Chưa xác định")
+            except json.JSONDecodeError:
+                logging.warning(f"File {file_path} bị lỗi, sẽ ghi đè.")
+
+        # 4. Chuẩn bị dữ liệu cuối cùng
+        data_to_save = {
+            "conversation_id": conversation_id,
+            "last_updated_date": now.strftime("%Y-%m-%d"),
+            "last_updated_time": now.strftime("%H:%M:%S"),
+            
+            "topic": summary_data.get("topic"),
+            "issue": summary_data.get("issue"),
+            "symptoms": summary_data.get("symptoms"),
+            
+            "messages": messages
+        }
+        
+        # 5. Ghi file
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(data_to_save, f, ensure_ascii=False, indent=4)
+        
+        logging.info(f"Đã cập nhật và tóm tắt lịch sử chat vào {file_path}")
+
+    except Exception as e:
+        logging.error(f"Lỗi nghiêm trọng khi lưu/tóm tắt: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 # --- CẤU HÌNH FLASK-LOGIN ---
@@ -179,6 +326,14 @@ def chat():
             return jsonify({"reply": "Xin lỗi, phản hồi của AI cho chủ đề này đã bị chặn vì lý do an toàn. Bạn có thể thử diễn đạt lại câu hỏi của mình không?"}), 200
 
         reply = response.text.strip() if hasattr(response, "text") and response.text else "Xin lỗi, AI chưa thể phản hồi."
+        current_history = list(chat_session.history) 
+        
+        # 2. Tạo và chạy thread
+        save_thread = threading.Thread(
+            target=save_chat_history_and_summarize, # Gọi hàm mới
+            args=(conversation_id, current_history)
+        )
+        save_thread.start() 
         return jsonify({"reply": reply})
 
     except Exception as e:
