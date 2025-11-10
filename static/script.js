@@ -516,3 +516,364 @@ function initializeResourceFilters() {
         });
     });
 }
+
+// --- Matching System Functions ---
+// --- Thêm vào ngày 10/11/2025 ---
+async function findMatchingCounselors(problemTags) {
+    try {
+        const response = await fetch("http://127.0.0.1:5000/api/match/find", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                problem_tags: problemTags,
+                only_online: true,
+                min_rating: 4.0
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+
+    } catch (error) {
+        console.error("Error finding matches:", error);
+        return null;
+    }
+}
+
+async function matchFromTestResults() {
+    // Lấy câu trả lời từ Quick Test
+    const answers = {};
+    
+    // Question 1
+    const q1Selected = document.querySelector('.question-card[data-question="1"] .answer-option.selected');
+    if (q1Selected) answers.q1 = q1Selected.textContent.trim();
+    
+    // Question 2  
+    const q2Selected = document.querySelector('.question-card[data-question="2"] .answer-option.selected');
+    if (q2Selected) answers.q2 = q2Selected.textContent.trim();
+    
+    // Question 3
+    const q3Selected = document.querySelector('.question-card[data-question="3"] .answer-option.selected');
+    if (q3Selected) answers.q3 = q3Selected.textContent.trim();
+    
+    if (Object.keys(answers).length === 0) {
+        alert("Vui lòng trả lời các câu hỏi trước!");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://127.0.0.1:5000/api/match/from-test", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ answers })
+        });
+
+        const data = await response.json();
+        
+        if (data.matches && data.matches.length > 0) {
+            displayMatchingResults(data);
+        } else {
+            alert("Không tìm thấy chuyên gia phù hợp. Vui lòng thử lại!");
+        }
+
+    } catch (error) {
+        console.error("Error matching from test:", error);
+        alert("Lỗi khi tìm chuyên gia. Vui lòng thử lại!");
+    }
+}
+
+function displayMatchingResults(data) {
+    // Tạo modal hiển thị kết quả matching
+    const modalHTML = `
+        <div class="matching-modal" id="matchingModal">
+            <div class="matching-modal-content">
+                <span class="close-modal" onclick="closeMatchingModal()">&times;</span>
+                <h2>Chuyên gia phù hợp cho bạn</h2>
+                <p class="detected-tags">Vấn đề được phát hiện: ${data.search_tags.join(', ')}</p>
+                <div class="matching-results">
+                    ${data.matches.map(counselor => `
+                        <div class="match-card">
+                            <div class="match-info">
+                                <h3>${counselor.name}</h3>
+                                <p class="match-score">Độ phù hợp: ${counselor.match_score}%</p>
+                                <p>Kinh nghiệm: ${counselor.experience}</p>
+                                <div class="specialties">
+                                    ${counselor.specialties.map(s => `<span class="tag">${s}</span>`).join('')}
+                                </div>
+                                <div class="rating">
+                                    <span class="stars">${'⭐'.repeat(Math.round(counselor.rating))}</span>
+                                    ${counselor.rating}
+                                </div>
+                                <button class="btn-connect-counselor" data-counselor-id="${counselor.id}">
+                                    ${counselor.status === 'online' ? 'Kết nối ngay' : 'Đặt lịch hẹn'}
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Thêm modal vào body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Thêm event listeners cho buttons
+    document.querySelectorAll('.btn-connect-counselor').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const counselorId = this.dataset.counselorId;
+            connectToCounselor(counselorId);
+        });
+    });
+}
+
+function closeMatchingModal() {
+    const modal = document.getElementById('matchingModal');
+    if (modal) modal.remove();
+}
+
+function connectToCounselor(counselorId) {
+    alert(`Đang kết nối với chuyên gia ${counselorId}...`);
+    // TODO: Implement actual connection logic
+}
+
+// Cập nhật hàm showTestResults
+async function showTestResults() {
+    // Thu thập câu trả lời
+    const answers = collectTestAnswers();
+    
+    if (Object.keys(answers).length < 3) {
+        alert("Vui lòng trả lời tất cả câu hỏi!");
+        return;
+    }
+    
+    try {
+        // Hiển thị loading
+        showLoadingModal("Đang phân tích kết quả...");
+        
+        // Gửi kết quả lên server
+        const response = await fetch("http://127.0.0.1:5000/api/test/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ answers })
+        });
+        
+        const data = await response.json();
+        hideLoadingModal();
+        
+        if (data.success) {
+            // Hiển thị kết quả test
+            showTestResultModal(data);
+            
+            // Nếu cần tìm chuyên gia (điểm cao)
+            if (data.should_find_counselor) {
+                setTimeout(() => {
+                    if (confirm("Bạn có muốn tìm chuyên gia phù hợp không?")) {
+                        findCounselorsFromTags(data.problem_tags);
+                    }
+                }, 2000);
+            }
+        } else {
+            alert("Có lỗi xảy ra. Vui lòng thử lại!");
+        }
+        
+    } catch (error) {
+        console.error("Error submitting test:", error);
+        hideLoadingModal();
+        alert("Không thể kết nối đến server!");
+    }
+}
+
+// Hàm thu thập câu trả lời
+function collectTestAnswers() {
+    const answers = {};
+    
+    // Lặp qua 3 câu hỏi
+    for (let i = 1; i <= 3; i++) {
+        const selected = document.querySelector(
+            `.question-card[data-question="${i}"] .answer-option.selected`
+        );
+        if (selected) {
+            answers[`q${i}`] = selected.textContent.trim();
+        }
+    }
+    
+    return answers;
+}
+
+// Hiển thị modal kết quả test
+function showTestResultModal(data) {
+    const modalHTML = `
+        <div class="test-result-modal" id="testResultModal">
+            <div class="test-result-content">
+                <span class="close-modal" onclick="closeTestResultModal()">&times;</span>
+                <h2>Kết quả đánh giá của bạn</h2>
+                
+                <div class="result-score">
+                    <div class="score-circle ${getScoreClass(data.level)}">
+                        <span class="score-number">${data.score}</span>
+                        <span class="score-max">/9</span>
+                    </div>
+                    <h3 class="score-level">${data.level}</h3>
+                </div>
+                
+                <p class="result-message">${data.message}</p>
+                
+                ${data.problem_tags.length > 0 ? `
+                    <div class="detected-issues">
+                        <h4>Vấn đề được phát hiện:</h4>
+                        <div class="issue-tags">
+                            ${data.problem_tags.map(tag => 
+                                `<span class="issue-tag">${formatTag(tag)}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+                
+                <div class="result-actions">
+                    ${data.should_find_counselor ? 
+                        `<button class="btn-find-counselor" onclick="findCounselorsFromTags(${JSON.stringify(data.problem_tags)})">
+                            <i class="fas fa-user-md"></i> Tìm chuyên gia phù hợp
+                        </button>` : ''
+                    }
+                    <button class="btn-retake" onclick="retakeTest()">
+                        <i class="fas fa-redo"></i> Làm lại
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// Hàm tìm chuyên gia từ tags
+async function findCounselorsFromTags(tags) {
+    closeTestResultModal(); // Đóng modal kết quả test
+    
+    try {
+        showLoadingModal("Đang tìm chuyên gia phù hợp...");
+        
+        const response = await fetch("http://127.0.0.1:5000/api/match/find", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                problem_tags: tags,
+                only_online: true,
+                min_rating: 4.0
+            })
+        });
+        
+        const data = await response.json();
+        hideLoadingModal();
+        
+        if (data.matches && data.matches.length > 0) {
+            displayMatchingResults(data);
+        } else {
+            alert("Không tìm thấy chuyên gia phù hợp. Vui lòng thử lại sau!");
+        }
+        
+    } catch (error) {
+        console.error("Error finding counselors:", error);
+        hideLoadingModal();
+        alert("Có lỗi xảy ra!");
+    }
+}
+
+// Utility functions
+function getScoreClass(level) {
+    switch(level) {
+        case 'Tốt': return 'good';
+        case 'Trung bình': return 'medium';
+        case 'Cần hỗ trợ': return 'need-support';
+        default: return '';
+    }
+}
+
+function formatTag(tag) {
+    const tagNames = {
+        'stress': 'Stress',
+        'lo_au': 'Lo âu',
+        'tram_cam': 'Trầm cảm',
+        'hoc_tap': 'Học tập',
+        'roi_loan_giac_ngu': 'Rối loạn giấc ngủ',
+        'tam_ly_xa_hoi': 'Tâm lý xã hội'
+    };
+    return tagNames[tag] || tag;
+}
+
+function closeTestResultModal() {
+    const modal = document.getElementById('testResultModal');
+    if (modal) modal.remove();
+}
+
+function retakeTest() {
+    closeTestResultModal();
+    // Reset lại test
+    currentQuestion = 1;
+    document.querySelectorAll('.answer-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    document.querySelectorAll('.question-card').forEach(card => {
+        card.classList.remove('active');
+    });
+    document.querySelector('.question-card[data-question="1"]').classList.add('active');
+    updateProgress();
+}
+
+// Loading modal
+function showLoadingModal(message) {
+    const loadingHTML = `
+        <div class="loading-modal" id="loadingModal">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p>${message}</p>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', loadingHTML);
+}
+
+function hideLoadingModal() {
+    const modal = document.getElementById('loadingModal');
+    if (modal) modal.remove();
+}
+
+// Thêm nút "Tìm chuyên gia" vào chatbot
+function addFindExpertButton() {
+    const chatInput = document.querySelector('.chatbot-input');
+    if (!chatInput) return;
+    
+    const findExpertBtn = document.createElement('button');
+    findExpertBtn.innerHTML = '<i class="fas fa-user-md"></i>';
+    findExpertBtn.className = 'btn-find-expert';
+    findExpertBtn.title = 'Tìm chuyên gia phù hợp';
+    findExpertBtn.onclick = async () => {
+        const conversationId = getConversationId();
+        
+        try {
+            const response = await fetch(`http://127.0.0.1:5000/api/match/from-chat/${conversationId}`);
+            const data = await response.json();
+            
+            if (data.matches && data.matches.length > 0) {
+                displayMatchingResults(data);
+            } else {
+                addMessageToChat("Chưa phát hiện được vấn đề cụ thể. Hãy chia sẻ thêm với tôi nhé!", "bot");
+            }
+        } catch (error) {
+            console.error("Error matching from chat:", error);
+        }
+    };
+    
+    chatInput.appendChild(findExpertBtn);
+}
+
+// Gọi khi DOM loaded
+document.addEventListener("DOMContentLoaded", function() {
+    // ... existing code ...
+    addFindExpertButton();
+});

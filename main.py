@@ -12,8 +12,9 @@ import uuid # Thư viện để tạo ID duy nhất cho phiên chat
 from dotenv import load_dotenv
 from flask import render_template
 import json
-import datetime
-
+import datetime #xử lý quicktest dể làm problem tags
+from datetime import datetime
+from matching import MatchingSystem, TagExtractor #thêm dòng này cho cái tính năng matching
 # Cấu hình cơ bản
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -64,6 +65,8 @@ SAFETY_SETTINGS = [
     {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
 ]
+# Thêm constants cho Quick Test 
+TEST_RESULTS_FILE = "test_results.txt"
 
 # Khởi tạo model Chatbot một lần
 try:
@@ -77,6 +80,10 @@ try:
 except Exception as e:
     logging.error(f"Lỗi nghiêm trọng khi khởi tạo Gemini Model: {e}")
     gemini_model = None
+
+# --- Khởi tạo Matching System ---
+matching_system = MatchingSystem()
+logging.info("Khởi tạo Matching System thành công.")
 
 # --- Quản lý Phiên Chat (Chatbot) ---
 chat_sessions = {}
@@ -293,6 +300,96 @@ def load_user(user_id):
     """Callback được Flask-Login sử dụng để tải user từ session."""
     return User.get_by_id(user_id)
 
+# Thêm class xử lý Quick Test 
+# thêm vào ngày 10/11/2025
+class QuickTestProcessor:
+    """Xử lý kết quả Quick Test và gán Problem Tags"""
+    
+    @staticmethod
+    def calculate_score_and_tags(answers):
+        """
+        Tính điểm và trích xuất problem tags từ câu trả lời
+        Returns: (score, problem_tags)
+        """
+        score = 0
+        problem_tags = []
+        
+        # Câu 1: Lo lắng/căng thẳng
+        q1_mapping = {
+            "Không bao giờ": 0,
+            "Đôi khi": 1, 
+            "Thường xuyên": 2,
+            "Luôn luôn": 3
+        }
+        
+        # Câu 2: Khó khăn tập trung
+        q2_mapping = {
+            "Không gặp khó khăn": 0,
+            "Ít khi": 1,
+            "Thỉnh thoảng": 2,
+            "Rất thường xuyên": 3
+        }
+        
+        # Câu 3: Giấc ngủ
+        q3_mapping = {
+            "Rất tốt": 0,
+            "Bình thường": 1,
+            "Không tốt": 2,
+            "Rất tệ, thường mất ngủ": 3
+        }
+        
+        # Tính điểm cho từng câu
+        q1_score = q1_mapping.get(answers.get('q1', ''), 0)
+        q2_score = q2_mapping.get(answers.get('q2', ''), 0)
+        q3_score = q3_mapping.get(answers.get('q3', ''), 0)
+        
+        total_score = q1_score + q2_score + q3_score
+        
+        # Gán problem tags dựa trên điểm từng câu
+        if q1_score >= 2:
+            problem_tags.extend(['stress', 'lo_au'])
+        
+        if q2_score >= 2:
+            problem_tags.append('hoc_tap')
+            
+        if q3_score >= 2:
+            problem_tags.append('roi_loan_giac_ngu')
+            
+        # Thêm tags dựa trên tổng điểm
+        if total_score >= 7:
+            problem_tags.append('tram_cam')  # Nguy cơ cao
+        
+        # Loại bỏ duplicates
+        problem_tags = list(set(problem_tags))
+        
+        return total_score, problem_tags
+    
+    @staticmethod
+    def save_test_result(user_id, answers, problem_tags, score):
+        """Lưu kết quả test vào file"""
+        try:
+            # Tạo file nếu chưa tồn tại
+            if not os.path.exists(TEST_RESULTS_FILE):
+                with open(TEST_RESULTS_FILE, 'w', encoding='utf-8') as f:
+                    f.write("UserID;TestDate;TestTime;Answers;ProblemTags;Score\n")
+            
+            # Chuẩn bị dữ liệu
+            now = datetime.now()
+            test_date = now.strftime("%Y-%m-%d")
+            test_time = now.strftime("%H:%M:%S")
+            answers_str = json.dumps(answers)
+            tags_str = ','.join(problem_tags) if problem_tags else 'none'
+            
+            # Ghi vào file
+            with open(TEST_RESULTS_FILE, 'a', encoding='utf-8') as f:
+                f.write(f"{user_id};{test_date};{test_time};{answers_str};{tags_str};{score}\n")
+            
+            return True
+            
+        except Exception as e:
+            logging.error(f"Error saving test result: {e}")
+            return False
+
 # ----------------------------------------------------
 # --- III. CÁC API ROUTE (ĐIỂM CUỐI) ---
 # ----------------------------------------------------
@@ -413,6 +510,260 @@ def get_status():
         return jsonify({"logged_in": True, "username": current_user.username})
     else:
         return jsonify({"logged_in": False})
+    
+# Thêm API endpoints cho Quick Test 
+# 10/11/2025
+@app.route("/api/test/submit", methods=["POST"])
+def submit_quick_test():
+    """
+    API xử lý kết quả Quick Test
+    Body: {
+        "answers": {
+            "q1": "Thường xuyên",
+            "q2": "Thỉnh thoảng",
+            "q3": "Không tốt"
+        }
+    }
+    """
+    data = request.get_json()
+    answers = data.get("answers", {})
+    
+    if not answers or len(answers) < 3:
+        return jsonify({"error": "Please answer all questions"}), 400
+    
+    try:
+        # Tính điểm và trích xuất tags
+        score, problem_tags = QuickTestProcessor.calculate_score_and_tags(answers)
+        
+        # Lấy user_id (nếu đã đăng nhập)
+        user_id = current_user.username if current_user.is_authenticated else "anonymous"
+        
+        # Lưu kết quả
+        QuickTestProcessor.save_test_result(user_id, answers, problem_tags, score)
+        
+        # Lưu problem_tags vào session để sử dụng sau
+        from flask import session
+        session['last_test_tags'] = problem_tags
+        session['last_test_score'] = score
+        
+        # Phân loại mức độ
+        if score <= 3:
+            level = "Tốt"
+            message = "Sức khỏe tâm lý của bạn đang ở mức tốt. Hãy duy trì!"
+        elif score <= 6:
+            level = "Trung bình"
+            message = "Bạn đang có một số dấu hiệu stress. Nên tìm hiểu các phương pháp thư giãn."
+        else:
+            level = "Cần hỗ trợ"
+            message = "Bạn nên tìm kiếm sự hỗ trợ từ chuyên gia tâm lý."
+        
+        return jsonify({
+            "success": True,
+            "score": score,
+            "level": level,
+            "message": message,
+            "problem_tags": problem_tags,
+            "should_find_counselor": len(problem_tags) > 0
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error processing test: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route("/api/test/history", methods=["GET"])
+@login_required
+def get_test_history():
+    """Lấy lịch sử làm test của user"""
+    try:
+        user_id = current_user.username
+        history = []
+        
+        if os.path.exists(TEST_RESULTS_FILE):
+            with open(TEST_RESULTS_FILE, 'r', encoding='utf-8') as f:
+                lines = f.readlines()[1:]  # Skip header
+                
+                for line in lines:
+                    parts = line.strip().split(';')
+                    if len(parts) >= 6 and parts[0] == user_id:
+                        history.append({
+                            "date": parts[1],
+                            "time": parts[2],
+                            "score": int(parts[5]),
+                            "tags": parts[4].split(',') if parts[4] != 'none' else []
+                        })
+        
+        # Sắp xếp theo ngày giờ mới nhất
+        history.sort(key=lambda x: f"{x['date']} {x['time']}", reverse=True)
+        
+        return jsonify({"history": history[:10]}), 200  # Trả về 10 kết quả gần nhất
+        
+    except Exception as e:
+        logging.error(f"Error getting test history: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+    
+# --- API Matching Endpoints --- Thêm ngày 10/11/2025
+@app.route("/api/match/find", methods=["POST"])
+def find_matching_counselors():
+    """
+    API tìm chuyên gia phù hợp
+    Body: {
+        "problem_tags": ["stress", "lo_au"],
+        "only_online": true,
+        "min_rating": 4.0
+    }
+    """
+    data = request.get_json()
+    problem_tags = data.get("problem_tags", [])
+    only_online = data.get("only_online", True)
+    min_rating = data.get("min_rating", 0.0)
+    
+    if not problem_tags:
+        return jsonify({"error": "problem_tags is required"}), 400
+    
+    try:
+        matches = matching_system.find_matches(
+            problem_tags=problem_tags,
+            only_online=only_online,
+            min_rating=min_rating
+        )
+        
+        # Convert to JSON-serializable format
+        results = []
+        for counselor in matches:
+            results.append({
+                "id": counselor.id,
+                "name": counselor.name,
+                "specialties": counselor.specialties,
+                "rating": counselor.rating,
+                "status": counselor.status,
+                "experience": counselor.experience,
+                "match_score": round(counselor.match_score, 1)
+            })
+            
+        return jsonify({
+            "matches": results,
+            "total": len(results),
+            "search_tags": problem_tags
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error in matching: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route("/api/match/from-test", methods=["POST"])
+def match_from_test_results():
+    """
+    API matching từ kết quả Quick Test
+    Body: {
+        "answers": {
+            "q1": "Thường xuyên",
+            "q2": "Thỉnh thoảng", 
+            "q3": "Không tốt"
+        }
+    }
+    """
+    data = request.get_json()
+    answers = data.get("answers", {})
+    
+    if not answers:
+        return jsonify({"error": "answers is required"}), 400
+    
+    try:
+        # Extract tags từ test results
+        tags = TagExtractor.extract_from_test_results(answers)
+        
+        if not tags:
+            return jsonify({
+                "message": "No issues detected from test results",
+                "matches": []
+            }), 200
+        
+        # Find matching counselors
+        matches = matching_system.find_matches(problem_tags=tags)
+        
+        results = []
+        for counselor in matches:
+            results.append({
+                "id": counselor.id,
+                "name": counselor.name,
+                "specialties": counselor.specialties,
+                "rating": counselor.rating,
+                "status": counselor.status,
+                "experience": counselor.experience,
+                "match_score": round(counselor.match_score, 1)
+            })
+            
+        return jsonify({
+            "detected_tags": tags,
+            "matches": results,
+            "total": len(results)
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error in test matching: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route("/api/match/from-chat/<conversation_id>", methods=["GET"])
+def match_from_chat(conversation_id):
+    """
+    API matching từ lịch sử chat
+    """
+    try:
+        # Extract tags từ chat history
+        tags = TagExtractor.extract_from_chat_history(conversation_id)
+        
+        if not tags:
+            return jsonify({
+                "message": "No issues detected from chat history",
+                "matches": []
+            }), 200
+        
+        # Find matching counselors
+        matches = matching_system.find_matches(problem_tags=tags)
+        
+        results = []
+        for counselor in matches:
+            results.append({
+                "id": counselor.id,
+                "name": counselor.name,
+                "specialties": counselor.specialties,
+                "rating": counselor.rating,
+                "status": counselor.status,
+                "experience": counselor.experience,
+                "match_score": round(counselor.match_score, 1)
+            })
+            
+        return jsonify({
+            "conversation_id": conversation_id,
+            "detected_tags": tags,
+            "matches": results,
+            "total": len(results)
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error in chat matching: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route("/api/counselors/all", methods=["GET"])
+def get_all_counselors():
+    """API lấy tất cả chuyên gia"""
+    try:
+        counselors = []
+        for c in matching_system.counselors:
+            counselors.append({
+                "id": c.id,
+                "name": c.name,
+                "specialties": c.specialties,
+                "rating": c.rating,
+                "status": c.status,
+                "experience": c.experience
+            })
+        
+        return jsonify({"counselors": counselors}), 200
+        
+    except Exception as e:
+        logging.error(f"Error getting counselors: {e}")
+        return jsonify({"error": "Internal server error"}), 500 # Hết API matching 
 
 # --- Route phục vụ file HTML ---
 @app.route("/")
