@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác thực Cố vấn - StudentMind Connect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <style>
+        body {
+            background: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .verify-container {
+            max-width: 600px;
+            width: 100%;
+            background: var(--white);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .verify-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .verify-header h2 {
+            color: var(--dark);
+            font-size: 1.8rem;
+        }
+        .verify-header p {
+            color: var(--gray);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            font-family: inherit;
+        }
+        .btn-submit-verify {
+            width: 100%;
+            padding: 1rem;
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        .btn-submit-verify:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+        #message {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+        .message-success {
+            color: var(--success);
+        }
+        .message-error {
+            color: var(--danger);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="verify-container">
+        <div class="verify-header">
+            <a href="/" class="logo" style="justify-content: center; margin-bottom: 1rem;">
+                <i class="fas fa-brain"></i> StudentMind Connect
+            </a>
+            <h2>Xác thực Cố vấn</h2>
+            <p>Vui lòng tải lên tài liệu của bạn để chúng tôi thẩm định.</p>
+        </div>
+
+        <form id="verificationForm">
+            <div class="form-group">
+                <label for="id_card">1. Ảnh chụp Căn cước Công dân (CCCD)</label>
+                <input type="file" id="id_card" name="id_card" accept="image/png, image/jpeg, image/jpg" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="degree">2. Ảnh chụp Bằng cấp Chuyên môn</label>
+                <input type="file" id="degree" name="degree" accept="image/png, image/jpeg, image/jpg" required>
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn-submit-verify">
+                Nộp hồ sơ
+            </button>
+        </form>
+
+        <div id="message"></div>
+        <div style="text-align: center; margin-top: 1rem;">
+            <a href="/" style="color: var(--primary); text-decoration: none;">&larr; Quay về trang chủ</a>
+        </div>
+    </div>
+
+<script>
+    // JS để xử lý form submission (Phiên bản đơn giản)
+    const form = document.getElementById('verificationForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const idCardFile = document.getElementById('id_card').files[0];
+        const degreeFile = document.getElementById('degree').files[0];
+
+        if (!idCardFile || !degreeFile) {
+            showMessage('Vui lòng chọn cả hai tệp.', 'error');
+            return;
+        }
+
+        // Vô hiệu hóa nút, hiển thị loading
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Đang tải lên...'; // <-- Thay đổi
+        messageDiv.textContent = '';
+
+        const formData = new FormData();
+        formData.append('id_card', idCardFile);
+        formData.append('degree', degreeFile);
+
+        try {
+            // Gọi API trong main.py
+            const response = await fetch('/verify_counselor', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                // Thành công
+                showMessage(result.message, 'success');
+                form.reset();
+                submitBtn.textContent = 'Đã nộp thành công!';
+            } else {
+                // Thất bại
+                throw new Error(result.message || 'Có lỗi xảy ra.');
+            }
+
+        } catch (error) {
+            showMessage(error.message, 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Nộp hồ sơ';
+        }
+    });
+
+    function showMessage(message, type) {
+        messageDiv.textContent = message;
+        messageDiv.className = type === 'success' ? 'message-success' : 'message-error';
+    }
+</script>  
+</body>
+</html>

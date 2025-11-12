@@ -1672,6 +1672,58 @@ footer {
     text-align: center;
 }
 
+/* --- THÊM MỚI NGÀY 12/11: BOX XÁC THỰC CỐ VẤN --- */
+
+.counselor-verify-box {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  z-index: 998; /* Dưới chatbot 1 bậc */
+  background: var(--white);
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.counselor-verify-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.counselor-verify-box a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  text-decoration: none;
+  color: var(--dark);
+}
+
+.counselor-verify-box i {
+  font-size: 1.8rem;
+  color: var(--primary);
+}
+
+.counselor-verify-box span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+  font-weight: 500;
+}
+
+.counselor-verify-box span small {
+  font-size: 0.8rem;
+  color: var(--gray);
+  font-weight: 400;
+}
+
+/* Ẩn box này trên điện thoại để đỡ chật */
+@media (max-width: 768px) {
+  .counselor-verify-box {
+    display: none;
+  }
+}
+
 .spinner {
     width: 50px;
     height: 50px;

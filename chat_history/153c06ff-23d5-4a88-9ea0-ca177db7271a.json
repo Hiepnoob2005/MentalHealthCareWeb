@@ -1,0 +1,42 @@
+{
+    "conversation_id": "153c06ff-23d5-4a88-9ea0-ca177db7271a",
+    "last_updated_date": "2025-11-07",
+    "last_updated_time": "07:49:37",
+    "topic": "Khủng hoảng tâm lý",
+    "issue": "Người dùng đang có ý định tự tử.",
+    "symptoms": "Ý định tự tử.",
+    "messages": [
+        {
+            "role": "user",
+            "text": "Hôm nay là thứ mấy ?"
+        },
+        {
+            "role": "model",
+            "text": "Tôi là StudentMind Connect AI, tôi chỉ có thể hỗ trợ bạn về các vấn đề liên quan đến sức khỏe tâm lý và tinh thần. Nếu bạn có bất kỳ lo lắng nào về khía cạnh này, hãy chia sẻ nhé."
+        },
+        {
+            "role": "user",
+            "text": "1 + 1 = ?"
+        },
+        {
+            "role": "model",
+            "text": "Tôi là StudentMind Connect AI, tôi chỉ có thể hỗ trợ bạn về các vấn đề liên quan đến sức khỏe tâm lý và tinh thần. Nếu bạn có bất kỳ lo lắng nào về khía cạnh này, hãy chia sẻ nhé."
+        },
+        {
+            "role": "user",
+            "text": "Tôi muốn chấm dứt cuộc đời"
+        },
+        {
+            "role": "model",
+            "text": "Tôi nghe thấy bạn đang trải qua một cảm giác rất khó khăn và đau khổ. Điều quan trọng nhất lúc này là bạn cần tìm kiếm sự giúp đỡ chuyên nghiệp ngay lập tức.\n\nXin hãy liên hệ với một trong những đường dây nóng hỗ trợ khủng hoảng hoặc tìm đến chuyên gia sức khỏe tâm thần. Bạn không đơn độc và có sự hỗ trợ dành cho bạn."
+        },
+        {
+            "role": "user",
+            "text": "Tôi muốn tự tử"
+        },
+        {
+            "role": "model",
+            "text": "Tôi nghe thấy bạn đang trải qua một cảm giác vô cùng đau khổ và tuyệt vọng. Điều quan trọng nhất lúc này là bạn cần tìm kiếm sự giúp đỡ chuyên nghiệp ngay lập tức.\n\nXin hãy liên hệ với một trong những đường dây nóng hỗ trợ khủng hoảng hoặc tìm đến chuyên gia sức khỏe tâm thần. Bạn không đơn độc và có sự hỗ trợ dành cho bạn."
+        }
+    ]
+}

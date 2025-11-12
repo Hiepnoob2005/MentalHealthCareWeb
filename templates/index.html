@@ -449,6 +449,19 @@
       </div>
     </div>
 
+{% if current_user.is_authenticated %}
+    <div class="counselor-verify-box">
+      <a href="{{ url_for('verify_counselor_page') }}">
+        <i class="fas fa-user-tie"></i> <span>Bạn là chuyên gia?
+          <small>Đăng ký xác thực ngay</small>
+        </span>
+      </a>
+    </div>
+    {% endif %}
+    <footer>
+      <div class="footer-content">
+      
+
     <footer>
       <div class="footer-content">
         <div class="footer-section">

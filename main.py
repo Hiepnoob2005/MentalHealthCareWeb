@@ -15,6 +15,10 @@ import json
 import datetime #xử lý quicktest dể làm problem tags
 from datetime import datetime
 from matching import MatchingSystem, TagExtractor #thêm dòng này cho cái tính năng matching
+# ... (các import hiện có) ...
+from matching import MatchingSystem, TagExtractor #thêm dòng này cho cái tính năng matching
+from werkzeug.utils import secure_filename # <-- THÊM DÒNG NÀY
+
 # Cấu hình cơ bản
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -30,6 +34,17 @@ else:
 app = Flask(__name__)
 # RẤT QUAN TRỌNG: Cần có Secret Key cho Flask-Login
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'mot-chuoi-bi-mat-rat-kho-doan-12345')
+
+
+# --- THÊM CẤU HÌNH UPLOAD ---
+UPLOAD_FOLDER = 'verification_uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+    logging.info(f"Đã tạo thư mục {UPLOAD_FOLDER}")
+# --- KẾT THÚC THÊM CẤU HÌNH UPLOAD ---
+
 CORS(app)
 
 CHAT_HISTORY_DIR = "chat_history"
@@ -70,16 +85,16 @@ TEST_RESULTS_FILE = "test_results.txt"
 
 # Khởi tạo model Chatbot một lần
 try:
-    gemini_model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash", 
+    chatbot_model = genai.GenerativeModel(
+        model_name="gemini-1.0-pro", 
         generation_config=GENERATION_CONFIG,
         system_instruction=SYSTEM_INSTRUCTION,
         safety_settings=SAFETY_SETTINGS
     )
-    logging.info("Khởi tạo Gemini Model thành công với System Instruction.")
+    logging.info("Khởi tạo Chatbot Model thành công với System Instruction.")
 except Exception as e:
-    logging.error(f"Lỗi nghiêm trọng khi khởi tạo Gemini Model: {e}")
-    gemini_model = None
+    logging.error(f"Lỗi nghiêm trọng khi khởi tạo Chatbot Model: {e}")
+    chatbot_model = None
 
 # --- Khởi tạo Matching System ---
 matching_system = MatchingSystem()
@@ -90,12 +105,12 @@ chat_sessions = {}
 
 def get_or_create_chat_session(conversation_id):
     if conversation_id not in chat_sessions:
-        if not gemini_model:
+        if not chatbot_model:
             logging.error("Model chưa được khởi tạo, không thể tạo chat session.")
             return None
         
         logging.info(f"Tạo phiên chat mới: {conversation_id}")
-        chat_sessions[conversation_id] = gemini_model.start_chat(history=[]) 
+        chat_sessions[conversation_id] = chatbot_model.start_chat(history=[]) 
         
     return chat_sessions[conversation_id]
 
@@ -138,7 +153,7 @@ def summarize_chat_with_ai(history_messages):
     try:
         # 3. Gọi API (dùng 'generate_content' cho tác vụ một lần)
         # Chúng ta tái sử dụng 'gemini_model' đã khởi tạo
-        response = gemini_model.generate_content(
+        response = chatbot_model.generate_content(
             META_PROMPT,
             # Dùng config riêng cho việc tóm tắt, nhiệt độ thấp để chính xác
             generation_config=genai.types.GenerationConfig(temperature=0.2), 
@@ -172,6 +187,11 @@ def summarize_chat_with_ai(history_messages):
         traceback.print_exc()
         return {"topic": "Lỗi API tóm tắt", "issue": "Lỗi", "symptoms": "Lỗi"}
     
+def allowed_file(filename):
+    """Kiểm tra file có đuôi mở rộng cho phép không"""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 def save_chat_history_and_summarize(conversation_id, history):
     """
     Lưu lịch sử chat VÀ gọi AI để tóm tắt.
@@ -404,8 +424,8 @@ def chat():
     if not user_message or not conversation_id:
         return jsonify({"error": "Message and conversationId are required"}), 400
 
-    if not gemini_model:
-         return jsonify({"reply": "Xin lỗi, model AI chưa được khởi tạo đúng."}), 500
+    if not chatbot_model:
+        return jsonify({"reply": "Xin lỗi, model AI chưa được khởi tạo đúng."}), 500
 
     try:
         chat_session = get_or_create_chat_session(conversation_id)
@@ -778,6 +798,67 @@ def register_page():
 def login_page():
     return render_template('login_page.html')
 
+# --- API MỚI CHO VIỆC XÁC THỰC CỐ VẤN ---
+
+@app.route("/verify_counselor", methods=["GET"])
+@login_required # Yêu cầu đăng nhập để thấy trang này
+def verify_counselor_page():
+    """Hiển thị trang HTML cho form upload"""
+    return render_template("counselor_verification.html")
+
+@app.route("/verify_counselor", methods=["POST"])
+@login_required # Yêu cầu đăng nhập để nộp form
+def handle_verification_upload(): # <-- Bỏ 'async'
+    """
+    Xử lý upload, KHÔNG DÙNG AI, chỉ lưu file.
+    """
+    
+    # 1. Kiểm tra file
+    if 'id_card' not in request.files or 'degree' not in request.files:
+        return jsonify({"success": False, "message": "Lỗi: Thiếu tệp CCCD hoặc Bằng cấp."}), 400
+    
+    id_card_file = request.files['id_card']
+    degree_file = request.files['degree']
+    
+    if id_card_file.filename == '' or degree_file.filename == '':
+        return jsonify({"success": False, "message": "Lỗi: Vui lòng chọn cả hai tệp."}), 400
+        
+    if not (allowed_file(id_card_file.filename) and allowed_file(degree_file.filename)):
+        return jsonify({"success": False, "message": f"Lỗi: Chỉ chấp nhận tệp {ALLOWED_EXTENSIONS}"}), 400
+
+    try:
+        # 2. Lấy tên file an toàn
+        # Lấy đuôi file gốc
+        ext1 = os.path.splitext(id_card_file.filename)[1]
+        ext2 = os.path.splitext(degree_file.filename)[1]
+        
+        # Tạo tên file an toàn, gắn với username
+        id_filename = secure_filename(f"{current_user.username}_id_card{ext1}")
+        degree_filename = secure_filename(f"{current_user.username}_degree{ext2}")
+        
+        id_path = os.path.join(app.config['UPLOAD_FOLDER'], id_filename)
+        degree_path = os.path.join(app.config['UPLOAD_FOLDER'], degree_filename)
+        
+        # 3. Lưu file
+        id_card_file.save(id_path)
+        degree_file.save(degree_path)
+            
+        logging.info(f"Đã lưu hồ sơ (CCCD, Bằng cấp) cho user: {current_user.username}")
+
+        # TODO: Cập nhật trạng thái 'pending_review' cho user trong database
+        # (Hiện tại, chúng ta chỉ lưu file để bạn duyệt thủ công)
+
+        return jsonify({
+            "success": True, 
+            "message": "Hồ sơ đã được nộp thành công! Chúng tôi sẽ xem xét và liên hệ với bạn sớm."
+        }), 200
+
+    except Exception as e:
+        logging.error(f"Lỗi nghiêm trọng khi xử lý upload: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": "Lỗi hệ thống, vui lòng thử lại sau."}), 500
+        
 @app.route("/health", methods=["GET"])
 def health_check():
     return jsonify({"status": "healthy", "model": "gemini-2.5-flash"})
