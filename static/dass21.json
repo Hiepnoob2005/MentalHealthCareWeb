@@ -1,0 +1,95 @@
+{
+  "topic": "Thang đo DASS-21",
+  "questions": [
+    {
+      "text": "1. Tôi thấy khó mà thoải mái được",
+      "type": "S"
+    },
+    {
+      "text": "2. Tôi bị khô miệng",
+      "type": "A"
+    },
+    {
+      "text": "3. Tôi không thấy có chút cảm xúc tích cực nào",
+      "type": "D"
+    },
+    {
+      "text": "4. Tôi bị rối loạn nhịp thở (thở gấp, khó thở dù chẳng làm việc gì nặng)",
+      "type": "A"
+    },
+    {
+      "text": "5. Tôi thấy khó bắt tay vào công việc",
+      "type": "D"
+    },
+    {
+      "text": "6. Tôi đã phản ứng thái quá khi có những sự việc xảy ra",
+      "type": "S"
+    },
+    {
+      "text": "7. Tôi bị ra mồ hôi (chẳng hạn như mồ hôi tay...)",
+      "type": "A"
+    },
+    {
+      "text": "8. Tôi thấy mình đang suy nghĩ quá nhiều",
+      "type": "S"
+    },
+    {
+      "text": "9. Tôi lo lắng về những tình huống có thể khiến tôi hoảng sợ hoặc biến tôi thành trò cười",
+      "type": "A"
+    },
+    {
+      "text": "10. Tôi thấy mình chẳng có gì để mong đợi cả",
+      "type": "D"
+    },
+    {
+      "text": "11. Tôi thấy bản thân dễ bị kích động",
+      "type": "S"
+    },
+    {
+      "text": "12. Tôi thấy khó thư giãn được",
+      "type": "S"
+    },
+    {
+      "text": "13. Tôi cảm thấy chán nản, thất vọng",
+      "type": "D"
+    },
+    {
+      "text": "14. Tôi không chấp nhận được việc có cái gì đó xen vào cản trở việc tôi đang làm",
+      "type": "S"
+    },
+    {
+      "text": "15. Tôi thấy mình gần như hoảng loạn",
+      "type": "A"
+    },
+    {
+      "text": "16. Tôi không thấy hăng hái với bất kỳ việc gì nữa",
+      "type": "D"
+    },
+    {
+      "text": "17. Tôi cảm thấy mình chẳng đáng làm người",
+      "type": "D"
+    },
+    {
+      "text": "18. Tôi thấy mình khá dễ phật ý, tự ái",
+      "type": "S"
+    },
+    {
+      "text": "19. Tôi nghe thấy rõ tiếng nhịp tim dù chẳng làm việc gì cả",
+      "type": "A"
+    },
+    {
+      "text": "20. Tôi hay sợ vô cớ",
+      "type": "A"
+    },
+    {
+      "text": "21. Tôi thấy cuộc sống vô nghĩa",
+      "type": "D"
+    }
+  ],
+  "options": [
+    { "text": "Không đúng với tôi chút nào cả", "value": 0 },
+    { "text": "Đúng với tôi phần, hoặc thỉnh thoảng mới đúng", "value": 1 },
+    { "text": "Đúng với tôi phần nhiều, hoặc phần lớn thời gian là đúng", "value": 2 },
+    { "text": "Hoàn toàn đúng với tôi, hoặc hầu hết thời gian là đúng", "value": 3 }
+  ]
+}

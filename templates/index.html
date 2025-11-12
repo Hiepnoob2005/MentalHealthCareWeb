@@ -6,17 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>StudentMind Connect</title>
 
-    <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}" />
-
-    <!-- JS -->
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-    <script src="{{ url_for('static', filename='register.js') }}"></script>
-  </head>
+    
+    </head>
 
   <body>
-    <!-- Navigation -->
     <nav class="navbar">
       <div class="nav-container">
         <a href="#" class="logo">
@@ -50,7 +44,6 @@
       </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero" id="home">
       <div class="hero-container">
         <div class="hero-content">
@@ -81,7 +74,6 @@
       </div>
     </section>
 
-    <!-- Features Section -->
     <section class="features" id="features">
       <div class="section-header">
         <h2>Tính năng nổi bật</h2>
@@ -133,55 +125,38 @@
       </div>
     </section>
 
-    <!-- Quick Test Section -->
     <section class="quick-test" id="test">
       <div class="test-container">
         <div class="test-header">
-          <h2>Đánh giá Sức khỏe Tâm lý</h2>
-          <p>Bài test nhanh giúp bạn nhận diện các dấu hiệu stress, lo âu hoặc trầm cảm</p>
+          <h2 id="test-title">Đánh giá Sức khỏe Tâm lý</h2>
+          <p>Bài test nhanh giúp bạn nhận diện các dấu hiệu</p>
         </div>
+
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill"></div>
         </div>
 
-        <div class="question-card active" data-question="1">
-          <h3>Trong tuần qua, bạn có thường xuyên cảm thấy lo lắng hoặc căng thẳng không?</h3>
-          <div class="answer-options">
-            <div class="answer-option" onclick="selectAnswer(this)">Không bao giờ</div>
-            <div class="answer-option" onclick="selectAnswer(this)">Đôi khi</div>
-            <div class="answer-option" onclick="selectAnswer(this)">Thường xuyên</div>
-            <div class="answer-option" onclick="selectAnswer(this)">Luôn luôn</div>
-          </div>
+        <div class="question-card active" id="question-container">
+          <h3 id="question-text"></h3>
+          <div class="answer-options" id="answer-options"></div>
         </div>
 
-        <div class="question-card" data-question="2">
-          <h3>Bạn có gặp khó khăn trong việc tập trung vào học tập hoặc công việc không?</h3>
-          <div class="answer-options">
-            <div class="answer-option" onclick="selectAnswer(this)">Không gặp khó khăn</div>
-            <div class="answer-option" onclick="selectAnswer(this)">Ít khi</div>
-            <div class="answer-option" onclick="selectAnswer(this)">Thỉnh thoảng</div>
-            <div class="answer-option" onclick="selectAnswer(this)">Rất thường xuyên</div>
-          </div>
-        </div>
+        <div class="result-card" id="result-container" style="display: none;">
+          <h3 id="result-title">Kết quả DASS-21</h3>
+          <p>Điểm số của bạn được tính bằng tổng điểm mỗi nhóm nhân 2.</p>
 
-        <div class="question-card" data-question="3">
-          <h3>Chất lượng giấc ngủ của bạn như thế nào?</h3>
-          <div class="answer-options">
-            <div class="answer-option" onclick="selectAnswer(this)">Rất tốt</div>
-            <div class="answer-option" onclick="selectAnswer(this)">Bình thường</div>
-            <div class="answer-option" onclick="selectAnswer(this)">Không tốt</div>
-            <div class="answer-option" onclick="selectAnswer(this)">Rất tệ, thường mất ngủ</div>
-          </div>
+          <ul id="result-list"></ul>
+
+          <button class="btn-next" onclick="restartTest()">Làm lại bài test</button>
         </div>
 
         <div class="test-navigation">
-          <button class="btn-prev" onclick="prevQuestion()"><i class="fas fa-arrow-left"></i> Quay lại</button>
-          <button class="btn-next" onclick="nextQuestion()">Tiếp theo <i class="fas fa-arrow-right"></i></button>
+          <button class="btn-prev" id="btn-prev"><i class="fas fa-arrow-left"></i> Quay lại</button>
+          <button class="btn-next" id="btn-next">Tiếp theo <i class="fas fa-arrow-right"></i></button>
         </div>
       </div>
     </section>
 
-    <!-- Experts Section -->
     <section class="experts" id="experts">
       <div class="section-header">
         <h2>Đội ngũ Chuyên gia</h2>
@@ -265,7 +240,6 @@
       </div>
     </section>
 
-    <!-- Resources Section -->
     <section class="resources" id="resources">
       <div class="section-header">
         <h2>Kho Tài nguyên</h2>
@@ -326,7 +300,6 @@
       </div>
     </section>
 
-    <!-- Dashboard Section -->
     <section class="dashboard" id="dashboard">
       <div class="section-header">
         <h2>Dashboard Cá nhân</h2>
@@ -403,9 +376,8 @@
       </div>
     </section>
 
-    <!-- Chatbot -->
     <div class="chatbot-container">
-      <div class="chatbot-toggle" onclick="toggleChatbot()">
+      <div class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()">
         <i class="fa-regular fa-message"></i>
       </div>
       <div class="chatbot-window" id="chatbotWindow">
@@ -433,7 +405,6 @@
       </div>
     </div>
 
-    <!-- Login Modal -->
     <div class="modal-overlay" id="loginModal">
       <div class="modal-container">
         <button class="modal-close" onclick="closeLoginModal()"><i class="fas fa-times"></i></button>
@@ -447,15 +418,12 @@
 
           <form id="loginForm">
             <div class="form-group">
-              <!-- SỬA Ở ĐÂY: id và name là "username" -->
               <input type="text" id="username" name="username" placeholder="Tên đăng nhập *" required />
             </div>
             <div class="form-group">
-              <!-- SỬA Ở ĐÂY: id và name là "password" -->
               <input type="password" id="password" name="password" placeholder="Mật khẩu *" required />
             </div>
-
-            <!-- THÊM Ở ĐÂY: Div hiển thị thông báo lỗi/thành công -->
+            
             <div id="loginMessage" style="display: none; margin-bottom: 1rem; color: red; text-align: center;"></div>
 
             <button type="submit" class="btn-submit">Đăng nhập</button>
@@ -481,7 +449,6 @@
       </div>
     </div>
 
-    <!-- Footer -->
     <footer>
       <div class="footer-content">
         <div class="footer-section">
@@ -546,6 +513,9 @@
       <div class="footer-bottom">
         <p>&copy; 2024 StudentMind Connect. All rights reserved.</p>
       </div>
-    </footer><<<<<<< HEAD<script src="register.js"></script>=======<script src="script.js"></script>>>>>>>> df09a2836fe8e3cb29becd2c16ea618d636d7374
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    
   </body>
 </html>
