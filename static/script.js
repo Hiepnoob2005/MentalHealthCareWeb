@@ -1,6 +1,7 @@
 /**
  * File này chỉ dùng cho trang index.html
  * Logic đăng nhập: SỬ DỤNG MODAL
+ * Tích hợp: DASS-21 (Hệ thống 1) + Matching (Hệ thống 2)
  */
 
 // --- Global Initializations & DOM Loading ---
@@ -18,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeQuickTestListeners(); // Sẽ khởi tạo DASS-21
   initializeChatbotListeners();
   initializeResourceFilters();
+  addFindExpertButton(); // Thêm nút "Tìm chuyên gia" vào chatbot
 });
 
 // --- Authentication (Đăng nhập/Đăng xuất) ---
@@ -455,7 +457,7 @@ function prevQuestion() {
   }
 }
 
-// Tính điểm và hiển thị kết quả
+// Tính điểm và hiển thị kết quả (ĐÃ TÍCH HỢP)
 function showResults() {
   // 1. Tính tổng điểm thô cho 3 nhóm
   let scores = { D: 0, A: 0, S: 0 };
@@ -508,6 +510,23 @@ function showResults() {
       "<i><strong>Lưu ý:</strong> Bài test này chỉ mang tính chất tham khảo, không thay thế cho chẩn đoán y tế chuyên nghiệp.</i>";
     resultList.appendChild(disclaimer);
   }
+
+  // --- BẮT ĐẦU TÍCH HỢP HỆ THỐNG 2 ---
+  // 6. Dịch điểm DASS-21 ra tag
+  const problemTags = getTagsFromDassScores(scores);
+
+  // 7. Nếu có tag (tức là có vấn đề từ mức 'Nhẹ' trở lên), hỏi người dùng
+  if (problemTags.length > 0) {
+    // Chờ 1.5s để người dùng đọc kết quả
+    setTimeout(() => {
+      const formattedTags = problemTags.map(tag => formatTag(tag)).join(', ');
+      if (confirm(`Kết quả của bạn cho thấy dấu hiệu về: ${formattedTags}.\n\nBạn có muốn tìm chuyên gia phù hợp ngay bây giờ không?`)) {
+          // Gọi hàm tìm chuyên gia của Hệ thống 2
+          findCounselorsFromTags(problemTags);
+      }
+    }, 1500);
+  }
+  // --- KẾT THÚC TÍCH HỢP ---
 }
 
 // --- Các hàm phụ trợ để diễn giải điểm ---
@@ -700,4 +719,201 @@ function initializeResourceFilters() {
       // Add actual filtering logic here (cần triển khai logic lọc tài nguyên)
     });
   });
+}
+
+// --- Matching System Functions (Hệ thống 2) ---
+// --- Thêm vào ngày 10/11/2025 ---
+
+/**
+ * HÀM MỚI (TÍCH HỢP): Dịch điểm DASS-21 ra các tag
+ * @param {object} scores - {D: 10, A: 8, S: 15}
+ * @returns {array} - ['tram_cam', 'lo_au', 'stress']
+ */
+function getTagsFromDassScores(scores) {
+  const tags = [];
+  // Sử dụng logic: 'Nhẹ' (hoặc cao hơn) thì thêm tag
+  if (scores.D >= 10) tags.push('tram_cam');
+  if (scores.A >= 8) tags.push('lo_au');
+  if (scores.S >= 15) tags.push('stress');
+  return tags;
+}
+
+/**
+ * Hàm tìm chuyên gia từ tags (được gọi từ DASS-21 hoặc Chatbot)
+ */
+async function findCounselorsFromTags(tags) {
+  // Đóng modal kết quả DASS-21 nếu nó đang mở
+  closeTestResultModal(); 
+  
+  try {
+    showLoadingModal("Đang tìm chuyên gia phù hợp...");
+      
+    const response = await fetch("http://127.0.0.1:5000/api/match/find", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+          problem_tags: tags,
+          only_online: true,
+          min_rating: 4.0
+      })
+    });
+      
+    const data = await response.json();
+    hideLoadingModal();
+      
+    if (data.matches && data.matches.length > 0) {
+      displayMatchingResults(data);
+    } else {
+      alert("Không tìm thấy chuyên gia phù hợp. Vui lòng thử lại sau!");
+    }
+      
+  } catch (error) {
+    console.error("Error finding counselors:", error);
+    hideLoadingModal();
+    alert("Có lỗi xảy ra!");
+  }
+}
+
+/**
+ * Hiển thị modal kết quả matching
+ */
+function displayMatchingResults(data) {
+  // Đảm bảo không có modal cũ
+  closeMatchingModal();
+
+  // Tạo modal hiển thị kết quả matching
+  const modalHTML = `
+      <div class="matching-modal" id="matchingModal">
+          <div class="matching-modal-content">
+              <span class="close-modal" onclick="closeMatchingModal()">&times;</span>
+              <h2>Chuyên gia phù hợp cho bạn</h2>
+              <p class="detected-tags">Vấn đề được phát hiện: ${data.search_tags.map(tag => formatTag(tag)).join(', ')}</p>
+              <div class="matching-results">
+                  ${data.matches.map(counselor => `
+                      <div class="match-card">
+                          <div class="match-info">
+                              <h3>${counselor.name}</h3>
+                              <p class="match-score">Độ phù hợp: ${counselor.match_score}%</p>
+                              <p>Kinh nghiệm: ${counselor.experience}</p>
+                              <div class="specialties">
+                                  ${counselor.specialties.map(s => `<span class="tag">${s}</span>`).join('')}
+                              </div>
+                              <div class="rating">
+                                  <span class="stars">${'⭐'.repeat(Math.round(counselor.rating))}</span>
+                                  ${counselor.rating}
+                              </div>
+                              <button class="btn-connect-counselor" data-counselor-id="${counselor.id}">
+                                  ${counselor.status === 'online' ? 'Kết nối ngay' : 'Đặt lịch hẹn'}
+                              </button>
+                          </div>
+                      </div>
+                  `).join('')}
+              </div>
+          </div>
+      </div>
+  `;
+
+  // Thêm modal vào body
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Thêm event listeners cho buttons
+  document.querySelectorAll('.btn-connect-counselor').forEach(btn => {
+      btn.addEventListener('click', function() {
+          const counselorId = this.dataset.counselorId;
+          connectToCounselor(counselorId);
+      });
+  });
+}
+
+function closeMatchingModal() {
+  const modal = document.getElementById('matchingModal');
+  if (modal) modal.remove();
+}
+
+function connectToCounselor(counselorId) {
+  alert(`Đang kết nối với chuyên gia ${counselorId}...`);
+  // TODO: Implement actual connection logic
+}
+
+// --- Utility functions (Hỗ trợ cho Hệ thống 2) ---
+
+function formatTag(tag) {
+  const tagNames = {
+      'stress': 'Stress',
+      'lo_au': 'Lo âu',
+      'tram_cam': 'Trầm cảm',
+      'hoc_tap': 'Học tập',
+      'roi_loan_giac_ngu': 'Rối loạn giấc ngủ',
+      'tam_ly_xa_hoi': 'Tâm lý xã hội'
+  };
+  return tagNames[tag] || tag;
+}
+
+// Hàm này dùng để đóng modal của bài test 3 câu hỏi (không còn dùng)
+// Nhưng có thể `findCounselorsFromTags` gọi nó, nên ta cứ để nó
+// làm rỗng để tránh lỗi.
+function closeTestResultModal() {
+  // const modal = document.getElementById('testResultModal');
+  // if (modal) modal.remove();
+  // Không làm gì cả, vì chúng ta không dùng testResultModal
+}
+
+// Loading modal
+function showLoadingModal(message) {
+  hideLoadingModal(); // Đảm bảo không có modal cũ
+  const loadingHTML = `
+      <div class="loading-modal" id="loadingModal">
+          <div class="loading-content">
+              <div class="spinner"></div>
+              <p>${message}</p>
+          </div>
+      </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', loadingHTML);
+}
+
+function hideLoadingModal() {
+  const modal = document.getElementById('loadingModal');
+  if (modal) modal.remove();
+}
+
+// Thêm nút "Tìm chuyên gia" vào chatbot
+function addFindExpertButton() {
+  const chatInputContainer = document.querySelector('.chatbot-input');
+  if (!chatInputContainer) return;
+
+  // Kiểm tra xem nút đã tồn tại chưa
+  if (chatInputContainer.querySelector('.btn-find-expert')) {
+    return;
+  }
+  
+  const findExpertBtn = document.createElement('button');
+  findExpertBtn.innerHTML = '<i class="fas fa-user-md"></i>';
+  findExpertBtn.className = 'btn-find-expert'; // Thêm class để CSS
+  findExpertBtn.title = 'Tìm chuyên gia phù hợp';
+  findExpertBtn.type = 'button'; // Ngăn không cho submit form
+  
+  findExpertBtn.onclick = async () => {
+      const conversationId = getConversationId();
+      
+      try {
+          showLoadingModal("Đang phân tích hội thoại...");
+          const response = await fetch(`http://127.0.0.1:5000/api/match/from-chat/${conversationId}`);
+          hideLoadingModal();
+          const data = await response.json();
+          
+          if (data.matches && data.matches.length > 0) {
+              displayMatchingResults(data);
+          } else {
+              addMessageToChat("Chưa phát hiện được vấn đề cụ thể. Hãy chia sẻ thêm với tôi về cảm xúc của bạn nhé!", "bot");
+          }
+      } catch (error) {
+          hideLoadingModal();
+          console.error("Error matching from chat:", error);
+          addMessageToChat("Lỗi khi tìm chuyên gia. Vui lòng thử lại!", "bot");
+      }
+  };
+  
+  // Thêm vào TRƯỚC nút send
+  chatInputContainer.appendChild(findExpertBtn);
 }

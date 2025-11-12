@@ -1,0 +1,18 @@
+UserID;TestDate;TestTime;Answers;ProblemTags;Score24127168;2025-11-10;16:10:03;{"q1": "\u0110\u00f4i khi", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "B\u00ecnh th\u01b0\u1eddng"};hoc_tap;5
+24127168;2025-11-10;16:11:41;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu,hoc_tap,stress,tram_cam,lo_au;8
+24127168;2025-11-10;16:12:11;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu,hoc_tap,stress,tram_cam,lo_au;8
+24127168;2025-11-10;16:12:31;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu,hoc_tap,stress,tram_cam,lo_au;8
+24127168;2025-11-10;16:12:43;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu,hoc_tap,stress,tram_cam,lo_au;8
+24127168;2025-11-10;16:13:11;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu,hoc_tap,stress,tram_cam,lo_au;8
+24127168;2025-11-10;16:29:38;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu,hoc_tap,stress,tram_cam,lo_au;8
+24127168;2025-11-10;16:46:54;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "B\u00ecnh th\u01b0\u1eddng"};none;1
+24127168;2025-11-10;16:47:09;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "R\u1ea5t t\u1ec7, th\u01b0\u1eddng m\u1ea5t ng\u1ee7"};stress,hoc_tap,lo_au,tram_cam,roi_loan_giac_ngu;9
+24127168;2025-11-10;16:53:23;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "B\u00ecnh th\u01b0\u1eddng"};none;1
+24127168;2025-11-10;16:55:25;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu;2
+24127168;2025-11-10;16:55:47;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu;2
+24127168;2025-11-10;16:57:39;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu;2
+24127168;2025-11-10;17:14:52;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu;2
+24127168;2025-11-10;17:15:07;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "B\u00ecnh th\u01b0\u1eddng"};hoc_tap;4
+24127168;2025-11-10;17:17:40;{"q1": "Th\u01b0\u1eddng xuy\u00ean", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "R\u1ea5t t\u1ed1t"};lo_au,stress;2
+24127168;2025-11-10;17:26:58;{"q1": "Th\u01b0\u1eddng xuy\u00ean", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "R\u1ea5t t\u1ed1t"};lo_au,stress;2
+24127168;2025-11-10;19:06:58;{"q1": "Th\u01b0\u1eddng xuy\u00ean", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "R\u1ea5t t\u1ed1t"};lo_au,stress;2
