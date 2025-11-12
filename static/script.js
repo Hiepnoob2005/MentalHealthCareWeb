@@ -687,7 +687,7 @@ function initializeChatbotListeners() {
   const chatInput = document.getElementById("chatInput");
   const sendButton = document.getElementById("sendButton");
   const toggleButton = document.getElementById("chatbotToggle");
-  const toggleChatbotBox = document.getElementById("chatbotTogglen");
+  const toggleChatbotBox = document.getElementById("chatbotToggle2");
 
   if (chatInput) {
     chatInput.addEventListener("keypress", handleChatInputKey);

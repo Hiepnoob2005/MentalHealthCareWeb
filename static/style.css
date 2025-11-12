@@ -520,7 +520,8 @@ body {
 
 .chatbot-window.active {
   display: flex;
-  animation: slideUp 0.3s ease;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 @keyframes slideUp {
