@@ -38,35 +38,41 @@ class MatchingSystem:
         }
     
     def load_counselors(self) -> List[Counselor]:
-        """Load danh sách chuyên gia từ file"""
-        counselors = []
-        
-        if not os.path.exists(self.counselor_file):
-            logging.warning(f"File {self.counselor_file} không tồn tại")
-            return counselors
+            """Load danh sách chuyên gia từ file"""
+            counselors = []
             
-        try:
-            with open(self.counselor_file, 'r', encoding='utf-8') as f:
-                lines = f.readlines()[2:]  # Bỏ qua header và comment
+            if not os.path.exists(self.counselor_file):
+                logging.warning(f"File {self.counselor_file} không tồn tại")
+                return counselors
                 
-                for line in lines:
-                    parts = line.strip().split(';')
-                    if len(parts) >= 7:
-                        counselor = Counselor(
-                            id=parts[0],
-                            name=parts[1],
-                            email=parts[2],
-                            specialties=parts[4].split(','),
-                            rating=float(parts[5]),
-                            status=parts[6],
-                            experience=parts[7] if len(parts) > 7 else "Không rõ"
-                        )
-                        counselors.append(counselor)
-                        
-        except Exception as e:
-            logging.error(f"Lỗi khi load counselors: {e}")
-            
-        return counselors
+            try:
+                with open(self.counselor_file, 'r', encoding='utf-8') as f:
+                    lines = f.readlines()[1:]  # Bỏ qua header
+                    
+                    for line in lines:
+                        parts = line.strip().split(';')
+                        # Cấu trúc MỚI: ID(0);Username(1);Name(2);Email(3);Pass(4);Specialties(5);Rating(6);Status(7);Exp(8);Verified(9)
+                        if len(parts) >= 10: 
+                            # Chỉ load những người đã Verified = yes để hiển thị cho user
+                            if parts[9].strip().lower() != 'yes':
+                                continue
+
+                            counselor = Counselor(
+                                id=parts[0],
+                                name=parts[2], # Index lệch +1 so với cũ
+                                email=parts[3],
+                                specialties=parts[5].split(','),
+                                rating=float(parts[6]),
+                                status=parts[7],
+                                experience=parts[8]
+                            )
+                            counselors.append(counselor)
+                            
+            except Exception as e:
+                logging.error(f"Lỗi khi load counselors: {e}")
+                
+            return counselors                        
+
     
     def normalize_tags(self, tags: List[str]) -> List[str]:
         """Chuẩn hóa tags dựa trên synonyms"""

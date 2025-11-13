@@ -18,7 +18,8 @@ from matching import MatchingSystem, TagExtractor #thêm dòng này cho cái tí
 # ... (các import hiện có) ...
 from matching import MatchingSystem, TagExtractor #thêm dòng này cho cái tính năng matching
 from werkzeug.utils import secure_filename # <-- THÊM DÒNG NÀY
-
+import uuid
+from datetime import datetime
 # Cấu hình cơ bản
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -267,42 +268,56 @@ login_manager.init_app(app)
 # ----------------------------------------------------
 # --- II. USER CLASS VÀ HÀM QUẢN LÝ NGƯỜI DÙNG ---
 # ----------------------------------------------------
-# --- CẬP NHẬT: Class User hỗ trợ Admin ---
+# --- CẬP NHẬT: Class User hỗ trợ Admin và Counselor ---
 ADMIN_FILE = "admin_accounts.txt"
+COUNSELOR_FILE = "counselor_accounts.txt" # Đảm bảo biến này đã được khai báo
 
 class User(UserMixin):
-    def __init__(self, id, username, email, password_hash, is_admin=False):
-        self.id = id # ID dùng cho Flask-Login (thường là username)
+    # Hàm khởi tạo PHẢI có is_counselor và verified
+    def __init__(self, id, username, email, password_hash, is_admin=False, is_counselor=False, verified=False):
+        self.id = id 
         self.username = username
         self.email = email
         self.password_hash = password_hash
-        self.is_admin = is_admin # Thuộc tính mới
+        self.is_admin = is_admin
+        self.is_counselor = is_counselor # <-- Dòng này thiếu nên gây lỗi
+        self.verified = verified         # <-- Dòng này cũng cần thêm
 
     @staticmethod
     def get_by_id(user_id):
-        # 1. Tìm trong file Admin trước
+        # 1. Tìm trong Admin
         try:
             if os.path.exists(ADMIN_FILE):
                 with open(ADMIN_FILE, "r", encoding="utf-8") as f:
                     for line in f.readlines()[1:]:
                         parts = line.strip().split(';')
-                        if len(parts) == 3 and parts[0] == user_id:
+                        if len(parts) >= 3 and parts[0] == user_id:
                             return User(parts[0], parts[0], parts[1], parts[2], is_admin=True)
-        except Exception as e:
-            logging.error(f"Lỗi đọc file admin: {e}")
+        except Exception: pass
 
-        # 2. Nếu không thấy, tìm trong file User thường
+        # 2. Tìm trong Counselor (Quan trọng: Cần đọc đúng file cấu trúc mới)
+        try:
+            if os.path.exists(COUNSELOR_FILE):
+                with open(COUNSELOR_FILE, "r", encoding="utf-8") as f:
+                    for line in f.readlines()[1:]: # Bỏ qua header nếu có
+                        parts = line.strip().split(';')
+                        # Cấu trúc: ID(0);Username(1);Name(2);Email(3);Pass(4)...
+                        if len(parts) >= 10 and parts[1] == user_id:
+                            is_verified = parts[9].strip().lower() == 'yes'
+                            # TRUYỀN ĐỦ THAM SỐ is_counselor VÀ verified
+                            return User(parts[1], parts[1], parts[3], parts[4], is_counselor=True, verified=is_verified)
+        except Exception as e:
+            logging.error(f"Lỗi đọc file counselor: {e}")
+
+        # 3. Tìm trong User thường
         try:
             with open(USER_FILE, "r", encoding="utf-8") as f:
                 for line in f.readlines()[1:]:
                     parts = line.strip().split(';')
-                    if len(parts) == 3 and parts[0] == user_id: 
-                        return User(parts[0], parts[0], parts[1], parts[2], is_admin=False)
-        except FileNotFoundError:
-            return None
-        except Exception as e:
-            logging.error(f"Lỗi đọc file user: {e}")
-            return None
+                    if len(parts) >= 3 and parts[0] == user_id: 
+                        return User(parts[0], parts[0], parts[1], parts[2])
+        except FileNotFoundError: pass
+        
         return None
 
     @staticmethod
@@ -492,7 +507,7 @@ def register_secure():
     except Exception as e:
         return jsonify({"message": f"Lỗi khi lưu tài khoản: {e}"}), 500
 
-# --- CẬP NHẬT: API Đăng nhập trả về cờ is_admin ---
+# --- CẬP NHẬT: API Đăng nhập ---
 @app.route("/api/login", methods=["POST"])
 def login_secure():
     data = request.get_json()
@@ -502,15 +517,20 @@ def login_secure():
     if not username or not password:
         return jsonify({"message": "Vui lòng nhập tài khoản và mật khẩu"}), 400
         
-    user = User.get_by_username(username)
+    user = User.get_by_id(username) # Dùng get_by_id vì nó quét cả 3 file
+    
     if user and bcrypt.check_password_hash(user.password_hash, password):
+        # Logic riêng cho Counselor
+        if user.is_counselor and not user.verified:
+            return jsonify({"message": "Tài khoản chuyên gia của bạn đang chờ Admin phê duyệt."}), 403
+
         login_user(user, remember=True)
         
-        # Trả về thêm trường is_admin
         return jsonify({
             "message": "Đăng nhập thành công!", 
             "username": user.username,
-            "is_admin": user.is_admin
+            "is_admin": user.is_admin,
+            "is_counselor": user.is_counselor
         }), 200
         
     return jsonify({"message": "Tên đăng nhập hoặc mật khẩu không đúng"}), 401
@@ -906,5 +926,328 @@ def uploaded_file(filename):
         return "Access Denied", 403
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+# --- BOOKING SYSTEM ---
+
+AVAILABILITY_FILE = "counselor_availability.txt"
+AVAILABILITY_LOGS_FILE = "availability_logs.txt"
+APPOINTMENTS_FILE = "appointments.txt"
+
+@app.route("/api/counselor/availability", methods=["POST"])
+@login_required
+def update_availability():
+    """Counselor cập nhật giờ rảnh"""
+    if not current_user.is_counselor:
+        return jsonify({"error": "Unauthorized"}), 403
+        
+    data = request.get_json()
+    date = data.get("date")
+    slots = data.get("slots") 
+    
+    # 1. LƯU VÀO FILE CHÍNH (Để hiển thị cho User đặt lịch)
+    lines = []
+    if os.path.exists(AVAILABILITY_FILE):
+        with open(AVAILABILITY_FILE, "r", encoding='utf-8') as f:
+            lines = f.readlines()
+    
+    new_lines = [line for line in lines if not (line.startswith(f"{current_user.username};{date}"))]
+    new_lines.append(f"{current_user.username};{date};{','.join(slots)}\n")
+    
+    with open(AVAILABILITY_FILE, "w", encoding='utf-8') as f:
+        f.writelines(new_lines)
+
+    # 2. GHI LOG LỊCH SỬ (Để hiển thị trong tab Lịch sử)
+    try:
+        log_id = str(uuid.uuid4())[:8]
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        slots_str = ','.join(slots)
+        
+        if not os.path.exists(AVAILABILITY_LOGS_FILE):
+             with open(AVAILABILITY_LOGS_FILE, "w", encoding='utf-8') as f:
+                 f.write("LogID;Username;ActionTime;TargetDate;Slots\n")
+
+        with open(AVAILABILITY_LOGS_FILE, "a", encoding='utf-8') as f:
+            f.write(f"{log_id};{current_user.username};{now_str};{date};{slots_str}\n")
+            
+    except Exception as e:
+        logging.error(f"Lỗi ghi log: {e}")
+        
+    return jsonify({"message": "Cập nhật lịch thành công"}), 200
+
+@app.route("/api/counselor/history-logs", methods=["GET"])
+@login_required
+def get_availability_logs():
+    if not current_user.is_counselor:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    logs = []
+    
+    # Kiểm tra file tồn tại chưa
+    if not os.path.exists(AVAILABILITY_LOGS_FILE):
+        return jsonify({"logs": []}), 200 # Trả về mảng rỗng ngay nếu chưa có file
+
+    try:
+        with open(AVAILABILITY_LOGS_FILE, "r", encoding='utf-8') as f:
+            lines = f.readlines()
+            
+            # Bỏ qua dòng header (dòng đầu tiên)
+            if len(lines) > 0 and "LogID" in lines[0]:
+                lines = lines[1:]
+                
+            for line in lines:
+                line = line.strip()
+                if not line: continue # Bỏ qua dòng trống
+                
+                parts = line.split(';')
+                
+                # Cấu trúc chuẩn: LogID;Username;ActionTime;TargetDate;Slots
+                # Cần ít nhất 5 phần tử
+                if len(parts) >= 5 and parts[1] == current_user.username:
+                    logs.append({
+                        "log_id": parts[0],
+                        "action_time": parts[2],
+                        "target_date": parts[3],
+                        "slots": parts[4].split(',') if parts[4] else []
+                    })
+                    
+        # Sắp xếp: Mới nhất lên đầu
+        logs.sort(key=lambda x: x['action_time'], reverse=True)
+        
+        return jsonify({"logs": logs}), 200
+
+    except Exception as e:
+        logging.error(f"Lỗi đọc log: {e}")
+        return jsonify({"error": "Lỗi server khi đọc log"}), 500
+
+@app.route("/api/booking/check-existing", methods=["GET"])
+@login_required
+def check_existing_booking():
+    """Kiểm tra xem User này đã có lịch hẹn nào confirmed chưa"""
+    existing_appt = None
+    
+    # 1. Kiểm tra file tồn tại chưa. Nếu chưa -> Trả về None luôn (Không lỗi)
+    if not os.path.exists(APPOINTMENTS_FILE):
+        return jsonify({"existing": None}), 200
+
+    try:
+        with open(APPOINTMENTS_FILE, "r", encoding='utf-8') as f:
+            for line in f:
+                parts = line.strip().split(';')
+                # Cấu trúc: ApptID;UserID;CounselorUsername;Date;Time;Status
+                # Kiểm tra đủ độ dài và đúng user
+                if len(parts) >= 6 and parts[1] == current_user.username and parts[5] == 'confirmed':
+                    existing_appt = {
+                        "id": parts[0],
+                        "counselor": parts[2],
+                        "date": parts[3],
+                        "time": parts[4]
+                    }
+                    break
+        
+        return jsonify({"existing": existing_appt}), 200
+
+    except Exception as e:
+        logging.error(f"Lỗi đọc file appointment: {e}")
+        # Trả về None thay vì lỗi 500 để App không bị crash
+        return jsonify({"existing": None}), 200
+
+@app.route("/api/booking/cancel", methods=["POST"])
+@login_required
+def cancel_booking():
+    """Hủy lịch hẹn"""
+    appt_id = request.get_json().get("id")
+    lines = []
+    found = False
+    
+    if os.path.exists(APPOINTMENTS_FILE):
+        with open(APPOINTMENTS_FILE, "r", encoding='utf-8') as f:
+            lines = f.readlines()
+            
+    new_lines = []
+    for line in lines:
+        parts = line.strip().split(';')
+        if len(parts) >= 6 and parts[0] == appt_id and parts[1] == current_user.username:
+            # Đổi trạng thái thành cancelled
+            parts[5] = 'cancelled'
+            new_lines.append(';'.join(parts) + '\n')
+            found = True
+        else:
+            new_lines.append(line)
+            
+    if found:
+        with open(APPOINTMENTS_FILE, "w", encoding='utf-8') as f:
+            f.writelines(new_lines)
+        return jsonify({"message": "Đã hủy lịch hẹn."}), 200
+    else:
+        return jsonify({"error": "Không tìm thấy lịch hẹn."}), 404
+
+@app.route("/api/user/appointments", methods=["GET"])
+@login_required
+def get_user_appointments():
+    """Lấy lịch sử hẹn của User (cả confirmed và cancelled)"""
+    history = []
+    
+    if os.path.exists(APPOINTMENTS_FILE):
+        with open(APPOINTMENTS_FILE, "r", encoding='utf-8') as f:
+            for line in f:
+                parts = line.strip().split(';')
+                if len(parts) >= 6 and parts[1] == current_user.username:
+                    history.append({
+                        "id": parts[0],
+                        "counselor": parts[2], # Username của counselor
+                        "date": parts[3],
+                        "time": parts[4],
+                        "status": parts[5]
+                    })
+    
+    # Sắp xếp mới nhất lên đầu
+    history.sort(key=lambda x: f"{x['date']} {x['time']}", reverse=True)
+    return jsonify({"appointments": history}), 200
+
+@app.route("/api/counselors/available", methods=["GET"])
+def get_available_counselors():
+    """Lấy danh sách Counselor ĐANG CÓ LỊCH TRỐNG (cho tab Lịch hẹn)"""
+    # 1. Lấy tất cả counselor có lịch trong tương lai
+    active_counselors = set()
+    today = datetime.now().strftime("%Y-%m-%d")
+    
+    if os.path.exists(AVAILABILITY_FILE):
+        with open(AVAILABILITY_FILE, "r", encoding='utf-8') as f:
+            for line in f:
+                parts = line.strip().split(';')
+                # Check ngày >= hôm nay
+                if len(parts) >= 3 and parts[1] >= today:
+                    active_counselors.add(parts[0]) # Username
+                    
+    # 2. Lấy thông tin chi tiết của họ
+    results = []
+    if os.path.exists(COUNSELOR_FILE):
+        with open(COUNSELOR_FILE, "r", encoding='utf-8') as f:
+            lines = f.readlines()[1:]
+            for line in lines:
+                parts = line.strip().split(';')
+                # Username ở cột 1
+                if len(parts) >= 10 and parts[1] in active_counselors and parts[9].strip().lower() == 'yes':
+                    results.append({
+                        "username": parts[1], # Quan trọng: Dùng username làm ID
+                        "name": parts[2],
+                        "specialties": parts[5],
+                        "rating": parts[6],
+                        "status": parts[7]
+                    })
+                    
+    return jsonify({"counselors": results}), 200
+
+# --- SỬA LOGIC LẤY LỊCH (Để hiển thị đúng những gì Counselor đã đăng ký) ---
+
+@app.route("/api/counselor/get-dates", methods=["GET"])
+def get_counselor_dates():
+    """
+    Lấy danh sách các ngày Counselor ĐÃ ĐĂNG KÝ RẢNH.
+    Logic đúng: Quét file availability -> Lọc theo username -> Trả về list ngày.
+    """
+    counselor_username = request.args.get("username")
+    available_dates = set()
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    if not os.path.exists(AVAILABILITY_FILE):
+        return jsonify({"dates": []}), 200
+
+    try:
+        with open(AVAILABILITY_FILE, "r", encoding='utf-8') as f:
+            for line in f:
+                parts = line.strip().split(';')
+                # Cấu trúc: Username;Date;Slots
+                if len(parts) >= 3 and parts[0] == counselor_username:
+                    # Chỉ lấy ngày tương lai hoặc hôm nay
+                    if parts[1] >= today:
+                        available_dates.add(parts[1])
+        
+        # Sắp xếp ngày tăng dần để hiển thị đẹp
+        sorted_dates = sorted(list(available_dates))
+        return jsonify({"dates": sorted_dates}), 200
+    except Exception as e:
+        logging.error(f"Lỗi lấy ngày: {e}")
+        return jsonify({"dates": []}), 500
+
+@app.route("/api/counselor/get-slots", methods=["GET"])
+def get_counselor_slots():
+    """
+    Lấy giờ rảnh của Counselor trong ngày cụ thể (Đã trừ giờ bị đặt).
+    """
+    counselor_username = request.args.get("username")
+    date = request.args.get("date")
+    
+    if not counselor_username or not date:
+        return jsonify({"slots": []}), 400
+
+    all_slots = []
+    booked_slots = []
+    
+    try:
+        # 1. Lấy slot gốc từ file availability (Của Counselor)
+        if os.path.exists(AVAILABILITY_FILE):
+            with open(AVAILABILITY_FILE, "r", encoding='utf-8') as f:
+                for line in f:
+                    parts = line.strip().split(';')
+                    if len(parts) >= 3 and parts[0] == counselor_username and parts[1] == date:
+                        # Lấy dòng cuối cùng (cập nhật mới nhất)
+                        all_slots = parts[2].split(',')
+
+        # 2. Lấy slot đã bị đặt (từ file appointments)
+        if os.path.exists(APPOINTMENTS_FILE):
+            with open(APPOINTMENTS_FILE, "r", encoding='utf-8') as f:
+                for line in f:
+                    parts = line.strip().split(';')
+                    # Cấu trúc: ApptID;UserID;CounselorID;Date;Time;Status
+                    if len(parts) >= 6:
+                        # Chỉ chặn nếu đúng Counselor, đúng ngày và trạng thái 'confirmed'
+                        if (parts[2] == counselor_username and 
+                            parts[3] == date and 
+                            parts[5].strip() == 'confirmed'):
+                            booked_slots.append(parts[4])
+        
+        # 3. Trừ đi slot đã đặt
+        final_slots = [s for s in all_slots if s not in booked_slots]
+        final_slots.sort()
+        
+        return jsonify({"slots": final_slots}), 200
+
+    except Exception as e:
+        logging.error(f"Lỗi lấy slot: {e}")
+        return jsonify({"slots": []}), 500
+
+# --- SỬA LOGIC GHI FILE (Khắc phục lỗi không lưu được) ---
+
+@app.route("/api/booking/book", methods=["POST"])
+@login_required
+def book_appointment():
+    data = request.get_json()
+    counselor_username = data.get("counselor_username")
+    date = data.get("date")
+    time = data.get("time")
+    
+    if not counselor_username or not date or not time:
+        return jsonify({"message": "Thiếu thông tin"}), 400
+
+    try:
+        # Tạo file và header nếu chưa có
+        if not os.path.exists(APPOINTMENTS_FILE):
+            with open(APPOINTMENTS_FILE, "w", encoding='utf-8') as f:
+                f.write("ApptID;UserID;CounselorID;Date;Time;Status\n")
+
+        appt_id = str(uuid.uuid4())[:8]
+        
+        # QUAN TRỌNG: Mở file với encoding='utf-8' và mode 'a' (append)
+        with open(APPOINTMENTS_FILE, "a", encoding='utf-8') as f:
+            # Đảm bảo xuống dòng (\n) ở cuối
+            line = f"{appt_id};{current_user.username};{counselor_username};{date};{time};confirmed\n"
+            f.write(line)
+            
+        return jsonify({"message": "OK", "id": appt_id}), 200
+    except Exception as e:
+        logging.error(f"Lỗi ghi file: {e}")
+        return jsonify({"message": "Lỗi server"}), 500
+
+        
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
