@@ -160,9 +160,21 @@ async function handleLoginSubmit(event) {
       "Đăng nhập thành công! Đang tải lại...",
       false
     );
+
+    // --- LOGIC CHUYỂN HƯỚNG ---
+    // Chỉ dùng MỘT lần setTimeout duy nhất
     setTimeout(() => {
-      window.location.reload(); // Tải lại trang để cập nhật giao diện
+      if (data.is_admin) {
+        console.log("User is admin, redirecting to dashboard..."); // Log để kiểm tra
+        // Nếu là admin -> Chuyển sang Dashboard Admin
+        window.location.href = "/admin/dashboard";
+      } else {
+        console.log("User is normal user, reloading..."); // Log để kiểm tra
+        // Nếu là user thường -> Reload trang chủ
+        window.location.reload();
+      }
     }, 1000);
+
   } catch (err) {
     showFormMessage(messageElId, err.message, true);
   }

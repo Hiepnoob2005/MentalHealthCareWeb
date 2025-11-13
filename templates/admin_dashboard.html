@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | StudentMind Connect</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin_style.css') }}">
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-brain" style="color: var(--primary); font-size: 1.8rem;"></i>
+            <span class="logo-text">SMC Admin</span>
+        </div>
+
+        <div class="user-profile-card">
+            <div class="user-avatar">
+                <i class="fas fa-user-astronaut"></i>
+            </div>
+            <div class="user-details">
+                <h4>{{ current_user.username }}</h4>
+                <p>Administrator</p>
+            </div>
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-category">Quản lý chính</li>
+            <li class="nav-item">
+                <a href="#" class="nav-link active">
+                    <i class="fas fa-th-large"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-chart-pie"></i> Thống kê
+                    <span style="margin-left: auto; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">New</span>
+                </a>
+            </li>
+
+            <li class="nav-category">Hệ thống</li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-users"></i> Người dùng
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-user-md"></i> Chuyên gia
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-file-alt"></i> Tài nguyên
+                </a>
+            </li>
+
+            <li class="nav-category">Tài khoản</li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        
+        <header class="top-bar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Tìm kiếm (Ctrl + K)">
+            </div>
+            <div class="top-actions" style="display: flex; gap: 15px; align-items: center;">
+                <i class="fas fa-sun" style="cursor: pointer; color: var(--secondary);"></i>
+                <i class="fas fa-bell" style="cursor: pointer; color: var(--secondary);"></i>
+                <i class="fas fa-cog" style="cursor: pointer; color: var(--secondary);"></i>
+            </div>
+        </header>
+
+        <section class="hero-banner">
+            <div class="hero-text">
+                <h1>Khám phá Dashboard Mới</h1>
+                <p>Quản lý hồ sơ xác thực chuyên gia, theo dõi thống kê người dùng và vận hành hệ thống StudentMind Connect một cách hiệu quả.</p>
+                <a href="#requests-area" class="btn-hero">Xử lý hồ sơ ngay</a>
+            </div>
+            <div class="hero-decoration">
+                <i class="fas fa-rocket"></i>
+            </div>
+        </section>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon bg-blue-light"><i class="fas fa-wallet"></i></div>
+                    <i class="fas fa-ellipsis-v" style="color: #ccc; cursor: pointer;"></i>
+                </div>
+                <div class="stat-value">{{ profiles|length }}</div>
+                <div class="stat-label">Hồ sơ chờ duyệt</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon bg-orange-light"><i class="fas fa-file-alt"></i></div>
+                </div>
+                <div class="stat-value">15</div>
+                <div class="stat-label">Bài test hôm nay</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon bg-green-light"><i class="fas fa-check-circle"></i></div>
+                </div>
+                <div class="stat-value">8</div>
+                <div class="stat-label">Chuyên gia online</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon bg-red-light"><i class="fas fa-download"></i></div>
+                </div>
+                <div class="stat-value">245</div>
+                <div class="stat-label">Lượt truy cập</div>
+            </div>
+        </div>
+
+        <div class="content-section" id="requests-area">
+            <div class="section-header">
+                <h3>Hồ sơ Chuyên gia Chờ duyệt</h3>
+                <button class="btn-hero" style="background: var(--primary); color: white; border: none;">
+                    <i class="fas fa-filter"></i> Lọc
+                </button>
+            </div>
+
+            {% if profiles %}
+            <div class="request-card-grid">
+                {% for profile in profiles %}
+                <div class="request-card">
+                    <div class="request-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 40px; height: 40px; background: #e0e7ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: bold;">
+                                {{ profile.username[0] | upper }}
+                            </div>
+                            <div>
+                                <h4 style="margin: 0;">{{ profile.username }}</h4>
+                                <span style="font-size: 0.8rem; color: #aaa;">ID: #{{ loop.index }}</span>
+                            </div>
+                        </div>
+                        <span class="user-tag">Mới</span>
+                    </div>
+
+                    <div class="img-gallery">
+                        <div class="img-box">
+                            <a href="{{ url_for('uploaded_file', filename=profile.id_card) }}" target="_blank">
+                                <img src="{{ url_for('uploaded_file', filename=profile.id_card) }}" alt="CCCD">
+                            </a>
+                            <div class="img-label">CCCD</div>
+                        </div>
+                        <div class="img-box">
+                            <a href="{{ url_for('uploaded_file', filename=profile.degree) }}" target="_blank">
+                                <img src="{{ url_for('uploaded_file', filename=profile.degree) }}" alt="Bằng cấp">
+                            </a>
+                            <div class="img-label">Bằng cấp</div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-approve" onclick="approveExpert('{{ profile.username }}')">
+                            <i class="fas fa-check"></i> Duyệt
+                        </button>
+                        <button class="btn btn-reject" onclick="rejectExpert('{{ profile.username }}')">
+                            <i class="fas fa-times"></i> Từ chối
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 50px; color: var(--secondary);">
+                <i class="fas fa-folder-open" style="font-size: 3rem; opacity: 0.5; margin-bottom: 15px;"></i>
+                <p>Hiện tại không có hồ sơ nào cần duyệt.</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='admin_script.js') }}"></script>
+</body>
+</html>

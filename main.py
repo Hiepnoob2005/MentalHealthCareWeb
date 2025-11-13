@@ -267,57 +267,50 @@ login_manager.init_app(app)
 # ----------------------------------------------------
 # --- II. USER CLASS VÀ HÀM QUẢN LÝ NGƯỜI DÙNG ---
 # ----------------------------------------------------
+# --- CẬP NHẬT: Class User hỗ trợ Admin ---
+ADMIN_FILE = "admin_accounts.txt"
 
 class User(UserMixin):
-    def __init__(self, id, username, email, password_hash):
-        self.id = id # trong Flask-Login, id phải là self.id
+    def __init__(self, id, username, email, password_hash, is_admin=False):
+        self.id = id # ID dùng cho Flask-Login (thường là username)
         self.username = username
         self.email = email
         self.password_hash = password_hash
+        self.is_admin = is_admin # Thuộc tính mới
 
     @staticmethod
     def get_by_id(user_id):
+        # 1. Tìm trong file Admin trước
+        try:
+            if os.path.exists(ADMIN_FILE):
+                with open(ADMIN_FILE, "r", encoding="utf-8") as f:
+                    for line in f.readlines()[1:]:
+                        parts = line.strip().split(';')
+                        if len(parts) == 3 and parts[0] == user_id:
+                            return User(parts[0], parts[0], parts[1], parts[2], is_admin=True)
+        except Exception as e:
+            logging.error(f"Lỗi đọc file admin: {e}")
+
+        # 2. Nếu không thấy, tìm trong file User thường
         try:
             with open(USER_FILE, "r", encoding="utf-8") as f:
-                for line in f.readlines()[1:]: # Bỏ qua dòng tiêu đề
+                for line in f.readlines()[1:]:
                     parts = line.strip().split(';')
                     if len(parts) == 3 and parts[0] == user_id: 
-                        return User(parts[0], parts[0], parts[1], parts[2])
+                        return User(parts[0], parts[0], parts[1], parts[2], is_admin=False)
         except FileNotFoundError:
-            # Tự động tạo file nếu chưa tồn tại
-            logging.info(f"File {USER_FILE} không tìm thấy, đang tạo file mới...")
-            try:
-                with open(USER_FILE, "w", encoding="utf-8") as f:
-                    f.write("Username;Email;PasswordHash\n")
-            except Exception as e:
-                logging.error(f"Không thể tạo file {USER_FILE}: {e}")
             return None
         except Exception as e:
-            logging.error(f"Lỗi khi đọc file user: {e}")
+            logging.error(f"Lỗi đọc file user: {e}")
             return None
         return None
 
     @staticmethod
     def get_by_username(username):
-        """Tìm kiếm người dùng bằng Username (mà cũng là ID)."""
         return User.get_by_id(username)
-
-    @staticmethod
-    def get_by_email(email):
-        try:
-            with open(USER_FILE, "r", encoding="utf-8") as f:
-                for line in f.readlines()[1:]:
-                    parts = line.strip().split(';')
-                    if len(parts) == 3 and parts[1].lower() == email.lower():
-                        return User(parts[0], parts[0], parts[1], parts[2])
-        except FileNotFoundError:
-            logging.warn(f"{USER_FILE} không tìm thấy khi tìm email.")
-            return None
-        return None
 
 @login_manager.user_loader
 def load_user(user_id):
-    """Callback được Flask-Login sử dụng để tải user từ session."""
     return User.get_by_id(user_id)
 
 # Thêm class xử lý Quick Test 
@@ -499,7 +492,7 @@ def register_secure():
     except Exception as e:
         return jsonify({"message": f"Lỗi khi lưu tài khoản: {e}"}), 500
 
-# --- API cho Đăng nhập ---
+# --- CẬP NHẬT: API Đăng nhập trả về cờ is_admin ---
 @app.route("/api/login", methods=["POST"])
 def login_secure():
     data = request.get_json()
@@ -511,8 +504,14 @@ def login_secure():
         
     user = User.get_by_username(username)
     if user and bcrypt.check_password_hash(user.password_hash, password):
-        login_user(user, remember=True) # Tạo session
-        return jsonify({"message": "Đăng nhập thành công!", "username": user.username}), 200
+        login_user(user, remember=True)
+        
+        # Trả về thêm trường is_admin
+        return jsonify({
+            "message": "Đăng nhập thành công!", 
+            "username": user.username,
+            "is_admin": user.is_admin
+        }), 200
         
     return jsonify({"message": "Tên đăng nhập hoặc mật khẩu không đúng"}), 401
 
@@ -862,6 +861,50 @@ def handle_verification_upload(): # <-- Bỏ 'async'
 @app.route("/health", methods=["GET"])
 def health_check():
     return jsonify({"status": "healthy", "model": "gemini-2.5-flash"})
+
+# --- CÁC ROUTE CHO ADMIN ---
+
+@app.route("/admin/dashboard")
+@login_required
+def admin_dashboard():
+    # Kiểm tra quyền Admin
+    if not current_user.is_admin:
+        return "Access Denied: Bạn không có quyền truy cập trang này.", 403
+        
+    # Quét thư mục upload để lấy danh sách hồ sơ
+    profiles = []
+    if os.path.exists(app.config['UPLOAD_FOLDER']):
+        files = os.listdir(app.config['UPLOAD_FOLDER'])
+        # Gom nhóm file theo username (dựa vào tên file: username_id_card.jpg)
+        user_files = {}
+        for f in files:
+            if '_' in f:
+                username = f.split('_')[0]
+                if username not in user_files:
+                    user_files[username] = {'id_card': None, 'degree': None}
+                
+                if 'id_card' in f:
+                    user_files[username]['id_card'] = f
+                elif 'degree' in f:
+                    user_files[username]['degree'] = f
+        
+        # Chuyển thành list để render
+        for username, doc in user_files.items():
+            profiles.append({
+                'username': username,
+                'id_card': doc['id_card'],
+                'degree': doc['degree']
+            })
+
+    return render_template("admin_dashboard.html", profiles=profiles)
+
+# Route để xem ảnh (vì thư mục upload nằm ngoài static)
+@app.route('/uploads/<filename>')
+@login_required
+def uploaded_file(filename):
+    if not current_user.is_admin:
+        return "Access Denied", 403
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
