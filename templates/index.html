@@ -8,6 +8,9 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
     
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
     </head>
 
   <body>
@@ -24,12 +27,14 @@
           <li>
             <a href="#features">Tính năng</a>
           </li>
+          {% if not current_user.is_authenticated or not current_user.is_counselor %}
           <li>
             <a href="#test">Đánh giá</a>
           </li>
           <li>
             <a href="#experts">Chuyên gia</a>
           </li>
+          {% endif %}
           <li>
             <a href="#resources">Tài nguyên</a>
           </li>
@@ -124,7 +129,7 @@
         </div>
       </div>
     </section>
-
+{% if not current_user.is_authenticated or not current_user.is_counselor %}
     <section class="quick-test" id="test">
       <div class="test-container">
         <div class="test-header">
@@ -156,35 +161,32 @@
         </div>
       </div>
     </section>
-
+{% endif %}
+{% if not current_user.is_authenticated or not current_user.is_counselor %}
     <section class="experts" id="experts">
       <div class="section-header">
         <h2>Đội ngũ Chuyên gia</h2>
         <p>Kết nối với các chuyên gia tâm lý phù hợp với nhu cầu của bạn</p>
       </div>
       <div class="experts-grid">
+        
         <div class="expert-card">
           <div class="expert-avatar">
             <i class="fas fa-user-circle"></i>
             <span class="expert-status online"><span class="status-dot"></span> Đang online</span>
           </div>
           <div class="expert-info">
-            <h3>TS. Nguyễn Văn A</h3>
-            <div class="expert-specialties">
+            <h3>TS. Nguyễn Văn An</h3> <div class="expert-specialties">
               <span class="specialty-tag">Stress học tập</span>
               <span class="specialty-tag">Lo âu</span>
             </div>
             <div class="expert-rating">
               <div class="stars">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
               </div>
               <span>5.0 (124 đánh giá)</span>
             </div>
-            <button class="btn-connect">Kết nối ngay</button>
+            <button class="btn-connect" onclick="checkAndOpenBooking('nvan')">Đặt lịch hẹn</button>
           </div>
         </div>
 
@@ -194,22 +196,18 @@
             <span class="expert-status online"><span class="status-dot"></span> Đang online</span>
           </div>
           <div class="expert-info">
-            <h3>ThS. Trần Thị B</h3>
+            <h3>ThS. Trần Thị Bình</h3>
             <div class="expert-specialties">
               <span class="specialty-tag">Trầm cảm</span>
               <span class="specialty-tag">Tâm lý xã hội</span>
             </div>
             <div class="expert-rating">
               <div class="stars">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star-half-alt"></i>
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
               </div>
               <span>4.8 (98 đánh giá)</span>
             </div>
-            <button class="btn-connect">Kết nối ngay</button>
+            <button class="btn-connect" onclick="checkAndOpenBooking('ttbinh')">Đặt lịch hẹn</button>
           </div>
         </div>
 
@@ -219,27 +217,24 @@
             <span class="expert-status offline"><span class="status-dot"></span> Offline</span>
           </div>
           <div class="expert-info">
-            <h3>BS. Lê Văn C</h3>
+            <h3>BS. Lê Văn Cường</h3>
             <div class="expert-specialties">
               <span class="specialty-tag">Rối loạn giấc ngủ</span>
               <span class="specialty-tag">Áp lực thi cử</span>
             </div>
             <div class="expert-rating">
               <div class="stars">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
               </div>
               <span>4.9 (156 đánh giá)</span>
             </div>
-            <button class="btn-connect" disabled>Đặt lịch hẹn</button>
+            <button class="btn-connect" onclick="checkAndOpenBooking('lvcuong')">Đặt lịch hẹn</button>
           </div>
         </div>
+
       </div>
     </section>
-
+{% endif %}
     <section class="resources" id="resources">
       <div class="section-header">
         <h2>Kho Tài nguyên</h2>
@@ -309,13 +304,12 @@
         <div class="dashboard-sidebar">
           <ul class="dashboard-menu">
             <li>
-              <a href="#" class="active"><i class="fas fa-chart-line"></i> Tổng quan</a>
+              <a href="#" id="tab-overview" class="active"><i class="fas fa-chart-line"></i> Tổng quan</a>            </li>
+            <li>
+              <a href="#" id="tab-schedule"><i class="fas fa-calendar-alt"></i> Lịch hẹn</a> </li>
             </li>
             <li>
-              <a href="#"><i class="fas fa-calendar"></i> Lịch hẹn</a>
-            </li>
-            <li>
-              <a href="#"><i class="fas fa-history"></i> Lịch sử</a>
+              <a href="#" id="tab-history"><i class="fas fa-history"></i> Lịch sử</a>
             </li>
             <li>
               <a href="#"><i class="fas fa-file-alt"></i> Kết quả đánh giá</a>
@@ -325,53 +319,110 @@
             </li>
           </ul>
         </div>
-        <div class="dashboard-content">
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-icon primary">
-                <i class="fas fa-smile"></i>
-              </div>
-              <div class="stat-info">
-                <h4>75</h4>
-                <p>Điểm tâm trạng</p>
-              </div>
+<div class="dashboard-content">
+          
+          {% if current_user.is_authenticated and current_user.is_counselor %}
+            
+            <div id="view-overview">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary"><i class="fas fa-calendar-check"></i></div>
+                        <div class="stat-info"><h4>Quản lý Lịch</h4><p>Trạng thái hoạt động</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success"><i class="fas fa-user-clock"></i></div>
+                        <div class="stat-info"><h4>12</h4><p>Cuộc hẹn sắp tới</p></div>
+                    </div>
+                </div>
+                <div style="text-align: center; padding: 50px; color: var(--gray);">
+                    <i class="fas fa-chart-pie" style="font-size: 4rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <p>Chào mừng trở lại! Chọn <strong>"Lịch hẹn"</strong> để cập nhật thời gian rảnh.</p>
+                </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon success">
-                <i class="fas fa-comments"></i>
-              </div>
-              <div class="stat-info">
-                <h4>12</h4>
-                <p>Phiên tư vấn</p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon warning">
-                <i class="fas fa-book-open"></i>
-              </div>
-              <div class="stat-info">
-                <h4>28</h4>
-                <p>Bài viết đã đọc</p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon danger">
-                <i class="fas fa-trophy"></i>
-              </div>
-              <div class="stat-info">
-                <h4>5</h4>
-                <p>Thành tựu</p>
-              </div>
-            </div>
-          </div>
 
-          <div class="mood-tracker">
-            <h3>Biểu đồ Tâm trạng 30 ngày</h3>
-            <div class="mood-chart">
-              <i class="fas fa-chart-area" style="font-size: 3rem;"></i>
-              <p>Biểu đồ tâm trạng sẽ hiển thị ở đây</p>
+            <div id="view-schedule" style="display: none;">
+                <div class="mood-tracker" style="padding: 30px;">
+                    <h3 style="color: var(--primary); margin-bottom: 10px;"><i class="fas fa-clock"></i> Cập nhật thời gian rảnh</h3>
+                    <p style="color: var(--gray); margin-bottom: 20px;">Chọn ngày và các khung giờ bạn có thể tiếp nhận tư vấn.</p>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-weight: bold; display: block; margin-bottom: 8px;">Chọn ngày:</label>
+                        <input type="text" id="counselorDatePicker" placeholder="Chọn ngày..." style="padding: 10px; border: 1px solid #ddd; border-radius: 8px; width: 100%; max-width: 300px;">
+                    </div>
+
+                    <label style="font-weight: bold; display: block; margin-bottom: 8px;">Chọn khung giờ:</label>
+                    <div id="counselorSlotContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                        </div>
+
+                    <button id="btnSaveAvailability" class="btn-submit" style="max-width: 200px;">Lưu Lịch Rảnh</button>
+                </div>
             </div>
+
+            <div id="view-history" style="display: none;">
+                <div class="mood-tracker" style="padding: 30px;">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;"><i class="fas fa-history"></i> Lịch sử Cập nhật</h3>
+                    <p style="margin-bottom: 15px; font-size: 0.9rem; color: #666;"><i>Click vào dòng lịch sử để sửa lại lịch cho ngày đó.</i></p>
+                    
+                    <div class="history-table-container" style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;" id="historyTable">
+                            <thead>
+                                <tr style="background: #f3f4f6; text-align: left;">
+                                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Thời gian cập nhật</th>
+                                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Ngày áp dụng</th>
+                                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Các khung giờ</th>
+                                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+{% else %} <div id="user-view-overview">
+                <div class="stats-grid">
+                  <div class="stat-card">
+                    <div class="stat-icon primary"><i class="fas fa-smile"></i></div>
+                    <div class="stat-info"><h4>75</h4><p>Điểm tâm trạng</p></div>
+                  </div>
+                  </div>
+
+                <div class="mood-tracker">
+                  <h3>Biểu đồ Tâm trạng 30 ngày</h3>
+                  </div>
+            </div>
+
+            <div id="user-view-booking" style="display: none;">
+                <div class="mood-tracker" style="padding: 30px;">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;"><i class="fas fa-calendar-check"></i> Đặt lịch hẹn mới</h3>
+                    <div id="available-counselors-list" class="experts-grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
+                        <p class="loading-text">Đang tải danh sách chuyên gia...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="user-view-history" style="display: none;">
+                <div class="mood-tracker" style="padding: 30px;">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;"><i class="fas fa-history"></i> Lịch sử đặt hẹn</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f3f4f6;">
+                                <th style="padding: 12px;">Ngày giờ</th>
+                                <th style="padding: 12px;">Chuyên gia</th>
+                                <th style="padding: 12px;">Trạng thái</th>
+                                <th style="padding: 12px;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-history-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+          {% endif %}
           </div>
+         </div>
         </div>
       </div>
     </section>
@@ -405,10 +456,13 @@
       </div>
     </div>
 
+    <div> </div>
+
     <div class="modal-overlay" id="loginModal">
       <div class="modal-container">
-        <button class="modal-close" onclick="closeLoginModal()"><i class="fas fa-times"></i></button>
-        <div class="modal-content">
+        <button class="modal-close" type="button" onclick="closeBookingModal()">
+            <i class="fas fa-times"></i>
+        </button>        <div class="modal-content">
           <div class="modal-logo">
             <i class="fas fa-brain"></i>
             <span>StudentMind Connect</span>
@@ -449,7 +503,7 @@
       </div>
     </div>
 
-{% if current_user.is_authenticated %}
+{% if current_user.is_authenticated and not current_user.is_counselor %}
     <div class="counselor-verify-box">
       <a href="{{ url_for('verify_counselor_page') }}">
         <i class="fas fa-user-tie"></i> <span>Bạn là chuyên gia?
@@ -530,5 +584,41 @@
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     
+    <div class="modal-overlay" id="bookingModal">
+      <div class="modal-container" style="max-width: 500px;">
+        <button class="modal-close" onclick="closeBookingModal()"><i class="fas fa-times"></i></button>
+        <div class="modal-content" style="padding: 2rem;">
+          <div class="modal-logo" style="margin-bottom: 1rem; justify-content: center;">
+            <i class="fas fa-calendar-check"></i>
+            <span>Đặt lịch hẹn</span>
+          </div>
+          
+          <h3 id="bookingCounselorName" style="text-align: center; margin-bottom: 1.5rem; color: var(--dark);">
+            </h3>
+
+          <form id="bookingForm">
+            <div class="form-group">
+              <label for="bookingDate" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">1. Chọn ngày rảnh:</label>
+              <select id="bookingDate" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: white;">
+                  <option value="">-- Vui lòng chọn ngày --</option>
+                  </select>
+            </div>
+
+            <div class="form-group">
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">2. Chọn khung giờ:</label>
+              <div id="bookingSlots" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                <p style="grid-column: span 3; text-align: center; color: #666; font-size: 0.9rem;">Vui lòng chọn ngày trước.</p>
+              </div>
+              <input type="hidden" id="selectedTime" required>
+            </div>
+
+            <div id="bookingMessage" style="display: none; margin-top: 1rem; text-align: center; font-size: 0.9rem;"></div>
+
+            <button type="submit" class="btn-submit" style="margin-top: 1.5rem;">Xác nhận Đặt lịch</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
   </body>
 </html>
