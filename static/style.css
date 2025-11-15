@@ -529,6 +529,30 @@ body {
   transform: translateY(0);
 }
 
+#connectBtn {
+  align-self: flex-end;
+  width: auto;
+  padding: 4px 10px;
+  background: #667de4;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+
+#connectBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+}
+
+#connectBtn:active {
+  transform: scale(0.97);
+}
+
 @keyframes slideUp {
   from {
     opacity: 0;
