@@ -89,8 +89,9 @@ function updateUIAfterLogin(username) {
     heroSubtitle.textContent =
       "Bạn đã sẵn sàng cho buổi đánh giá tiếp theo, trò chuyện với AI hay kết nối với một chuyên gia chưa?";
   }
-  document.querySelectorAll(".btn-connect:not([disabled])").forEach((btn) => {
-    btn.textContent = "Đặt lịch hẹn";
+  // BẰNG ĐOẠN NÀY:
+  document.querySelectorAll(".btn-connect:not(.btn-chat):not([disabled])").forEach((btn) => {
+  btn.textContent = "Đặt lịch hẹn";
   });
   // --- KẾT THÚC STYLE MỚI ---
 }
@@ -1439,4 +1440,208 @@ async function cancelBooking(apptId) {
     } catch (e) {
         alert("Lỗi khi hủy.");
     }
+}
+
+// ==========================================
+// LOGIC CHAT VỚI CHUYÊN GIA (MỚI)
+// ==========================================
+
+// Biến toàn cục để giữ kết nối socket
+let expertSocket = null;
+let currentExpertRoom = null;
+
+/**
+ * 1. Hàm chính được gọi từ nút "Chat với chuyên gia"
+ * (Hàm này cũng sửa lỗi cho 'connectToCounselor' chưa được định nghĩa)
+ */
+async function openChat(counselorUsername) {
+  console.log(`Yêu cầu chat với: ${counselorUsername}`);
+  
+  // KIỂM TRA QUAN TRỌNG:
+  // Nếu người dùng chưa đăng nhập, hàm initializeCTAListeners đã bắt
+  // sự kiện click và mở modal đăng nhập. 
+  // Hàm này chỉ chạy khi người dùng đã đăng nhập.
+
+  try {
+    showLoadingModal("Đang kiểm tra trạng thái chuyên gia...");
+    
+    // Giả định bạn có 1 API để check status
+    // BẠN CẦN TẠO API NÀY Ở FLASK
+    const response = await fetch(`/api/chat/check-expert-status?username=${counselorUsername}`);
+    const data = await response.json();
+    
+    hideLoadingModal();
+
+    if (response.ok && data.status === 'online') {
+      // Nếu chuyên gia online -> Mở modal chat
+      launchExpertChatModal(counselorUsername, data.expert_name || counselorUsername);
+    } else {
+      // Nếu chuyên gia offline
+      alert("Chuyên gia hiện không online hoặc đang bận. Bạn vui lòng đặt lịch hẹn.");
+    }
+
+  } catch (error) {
+    hideLoadingModal();
+    console.error("Lỗi khi kiểm tra trạng thái chuyên gia:", error);
+    alert("Không thể kết nối với chuyên gia. Vui lòng thử lại sau.");
+  }
+}
+
+/**
+ * 2. Hàm xử lý khi người dùng bấm "Kết nối" từ modal matching
+ * (Đây là hàm bị thiếu trong code của bạn, giờ ta trỏ nó về openChat)
+ */
+function connectToCounselor(counselorId) {
+    // counselorId ở đây chính là username (ví dụ: 'nvan')
+    openChat(counselorId);
+}
+
+
+/**
+ * 1. HÀM CHUẨN ĐỂ THÊM TIN NHẮN VÀO GIAO DIỆN
+ * (Hàm này tạo cấu trúc <div class="message"><div class="bubble">...</div></div>)
+ */
+function addMessageToExpertChat(text, type) {
+  // Lấy ID của khung chat chuyên gia
+  const messagesContainer = document.getElementById("expertChatMessages");
+  if (!messagesContainer) return;
+
+  // 1. Tạo thẻ div.message cha
+  const messageDiv = document.createElement("div");
+  messageDiv.className = `message ${type}`; // vd: "message sent", "message received", "message system"
+
+  // 2. Tạo "bong bóng" bên trong
+  const bubbleDiv = document.createElement("div");
+  bubbleDiv.className = "bubble";
+  bubbleDiv.textContent = text; // Gán nội dung tin nhắn
+
+  // 3. Gắn bubble vào message
+  messageDiv.appendChild(bubbleDiv);
+
+  // 4. Gắn message vào khung chat
+  messagesContainer.appendChild(messageDiv);
+
+  // 5. Tự động cuộn xuống dưới cùng
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+
+/**
+ * 2. HÀM MỞ CỬA SỔ CHAT (Đã cập nhật)
+ * (Hàm này phải XÓA tin nhắn cũ và THÊM tin nhắn 'system' đầu tiên)
+ */
+function launchExpertChatModal(counselorUsername, expertName) {
+  const chatWindow = document.getElementById('expertChatWindow');
+  if (!chatWindow) return;
+
+  // Cập nhật tên chuyên gia
+  document.getElementById('expertChatName').textContent = `Chat với ${expertName}`;
+  
+  // ----- SỬA LỖI HIỂN THỊ -----
+  // 1. XÓA SẠCH tất cả tin nhắn cũ
+  const messagesContainer = document.getElementById("expertChatMessages");
+  messagesContainer.innerHTML = ''; 
+  
+  // 2. Thêm tin nhắn hệ thống ĐẦU TIÊN bằng hàm chuẩn
+  addMessageToExpertChat('Đã kết nối. Đang chờ chuyên gia chấp nhận...', 'system');
+  // ------------------------------
+
+  // Hiển thị cửa sổ chat
+  chatWindow.classList.add('active'); 
+
+  // --- Khởi tạo Socket.IO (Giữ nguyên logic của bạn) ---
+  if (expertSocket) {
+    expertSocket.disconnect();
+  }
+  expertSocket = io("http://127.0.0.1:5000");
+  currentExpertRoom = counselorUsername; 
+
+  // ... (Gán sự kiện expertSocket.on('connect') VÀ 'receive_message' ở đây) ...
+  // ...
+  
+  // Gán sự kiện cho form
+  const chatForm = document.getElementById('expertChatForm');
+  chatForm.onsubmit = function(e) {
+    e.preventDefault();
+    sendExpertMessage();
+  };
+  
+  // Gán các listener cho socket
+  setupSocketListeners();
+}
+
+/**
+ * HÀM GỬI TIN NHẮN (User gửi)
+ * CHỈ GỬI, KHÔNG HIỂN THỊ
+ */
+function sendExpertMessage() {
+  const input = document.getElementById('expertChatInput');
+  const messageText = input.value.trim();
+  
+  if (messageText && expertSocket && currentExpertRoom) {
+    // 1. Chỉ gửi tin nhắn lên server
+    expertSocket.emit('send_expert_message', {
+      room: currentExpertRoom,
+      message: messageText
+    });
+    
+    // 2. (ĐÃ XÓA) KHÔNG tự hiển thị tin nhắn
+    // addMessageToExpertChat(messageText, 'sent'); // <-- XÓA DÒNG NÀY
+    
+    input.value = ''; // Xóa input
+  }
+}
+
+/**
+ * HÀM LẮNG NGHE SỰ KIỆN SOCKET (User nhận)
+ * (Thay thế hàm setupSocketListeners hoặc on('receive_message') của bạn)
+ */
+function setupSocketListeners() {
+  if (!expertSocket) return;
+
+  expertSocket.on('connect', () => {
+    addMessageToExpertChat('Đã kết nối thành công!', 'system');
+    expertSocket.emit('join_expert_chat', { room: currentExpertRoom });
+  });
+
+  // ---- LOGIC "THÔNG MINH" TẠI ĐÂY ----
+  expertSocket.on('receive_message', (data) => {
+    
+    if (data.sender_type === 'system') {
+      addMessageToExpertChat(data.text, 'system');
+    } 
+    // "TÔI LÀ USER"
+    else if (data.sender_type === 'user') {
+      // Tin nhắn này là của TÔI
+      addMessageToExpertChat(data.text, 'sent'); // Màu xanh
+    } 
+    else if (data.sender_type === 'counselor') {
+      // Tin nhắn này là của CHUYÊN GIA
+      addMessageToExpertChat(data.text, 'received'); // Màu xám
+    }
+  });
+  
+  expertSocket.on('expert_left', () => {
+    addMessageToExpertChat('Chuyên gia đã rời khỏi phòng chat.', 'system');
+  });
+}
+
+// (Hàm 'addMessageToExpertChat' của bạn giữ nguyên, nó đã đúng)
+
+/**
+ * 5. HÀM ĐÓNG CỬA SỔ CHAT
+ * (Giữ nguyên)
+ */
+function closeExpertChatModal() {
+  const chatWindow = document.getElementById('expertChatWindow');
+  if (chatWindow) {
+    chatWindow.classList.remove('active');
+  }
+  
+  if (expertSocket) {
+    expertSocket.emit('leave_room', { room: currentExpertRoom });
+    expertSocket.disconnect();
+    expertSocket = null;
+    currentExpertRoom = null;
+  }
 }

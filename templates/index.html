@@ -10,6 +10,7 @@
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
 
     </head>
 
@@ -164,76 +165,80 @@
 {% endif %}
 {% if not current_user.is_authenticated or not current_user.is_counselor %}
     <section class="experts" id="experts">
-      <div class="section-header">
-        <h2>Đội ngũ Chuyên gia</h2>
-        <p>Kết nối với các chuyên gia tâm lý phù hợp với nhu cầu của bạn</p>
+  <div class="section-header">
+    <h2>Đội ngũ Chuyên gia</h2>
+    <p>Kết nối với các chuyên gia tâm lý phù hợp với nhu cầu của bạn</p>
+  </div>
+  <div class="experts-grid">
+
+    <div class="expert-card">
+      <div class="expert-avatar">
+        <i class="fas fa-user-circle"></i>
+        <span class="expert-status online"><span class="status-dot"></span> Đang online</span>
       </div>
-      <div class="experts-grid">
-        
-        <div class="expert-card">
-          <div class="expert-avatar">
-            <i class="fas fa-user-circle"></i>
-            <span class="expert-status online"><span class="status-dot"></span> Đang online</span>
-          </div>
-          <div class="expert-info">
-            <h3>TS. Nguyễn Văn An</h3> <div class="expert-specialties">
-              <span class="specialty-tag">Stress học tập</span>
-              <span class="specialty-tag">Lo âu</span>
-            </div>
-            <div class="expert-rating">
-              <div class="stars">
-                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-              </div>
-              <span>5.0 (124 đánh giá)</span>
-            </div>
-            <button class="btn-connect" onclick="checkAndOpenBooking('nvan')">Đặt lịch hẹn</button>
-          </div>
+      <div class="expert-info">
+        <h3>TS. Nguyễn Văn An</h3>
+        <div class="expert-specialties">
+          <span class="specialty-tag">Stress học tập</span>
+          <span class="specialty-tag">Lo âu</span>
         </div>
-
-        <div class="expert-card">
-          <div class="expert-avatar">
-            <i class="fas fa-user-circle"></i>
-            <span class="expert-status online"><span class="status-dot"></span> Đang online</span>
+        <div class="expert-rating">
+          <div class="stars">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
           </div>
-          <div class="expert-info">
-            <h3>ThS. Trần Thị Bình</h3>
-            <div class="expert-specialties">
-              <span class="specialty-tag">Trầm cảm</span>
-              <span class="specialty-tag">Tâm lý xã hội</span>
-            </div>
-            <div class="expert-rating">
-              <div class="stars">
-                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-              </div>
-              <span>4.8 (98 đánh giá)</span>
-            </div>
-            <button class="btn-connect" onclick="checkAndOpenBooking('ttbinh')">Đặt lịch hẹn</button>
-          </div>
+          <span>5.0 (124 đánh giá)</span>
         </div>
-
-        <div class="expert-card">
-          <div class="expert-avatar">
-            <i class="fas fa-user-circle"></i>
-            <span class="expert-status offline"><span class="status-dot"></span> Offline</span>
-          </div>
-          <div class="expert-info">
-            <h3>BS. Lê Văn Cường</h3>
-            <div class="expert-specialties">
-              <span class="specialty-tag">Rối loạn giấc ngủ</span>
-              <span class="specialty-tag">Áp lực thi cử</span>
-            </div>
-            <div class="expert-rating">
-              <div class="stars">
-                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-              </div>
-              <span>4.9 (156 đánh giá)</span>
-            </div>
-            <button class="btn-connect" onclick="checkAndOpenBooking('lvcuong')">Đặt lịch hẹn</button>
-          </div>
-        </div>
-
+        <button class="btn-connect" onclick="checkAndOpenBooking('nvan')">Đặt lịch hẹn</button>
+        <button class="btn-connect btn-chat" onclick="openChat('nvan')">Chat với chuyên gia</button>
       </div>
-    </section>
+    </div>
+
+    <div class="expert-card">
+      <div class="expert-avatar">
+        <i class="fas fa-user-circle"></i>
+        <span class="expert-status online"><span class="status-dot"></span> Đang online</span>
+      </div>
+      <div class="expert-info">
+        <h3>ThS. Trần Thị Bình</h3>
+        <div class="expert-specialties">
+          <span class="specialty-tag">Trầm cảm</span>
+          <span class="specialty-tag">Tâm lý xã hội</span>
+        </div>
+        <div class="expert-rating">
+          <div class="stars">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+          </div>
+          <span>4.8 (98 đánh giá)</span>
+        </div>
+        <button class="btn-connect" onclick="checkAndOpenBooking('ttbinh')">Đặt lịch hẹn</button>
+        <button class="btn-connect btn-chat" onclick="openChat('ttbinh')">Chat với chuyên gia</button>
+      </div>
+    </div>
+
+    <div class="expert-card">
+      <div class="expert-avatar">
+        <i class="fas fa-user-circle"></i>
+        <span class="expert-status offline"><span class="status-dot"></span> Offline</span>
+      </div>
+      <div class="expert-info">
+        <h3>BS. Lê Văn Cường</h3>
+        <div class="expert-specialties">
+          <span class="specialty-tag">Rối loạn giấc ngủ</span>
+          <span class="specialty-tag">Áp lực thi cử</span>
+        </div>
+        <div class="expert-rating">
+          <div class="stars">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+          </div>
+          <span>4.9 (156 đánh giá)</span>
+        </div>
+        <button class="btn-connect" onclick="checkAndOpenBooking('lvcuong')">Đặt lịch hẹn</button>
+        <button class="btn-connect btn-chat" onclick="openChat('lvcuong')">Chat với chuyên gia</button>
+      </div>
+    </div>
+
+  </div>
+</section>
 {% endif %}
     <section class="resources" id="resources">
       <div class="section-header">
@@ -304,7 +309,7 @@
         <div class="dashboard-sidebar">
           <ul class="dashboard-menu">
             <li>
-              <a href="#" id="tab-overview" class="active"><i class="fas fa-chart-line"></i> Tổng quan</a>            </li>
+              <a href="#" id="tab-overview" class="active"><i class="fas fa-chart-line"></i> Tổng quan</a>      
             <li>
               <a href="#" id="tab-schedule"><i class="fas fa-calendar-alt"></i> Lịch hẹn</a> </li>
             </li>
@@ -388,8 +393,8 @@
                   </div>
                   </div>
 
-                <div class="mood-tracker">
-                  <h3>Biểu đồ Tâm trạng 30 ngày</h3>
+                  <div class="mood-tracker">
+                    <h3>Biểu đồ Tâm trạng 30 ngày</h3>
                   </div>
             </div>
 
@@ -455,6 +460,30 @@
         </div>
       </div>
     </div>
+
+  <div class="chatbot-window" id="expertChatWindow">
+    <div class="chat-container">
+      
+      <div class="chat-header">
+        <h3 id="expertChatName">Đang kết nối...</h3>
+        <button class="chat-close" onclick="closeExpertChatModal()">&times;</button>
+      </div>
+      
+      <div class="chat-messages" id="expertChatMessages">
+        <div class="message system">
+          <span>Đang chờ chuyên gia chấp nhận...</span>
+        </div>
+      </div>
+      
+      <form class="chat-input-form" id="expertChatForm">
+        <textarea id="expertChatInput" placeholder="Nhập tin nhắn..." rows="1"></textarea>
+        <button type="submit" id="expertChatSendBtn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+      
+    </div>
+  </div>
 
     <div> </div>
 
@@ -619,6 +648,5 @@
         </div>
       </div>
     </div>
-
   </body>
 </html>

@@ -1,6 +1,6 @@
 import google.generativeai as genai
 from flask_bcrypt import Bcrypt
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from flask import send_from_directory
@@ -11,6 +11,7 @@ import logging
 import uuid # Thư viện để tạo ID duy nhất cho phiên chat
 from dotenv import load_dotenv
 from flask import render_template
+from flask_socketio import SocketIO, emit, join_room, leave_room
 import json
 import datetime #xử lý quicktest dể làm problem tags
 from datetime import datetime
@@ -35,7 +36,7 @@ else:
 app = Flask(__name__)
 # RẤT QUAN TRỌNG: Cần có Secret Key cho Flask-Login
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'mot-chuoi-bi-mat-rat-kho-doan-12345')
-
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # --- THÊM CẤU HÌNH UPLOAD ---
 UPLOAD_FOLDER = 'verification_uploads'
@@ -524,13 +525,29 @@ def login_secure():
         if user.is_counselor and not user.verified:
             return jsonify({"message": "Tài khoản chuyên gia của bạn đang chờ Admin phê duyệt."}), 403
 
+        # Đăng nhập bằng Flask-Login (chỉ lưu user.id)
         login_user(user, remember=True)
         
+        # --- 2. THÊM CODE SỬA LỖI TẠI ĐÂY ---
+        # Gán thông tin vào Flask session để Socket.IO có thể đọc được
+        session['user_id'] = user.id
+        session['username'] = user.username
+        
+        # Xác định 'role' và gán vào session
+        if user.is_admin:
+            session['role'] = 'admin'
+        elif user.is_counselor:
+            session['role'] = 'counselor'
+        else:
+            session['role'] = 'user'
+        # --- KẾT THÚC SỬA LỖI ---
+            
         return jsonify({
             "message": "Đăng nhập thành công!", 
             "username": user.username,
             "is_admin": user.is_admin,
-            "is_counselor": user.is_counselor
+            "is_counselor": user.is_counselor,
+            "user_id": user.id
         }), 200
         
     return jsonify({"message": "Tên đăng nhập hoặc mật khẩu không đúng"}), 401
@@ -1249,5 +1266,138 @@ def book_appointment():
         return jsonify({"message": "Lỗi server"}), 500
 
         
-if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+# --- TRONG FILE app.py ---
+
+# API Route (Giữ nguyên)
+@app.route('/api/chat/check-expert-status')
+def check_expert_status():
+    username = request.args.get('username')
+    # TODO: Cần có logic để lấy tên thật (Full Name) từ username
+    # user = User.query.filter_by(username=username).first()
+    # expert_name = user.full_name if user else username
+    expert_name = f"TS. {username}" # Tạm thời
+    
+    # TODO: Logic kiểm tra online (ví dụ: CSDL hoặc 1 danh sách)
+    is_online = True 
+    if is_online:
+        return jsonify({"status": "online", "expert_name": expert_name}) 
+    else:
+        return jsonify({"status": "offline"})
+
+# --- CÁC HÀM XỬ LÝ SOCKET ĐÃ KHÔI PHỤC LOGIC ROLE ---
+
+@socketio.on('connect')
+def handle_connect():
+    # Kiểm tra đăng nhập VÀ CÓ ROLE (rất quan trọng)
+    if 'user_id' not in session or 'role' not in session:
+        print(f"--- KẾT NỐI BỊ TỪ CHỐI: Client chưa đăng nhập hoặc thiếu role.")
+        return False 
+        
+    session['sid'] = request.sid # Lưu lại SID để debug
+    print(f"--- KẾT NỐI THÀNH CÔNG: Client {session.get('username')} (Role: {session.get('role')}) | SID: {request.sid}")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    username = session.get('username', 'Unknown')
+    print(f"--- NGẮT KẾT NỐI: Client {username} (Role: {session.get('role')})")
+    # TODO: Thêm logic báo cho người trong phòng biết
+
+
+# Khi CHUYÊN GIA tải trang dashboard
+@socketio.on('counselor_join_room')
+def handle_counselor_join(data):
+    # Xác thực: Phải là counselor
+    if 'role' not in session or session['role'] != 'counselor':
+        print(f"--- LỖI: {session.get('username')} (không phải counselor) cố vào phòng host.")
+        return False
+    
+    username = session['username']
+    room = data['room']
+    
+    if username != room:
+        print(f"--- LỖI: Counselor {username} cố vào phòng {room}.")
+        return False
+        
+    join_room(room)
+    print(f"*** HOST (Counselor) {username} ĐÃ VÀO PHÒNG: {room} ***")
+    
+    emit('receive_message', 
+         {'text': 'Bạn đã kết nối với phòng chat của mình.', 'sender_type': 'system'}, 
+         to=request.sid)
+
+# Khi NGƯỜI DÙNG tham gia phòng chat
+@socketio.on('join_expert_chat')
+def handle_join_room(data):
+    # Xác thực: Phải là user
+    if 'role' not in session or session['role'] != 'user':
+        print(f"--- LỖI: {session.get('username')} (không phải user) cố vào phòng chat.")
+        return False
+
+    room = data['room'] # Tên phòng (username của chuyên gia)
+    user_username = session.get('username', 'Một người dùng')
+    
+    join_room(room)
+    print(f"*** GUEST (User) {user_username} ĐÃ VÀO PHÒNG: {room} ***")
+    
+    # 1. Báo cho USER (chỉ họ) là đã vào phòng
+    emit('receive_message', 
+         {'text': 'Đã kết nối, vui lòng chờ chuyên gia chấp nhận.', 'sender_type': 'system'}, 
+         to=request.sid)
+    
+    # 2. Báo cho CHUYÊN GIA (chủ phòng) biết có người vào
+    print(f"--- GỬI THÔNG BÁO 'show_chat_notification' TỚI PHÒNG: {room} ---")
+    
+    emit('show_chat_notification', 
+         {'user_id': session['user_id'], 'username': user_username}, 
+         to=room, 
+         skip_sid=request.sid) # Vẫn skip_sid cho thông báo này
+
+# Khi BẤT KỲ AI gửi tin nhắn
+@socketio.on('send_expert_message')
+def handle_send_message(data):
+    if 'user_id' not in session: return False
+        
+    room = data['room']
+    message = data['message']
+    
+    # Lấy vai trò từ session (mặc định là 'user' nếu không có)
+    sender_type = session.get('role', 'user')
+    
+    print(f"--- TIN NHẮN PHÒNG {room} (từ {sender_type}): {message} ---")
+    
+    # GỬI CHO TẤT CẢ MỌI NGƯỜI (KỂ CẢ NGƯỜI GỬI)
+    emit('receive_message', 
+         {'text': message, 'sender_id': session['user_id'], 'sender_type': sender_type}, 
+         to=room) # <-- KHÔNG DÙNG skip_sid
+
+# Khi CHUYÊN GIA từ chối chat
+@socketio.on('reject_chat')
+def handle_reject_chat(data):
+    if 'role' not in session or session['role'] != 'counselor': return False
+
+    room = data['room']
+    print(f"--- HOST ĐÃ TỪ CHỐI PHÒNG: {room} ---")
+    
+    emit('receive_message', 
+         {'text': 'Chuyên gia hiện đang bận và không thể kết nối. Vui lòng đặt lịch hẹn.', 'sender_type': 'system'}, 
+         to=room)
+
+# Khi NGƯỜI DÙNG đóng cửa sổ chat
+@socketio.on('leave_room')
+def handle_leave_room(data):
+    if 'user_id' not in session: return False
+
+    room = data['room']
+    username = session.get('username', 'User')
+    
+    leave_room(room)
+    print(f"User {username} đã rời phòng: {room}")
+    
+    emit('receive_message', 
+         {'text': f'Người dùng {username} đã rời đi.', 'sender_type': 'system'}, 
+         to=room,
+         skip_sid=request.sid)
+
+# --- CÁCH CHẠY SERVER ---
+if __name__ == '__main__':
+    socketio.run(app, debug=True, port=5000)

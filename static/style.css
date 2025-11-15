@@ -458,6 +458,11 @@ body {
   transition: all 0.3s ease;
 }
 
+.navigationBox {
+  display: block;
+  gap: 3px;
+}
+
 .btn-prev {
   background: var(--light);
   color: var(--dark);
@@ -853,6 +858,15 @@ body {
 .btn-connect:hover {
   background: var(--primary-dark);
   transform: translateY(-2px);
+}
+
+.btn-connect.btn-chat {
+  background-color: #ffffff; /* Nền trắng */
+  color: #007bff; /* Chữ màu chính (giống màu viền) */
+}
+
+.btn-connect.btn-chat:hover {
+  background-color: #f8f9fa; /* Màu nền hơi xám khi hover */
 }
 
 /* Resources Section */
@@ -1763,4 +1777,172 @@ footer {
     color: white;
     border-color: transparent;
     box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+}
+
+/* --- CSS CHO CỬA SỔ CHAT MỚI --- */
+
+/* Giả sử đây là CSS cho bot AI CŨ của bạn (để tham khảo)
+.chatbot-window {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  ... (display, transform, v.v...)
+}
+*/
+
+/* CSS MỚI cho cửa sổ chat chuyên gia
+  Nó dùng chung class .chatbot-window,
+  nhưng chúng ta ghi đè vị trí bằng ID
+*/
+#expertChatWindow {
+  /* Ẩn theo mặc định */
+  opacity: 0;
+  transform: scale(0.9);
+  transform-origin: bottom left;
+  display: none; /* Dùng none để không tương tác được */
+  
+  /* Định vị ở góc TRÁI (để không đè lên bot AI ở góc phải) */
+  position: fixed;
+  bottom: 20px;
+  left: 20px; /* <- Khác với bot AI */
+  z-index: 999;
+  
+  /* Các thuộc tính khác được kế thừa từ .chatbot-window
+     (ví dụ: width, height, box-shadow, border-radius) 
+     Nhờ vậy, 2 box sẽ có "tính chất tương tự" nhau
+  */
+}
+
+/* Lớp .active để BẬT cửa sổ chat chuyên gia
+  (JavaScript sẽ thêm/xóa lớp này)
+*/
+#expertChatWindow.active {
+  display: flex; /* Hoặc 'block' tùy vào .chatbot-window của bạn */
+  opacity: 1;
+  transform: scale(1);
+  transition: all 0.3s ease-out;
+}
+
+/* CSS cho nội dung chat-container BÊN TRONG 
+  (Đây là code từ câu trả lời trước, đảm bảo nó có trong CSS)
+*/
+.chat-container {
+  /* Bắt buộc: Phải bo theo cửa sổ cha */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: white; /* Thêm nền trắng */
+}
+
+.chat-header {
+  padding: 15px 20px;
+  background: var(--primary, #007bff); /* Dùng màu chính của bạn */
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0; /* Không co lại */
+}
+.chat-header h3 { margin: 0; font-size: 1.1rem; }
+.chat-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+
+.chat-messages {
+  flex: 1; /* Quan trọng: Tự co giãn */
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  background: #f9f9f9; /* Thêm màu nền cho khung chat */
+}
+
+/* (Thêm CSS cho .message.sent, .message.received... nếu bạn chưa có) */
+/* ... */
+
+.chat-input-form {
+  display: flex;
+  padding: 15px;
+  border-top: 1px solid #f0f0f0;
+  background: #fff;
+  flex-shrink: 0; /* Không co lại */
+}
+#expertChatInput {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 10px 15px;
+  font-size: 1rem;
+  resize: none;
+}
+#expertChatSendBtn {
+  background: var(--primary, #007bff);
+  color: white;
+  border: none;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  margin-left: 10px;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column; /* Tin nhắn xếp chồng lên nhau */
+  padding: 20px;
+  background: #f9f9f9;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.message {
+  margin-bottom: 15px;
+  max-width: 85%;
+  display: flex; 
+}
+
+.bubble {
+  padding: 10px 15px;
+  border-radius: 18px;
+  line-height: 1.5;
+  word-wrap: break-word; /* Tự xuống dòng khi tin nhắn dài */
+}
+
+/* Tin nhắn GỬI ĐI (của bạn) - Sửa lỗi "chuyên gia ơi"
+*/
+.message.sent {
+  align-self: flex-end; /* Đẩy sang phải */
+}
+.message.sent .bubble {
+  background: var(--primary, #007bff); /* Màu xanh */
+  color: white;
+  border-bottom-right-radius: 4px; 
+}
+
+/* Tin nhắn NHẬN ĐƯỢC (của chuyên gia) 
+*/
+.message.received {
+  align-self: flex-start; /* Đẩy sang trái */
+}
+.message.received .bubble {
+  background: #f1f1f1; /* Màu xám nhạt */
+  color: #333;
+  border-bottom-left-radius: 4px;
+}
+
+/* Tin nhắn HỆ THỐNG - Sửa lỗi "Đã kết nối..."
+*/
+.message.system {
+  align-self: center; /* Ra giữa */
+  max-width: 100%;
+  font-size: 0.8rem;
+  color: #aaa;
+  text-align: center;
+}
+/* Hệ thống không cần bubble */
+.message.system .bubble {
+  padding: 0;
+  background: none;
+  color: #aaa;
 }

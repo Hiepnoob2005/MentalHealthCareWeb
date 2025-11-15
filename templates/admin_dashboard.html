@@ -6,8 +6,9 @@
     <title>Admin Dashboard | StudentMind Connect</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='admin_style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
 </head>
-<body>
+<body data-counselor-username="{{ current_user.username }}">
 
     <nav class="sidebar">
         <div class="sidebar-header">
@@ -185,6 +186,40 @@
         </div>
 
     </main>
+
+    <div class="chat-notification-toast" id="chatNotificationToast">
+        <i class="fas fa-comment-dots"></i>
+        <div class="toast-content">
+            <strong>Yêu cầu chat mới!</strong>
+            <span id="chatRequestUser">Một người dùng</span> muốn kết nối với bạn.
+        </div>
+        <button class="btn-approve" onclick="acceptChat()">Chấp nhận</button>
+        <button class="btn-reject" onclick="rejectChat()" style="background: #ccc;">Từ chối</button>
+    </div>
+
+    <div class="chatbot-window" id="expertChatWindow">
+    <div class="chat-container">
+      
+      <div class="chat-header">
+        <h3 id="expertChatName">Đang kết nối...</h3>
+        <button class="chat-close" onclick="closeExpertChatModal()">&times;</button>
+      </div>
+      
+      <div class="chat-messages" id="expertChatMessages">
+        <div class="message system">
+          <span>Đang chờ chuyên gia chấp nhận...</span>
+        </div>
+      </div>
+      
+      <form class="chat-input-form" id="expertChatForm">
+        <textarea id="expertChatInput" placeholder="Nhập tin nhắn..." rows="1"></textarea>
+        <button type="submit" id="expertChatSendBtn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+      
+    </div>
+  </div>
 
     <script src="{{ url_for('static', filename='admin_script.js') }}"></script>
 </body>
