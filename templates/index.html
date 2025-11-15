@@ -9,8 +9,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
 
     </head>
 
@@ -475,13 +473,27 @@
         </div>
       </div>
       
-      <button id="connectBtn">Create a Zoom Meeting</button>
-      <div id="meetingLink"></div>
+      <div class="message system">
+          <div id="meetingLink"></div>
+      </div>
 
       <form class="chat-input-form" id="expertChatForm">
+          <button id="connectBtn" style=" background: var(--primary, #007bff);
+                                          color: white;
+                                          border: none;
+                                          width: 45px;
+                                          height: 45px;
+                                          border-radius: 50%;
+                                          margin-left: 10px;
+                                          cursor: pointer;
+                                          font-size: 1.1rem;">
+            <i class="fa-solid fa-video"></i>
+          </button>
+        
+
         <textarea id="expertChatInput" placeholder="Nhập tin nhắn..." rows="1"></textarea>
         <button type="submit" id="expertChatSendBtn">
-          <i class="fas fa-paper-plane"></i>
+          <i class="fa-solid fa-paper-plane"></i>
         </button>
       </form>
       
@@ -514,7 +526,7 @@
           </form>
 
           <div class="modal-footer">
-            <p>
+            <p>as fa-pape
               Bằng việc đăng nhập, bạn đồng ý với <a href="#">điều khoản sử dụng</a> và <a href="#">chính sách bảo mật</a> của chúng tôi.
             </p>
           </div>
@@ -650,6 +662,8 @@
       </div>
     </div>
 
-    <script src="createMeeting.js"></script>
+    <script src="{{ url_for('static', filename='admin_script.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
   </body>
 </html>

@@ -1443,7 +1443,7 @@ async function cancelBooking(apptId) {
 }
 
 // ==========================================
-// LOGIC CHAT VỚI CHUYÊN GIA (MỚI)
+// LOGIC CHAT VỚI CHUYÊN GIA 
 // ==========================================
 
 // Biến toàn cục để giữ kết nối socket

@@ -778,6 +778,7 @@ def login_secure():
                     "is_admin": user.is_admin,
                     "is_counselor": user.is_counselor,
                     "user_id": user.id,
+                    "user_role": session["role"],
                 }
             ),
             200,
@@ -1759,7 +1760,7 @@ def handle_reject_chat(data):
 # Khi NGƯỜI DÙNG đóng cửa sổ chat
 @socketio.on("leave_room")
 def handle_leave_room(data):
-    if "user_id" not in session:
+    if "user_id" not in session or "role" not in session:
         return False
 
     room = data["room"]

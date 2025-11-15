@@ -47,3 +47,42 @@ window.rejectExpert = function(username) {
     })
     .catch(err => alert("Lỗi: " + err));
 }
+
+/* === 4. LOGIC NÚT ZOOM (Thay thế code cũ) === */
+// (Dán vào cuối file admin_script.js)
+
+document.addEventListener('DOMContentLoaded', function() {
+    // ... (Các code DOMContentLoaded khác của bạn nếu có) ...
+
+    const zoomBtn = document.getElementById("connectBtn");
+    const linkDiv = document.getElementById("meetingLink");
+    
+    if (zoomBtn) {
+        zoomBtn.onclick = async () => {
+          try {
+            const res = await fetch("/create_meeting");
+            const data = await res.json();
+        
+            if (data.join_url) {
+        
+              // (Optional) Hiển thị link phụ
+              if(linkDiv) {
+                linkDiv.innerHTML = `<a href="${data.join_url}" target="_blank">Join Meeting</a>`;
+              }
+      
+              
+              // ------------------------------------
+        
+            } else {
+              if(linkDiv) linkDiv.textContent = "Failed to create meeting.";
+              zoomBtn.textContent = "Create a Zoom Meeting";
+            }
+          } catch (err) {
+            console.error("Lỗi tạo Zoom:", err);
+            if(linkDiv) linkDiv.textContent = "Error connecting to server.";
+            zoomBtn.textContent = "Create a Zoom Meeting";
+          }
+        };
+    }
+});
+
