@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ cá nhân | StudentMind Connect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    
+    <nav class="navbar" style="position: static;">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="fas fa-brain"></i> StudentMind Connect
+            </a>
+            <div class="navbar-actions">
+                <a href="/" class="btn-cta" style="background: none; border: 2px solid var(--primary); color: var(--primary);">
+                    Quay về Trang chủ
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-page-container">
+        
+        <div class="profile-card">
+            <h2><i class="fas fa-user-edit"></i> Hồ sơ cá nhân</h2>
+            <p class="profile-subtitle">Quản lý thông tin liên lạc của bạn.</p>
+
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="username">Tên tài khoản</label>
+                    <input type="text" id="username" name="username" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Số điện thoại</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Chưa có số điện thoại">
+                </div>
+                
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save"></i> Lưu thay đổi
+                </button>
+                <div id="formMessage" class="form-message"></div>
+            </form>
+        </div>
+
+        <div class="profile-card">
+            <h2><i class="fas fa-tags"></i> Kết quả gần nhất</h2>
+            <p class="profile-subtitle">
+                Đây là các vấn đề được ghi nhận từ bài kiểm tra DASS-21 mới nhất của bạn.
+            </p>
+            
+            <div class="profile-tags-container" id="latestTagsContainer">
+                <div class="spinner-container">
+                    <div class="spinner" style="margin: 0;"></div>
+                    <span>Đang tải...</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='profile.js') }}"></script>
+</body>
+</html>

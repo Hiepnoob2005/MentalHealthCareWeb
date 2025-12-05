@@ -52,8 +52,6 @@ window.rejectExpert = function(username) {
 // (Dán vào cuối file admin_script.js)
 
 document.addEventListener('DOMContentLoaded', function() {
-    // ... (Các code DOMContentLoaded khác của bạn nếu có) ...
-
     const zoomBtn = document.getElementById("connectBtn");
     const linkDiv = document.getElementById("meetingLink");
     

@@ -58,6 +58,7 @@ async function checkLoginStatus() {
  */
 function updateUIAfterLogin(username) {
   const ctaButton = document.getElementById("navbarCtaButton");
+  
   if (ctaButton) {
     // SỬA LỖI: Hiển thị đúng tên username
     ctaButton.textContent = `Xin chào, ${username}`;
@@ -72,14 +73,26 @@ function updateUIAfterLogin(username) {
     ctaButton.style.verticalAlign = "middle";
     // --- KẾT THÚC SỬA LỖI LAYOUT ---
 
-    // Thêm sự kiện click để Đăng xuất
+    // --- THAY ĐỔI CHÍNH ---
+    // Gán sự kiện MỚI để MỞ dropdown (thay vì gọi handleLogout)
     ctaButton.onclick = (e) => {
       e.preventDefault();
-      handleLogout();
+      toggleProfileDropdown(); // Gọi hàm bật/tắt dropdown
+    };
+    // --- KẾT THÚC THAY ĐỔI ---
+  }
+
+  // Gán sự kiện cho nút "Đăng xuất" BÊN TRONG dropdown
+  // (Phải chạy sau khi đăng nhập)
+  const logoutButton = document.getElementById("dropdownLogoutButton");
+  if (logoutButton) {
+    logoutButton.onclick = (e) => {
+      e.preventDefault();
+      handleLogout(); // Gọi hàm logout gốc của bạn
     };
   }
 
-  // --- BẮT ĐẦU STYLE MỚI KHI ĐĂNG NHẬP ---
+  // --- BẮT ĐẦU STYLE MỚI KHI ĐĂNG NHẬB (Giữ nguyên code cũ của bạn) ---
   const heroTitle = document.querySelector(".hero-content h1");
   if (heroTitle) {
     heroTitle.innerHTML = `Chào mừng trở lại, <span class="highlight">${username}</span>!`;
@@ -89,13 +102,40 @@ function updateUIAfterLogin(username) {
     heroSubtitle.textContent =
       "Bạn đã sẵn sàng cho buổi đánh giá tiếp theo, trò chuyện với AI hay kết nối với một chuyên gia chưa?";
   }
-  // BẰNG ĐOẠN NÀY:
   document.querySelectorAll(".btn-connect:not(.btn-chat):not([disabled])").forEach((btn) => {
-  btn.textContent = "Đặt lịch hẹn";
+    btn.textContent = "Đặt lịch hẹn";
   });
   // --- KẾT THÚC STYLE MỚI ---
 }
 
+/* === THÊM 2 HÀM MỚI NÀY VÀO script.js === */
+
+/**
+ * HÀM MỚI: Bật/tắt dropdown
+ */
+function toggleProfileDropdown() {
+  const dropdown = document.getElementById("profileDropdown");
+  if (dropdown) {
+    dropdown.classList.toggle("active");
+  }
+}
+
+/**
+ * HÀM MỚI: Đóng dropdown khi click ra ngoài
+ */
+window.addEventListener("click", function(event) {
+  const ctaButton = document.getElementById("navbarCtaButton");
+  const dropdown = document.getElementById("profileDropdown");
+
+  if (!dropdown || !ctaButton) return; // Thoát nếu không tìm thấy element
+
+  // Kiểm tra xem có đang click VÀO NÚT hoặc VÀO DROPDOWN không
+  const isClickInside = ctaButton.contains(event.target) || dropdown.contains(event.target);
+
+  if (!isClickInside) {
+    dropdown.classList.remove("active"); // Nếu click ra ngoài, đóng lại
+  }
+});
 /**
  * 3. Xử lý Đăng xuất
  */
@@ -525,6 +565,7 @@ function showResults() {
   // --- BẮT ĐẦU TÍCH HỢP HỆ THỐNG 2 ---
   // 6. Dịch điểm DASS-21 ra tag
   const problemTags = getTagsFromDassScores(scores);
+  saveDass21Results(userAnswers, problemTags, scores);
 
   // 7. Nếu có tag (tức là có vấn đề từ mức 'Nhẹ' trở lên), hỏi người dùng
   if (problemTags.length > 0) {
@@ -538,6 +579,33 @@ function showResults() {
     }, 1500);
   }
   // --- KẾT THÚC TÍCH HỢP ---
+}
+
+/**
+ * HÀM MỚI: Gửi kết quả DASS-21 lên server
+ */
+async function saveDass21Results(answers, tags, scores) {
+  console.log("Đang lưu kết quả DASS-21...");
+  try {
+    const response = await fetch('/api/save-dass21-results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        answers: answers,       // Mảng [0, 1, 2, ...]
+        problem_tags: tags, // Mảng ['stress', 'lo_au']
+        scores: scores          // Object {'D': 10, 'A': 8, 'S': 15}
+      })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data.message); // In ra "Kết quả đã được lưu."
+    } else {
+      console.error("Không thể lưu kết quả test.");
+    }
+  } catch (error) {
+    console.error("Lỗi khi kết nối API lưu test:", error);
+  }
 }
 
 // --- Các hàm phụ trợ để diễn giải điểm ---

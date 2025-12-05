@@ -54,6 +54,93 @@ body {
   align-items: center;
 }
 
+/* === BẮT ĐẦU: CSS MỚI CHO PROFILE DROPDOWN === */
+/* (Dán vào cuối file style.css) */
+
+/* 1. Bọc ngoài cho nút CTA và Dropdown để định vị */
+.navbar-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* 2. "Box List" (Dropdown) */
+.profile-dropdown {
+  position: absolute;
+  top: 130%; /* Vị trí ngay dưới nút CTA */
+  right: 0;
+  width: 230px; /* Độ rộng của box list */
+  background: var(--white);
+  border-radius: 10px; /* Bo góc giống các card */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Đổ bóng */
+  z-index: 1001;
+  
+  /* Ẩn theo mặc định */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+/* 3. Lớp .active để BẬT dropdown (JS sẽ thêm vào) */
+.profile-dropdown.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* 4. Menu bên trong */
+.dropdown-menu {
+  list-style: none;
+  padding: 0.5rem; /* Đệm lót nhỏ */
+}
+
+.dropdown-menu li a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Khoảng cách icon và chữ */
+  padding: 0.8rem 1rem;
+  color: var(--dark);
+  text-decoration: none;
+  border-radius: 8px; /* Bo góc cho link */
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.dropdown-menu li a i {
+  width: 20px;
+  text-align: center;
+  color: var(--gray);
+  transition: all 0.2s ease;
+}
+
+/* 5. Hiệu ứng khi di chuột (hover) */
+.dropdown-menu li a:hover {
+  background: var(--light);
+  color: var(--primary);
+}
+
+.dropdown-menu li a:hover i {
+  color: var(--primary);
+}
+
+/* 6. Đường kẻ ngang trước nút "Đăng xuất" */
+.dropdown-menu li:last-child {
+  border-top: 1px solid #f0f0f0; /* var(--light) hơi mờ */
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
+}
+
+.dropdown-menu li:last-child a:hover {
+  background: #fbebee; /* Màu đỏ nhạt khi hover Đăng xuất */
+  color: var(--danger);
+}
+.dropdown-menu li:last-child a:hover i {
+  color: var(--danger);
+}
+
+/* === KẾT THÚC: CSS MỚI === */
+
 .logo {
   font-size: 1.5rem;
   font-weight: 700;
@@ -1969,4 +2056,101 @@ footer {
   padding: 0;
   background: none;
   color: #aaa;
+}
+
+/* === CSS MỚI CHO TRANG PROFILE === */
+/* (Dán vào cuối file style.css) */
+
+.profile-page-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+  display: grid;
+  /* Hiển thị 2 cột trên PC, 1 cột trên mobile */
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+}
+
+.profile-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  height: fit-content; /* Tự co giãn chiều cao */
+}
+
+.profile-card h2 {
+  font-size: 1.8rem;
+  color: var(--dark);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.profile-card h2 i {
+  color: var(--primary);
+}
+
+.profile-subtitle {
+  color: var(--gray);
+  margin-bottom: 2rem;
+}
+
+/* Style cho form */
+.form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--dark);
+}
+
+.form-group input[disabled] {
+  background: var(--light);
+  color: var(--gray);
+  cursor: not-allowed;
+}
+
+/* Style cho thông báo (success/error) */
+.form-message {
+  margin-top: 1rem;
+  text-align: center;
+  font-weight: 500;
+}
+.form-message.success {
+  color: var(--success);
+}
+.form-message.error {
+  color: var(--danger);
+}
+.form-message.loading {
+  color: var(--gray);
+}
+
+/* Style cho khung hiển thị tags */
+.profile-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  background: var(--light);
+  padding: 1.5rem;
+  border-radius: 10px;
+  min-height: 80px;
+}
+
+/* Tái sử dụng style .issue-tag từ modal */
+.issue-tag {
+    background: var(--primary);
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.spinner-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--gray);
 }

@@ -92,6 +92,142 @@ def get_zoom_token():
 # -------------------------------------------------
 # Routes
 # -------------------------------------------------
+# --- CÁC HÀM TIỆN ÍCH MỚI (Đọc/Ghi file) ---
+USER_DETAILS_FILE = 'user_details.json'
+TEST_RESULTS_FILE = 'test_results.txt'
+
+def read_user_details():
+    """Đọc file user_details.json"""
+    try:
+        with open(USER_DETAILS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+def write_user_details(data):
+    """Ghi đè file user_details.json"""
+    with open(USER_DETAILS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+        
+import datetime  # Thêm import này ở đầu file nếu chưa có
+import json      # Thêm import này ở đầu file nếu chưa có
+from flask_login import login_required, current_user
+
+# (Giữ nguyên các import và code cũ của bạn...)
+
+# Định nghĩa tên file (nếu bạn chưa có)
+TEST_RESULTS_FILE = 'test_results.txt'
+
+# --- DÁN HÀM MỚI NÀY VÀO main.py ---
+@app.route('/api/save-dass21-results', methods=['POST'])
+@login_required  # Yêu cầu người dùng phải đăng nhập
+def save_dass21_results():
+    """
+    Nhận kết quả DASS-21 từ client và lưu vào test_results.txt
+    """
+    try:
+        data = request.get_json()
+        user_id = str(current_user.id) # Lấy ID của user đang đăng nhập
+        
+        # Lấy dữ liệu từ JavaScript
+        answers = data.get('answers')       # Đây là mảng [0, 1, 3, ...]
+        problem_tags = data.get('problem_tags') # Đây là mảng ['stress', 'lo_au']
+        scores = data.get('scores')         # Đây là object {'D': 10, 'A': 8, 'S': 15}
+        
+        # Lấy ngày giờ hiện tại
+        now = datetime.datetime.now()
+        test_date = now.strftime("%Y-%m-%d")
+        test_time = now.strftime("%H:%M:%S")
+        
+        # Định dạng dữ liệu để ghi vào file
+        answers_str = json.dumps(answers) # Chuyển mảng [0,1,2] thành chuỗi "[0, 1, 2]"
+        tags_str = ",".join(problem_tags) if problem_tags else "none"
+        
+        # Chúng ta sẽ lưu object scores {'D':10, 'A':8, 'S':15}
+        # vào cột Score (thay vì 1 số duy nhất)
+        scores_str = json.dumps(scores) 
+        
+        # Định dạng dòng mới theo cấu trúc file test_results.txt
+        # UserID;TestDate;TestTime;Answers;ProblemTags;Score
+        new_line = f"{user_id};{test_date};{test_time};{answers_str};{tags_str};{scores_str}\n"
+        
+        # Mở file ở chế độ 'a' (append - ghi nối tiếp)
+        with open(TEST_RESULTS_FILE, 'a', encoding='utf-8') as f:
+            f.write(new_line)
+            
+        return jsonify({"message": "Kết quả đã được lưu."}), 200
+        
+    except Exception as e:
+        print(f"Lỗi khi lưu kết quả DASS-21: {e}")
+        return jsonify({"message": "Lỗi máy chủ khi lưu kết quả."}), 500
+
+def get_latest_tags(user_id):
+    """Lấy tags từ bài test mới nhất của user"""
+    latest_tags = "none" # Mặc định
+    try:
+        with open(TEST_RESULTS_FILE, 'r', encoding='utf-8') as f:
+            for line in f:
+                if line.startswith(user_id):
+                    parts = line.strip().split(';')
+                    # Giả định cột ProblemTags là cột thứ 5 (index 4)
+                    if len(parts) >= 5:
+                        latest_tags = parts[4]
+            # Sau khi duyệt hết file, latest_tags sẽ là dòng cuối cùng
+            return latest_tags.split(',')
+    except Exception as e:
+        print(f"Lỗi đọc file test_results: {e}")
+        return ["none"]
+
+# --- CÁC ROUTE MỚI CHO TRANG PROFILE ---
+
+@app.route('/profile')
+@login_required
+def user_profile_page():
+    """Route để hiển thị trang profile.html"""
+    return render_template('profile.html')
+
+@app.route('/api/profile', methods=['GET'])
+@login_required
+def get_profile_data():
+    """API để JS lấy dữ liệu của user"""
+    user_id = str(current_user.id) # current_user.id lấy từ Flask-Login
+    
+    # 1. Lấy email/phone từ file JSON
+    details = read_user_details().get(user_id, {})
+    
+    # 2. Lấy tags từ file test_results.txt
+    tags = get_latest_tags(user_id)
+    
+    return jsonify({
+        "username": current_user.username,
+        "email": details.get("email", ""),
+        "phone": details.get("phone", ""),
+        "latest_tags": tags
+    }), 200
+
+@app.route('/api/profile/update', methods=['POST'])
+@login_required
+def update_profile_data():
+    """API để user cập nhật thông tin"""
+    user_id = str(current_user.id)
+    data = request.get_json()
+    
+    new_email = data.get('email')
+    new_phone = data.get('phone')
+    
+    # Đọc toàn bộ file, cập nhật, và ghi đè
+    all_details = read_user_details()
+    
+    if user_id not in all_details:
+        all_details[user_id] = {}
+        
+    all_details[user_id]['email'] = new_email
+    all_details[user_id]['phone'] = new_phone
+    
+    write_user_details(all_details)
+    
+    return jsonify({"message": "Cập nhật thông tin thành công!"}), 200
+
 @app.route("/")
 def home():
     return render_template("index.html")
