@@ -23,20 +23,20 @@
           <li>
             <a href="#home">Trang chủ</a>
           </li>
+          {% if not current_user.is_authenticated or not current_user.is_counselor %}
           <li>
             <a href="#features">Tính năng</a>
           </li>
-          {% if not current_user.is_authenticated or not current_user.is_counselor %}
           <li>
             <a href="#test">Đánh giá</a>
           </li>
           <li>
             <a href="#experts">Chuyên gia</a>
           </li>
-          {% endif %}
           <li>
             <a href="#resources">Tài nguyên</a>
           </li>
+          {% endif %}
           <li>
             <a href="#dashboard">Dashboard</a>
           </li>
@@ -98,6 +98,7 @@
       </div>
     </section>
 
+{% if not current_user.is_authenticated or not current_user.is_counselor %}
     <section class="features" id="features">
       <div class="section-header">
         <h2>Tính năng nổi bật</h2>
@@ -148,7 +149,6 @@
         </div>
       </div>
     </section>
-{% if not current_user.is_authenticated or not current_user.is_counselor %}
     <section class="quick-test" id="test">
       <div class="test-container">
         <div class="test-header">
@@ -173,15 +173,12 @@
 
           <button class="btn-next" onclick="restartTest()">Làm lại bài test</button>
         </div>
-
         <div class="test-navigation">
           <button class="btn-prev" id="btn-prev"><i class="fas fa-arrow-left"></i> Quay lại</button>
           <button class="btn-next" id="btn-next">Tiếp theo <i class="fas fa-arrow-right"></i></button>
         </div>
       </div>
     </section>
-{% endif %}
-{% if not current_user.is_authenticated or not current_user.is_counselor %}
     <section class="experts" id="experts">
   <div class="section-header">
     <h2>Đội ngũ Chuyên gia</h2>
@@ -257,7 +254,6 @@
 
   </div>
 </section>
-{% endif %}
     <section class="resources" id="resources">
       <div class="section-header">
         <h2>Kho Tài nguyên</h2>
@@ -317,7 +313,7 @@
         </article>
       </div>
     </section>
-
+{% endif %}
     <section class="dashboard" id="dashboard">
       <div class="section-header">
         <h2>Dashboard Cá nhân</h2>
@@ -345,7 +341,29 @@
 <div class="dashboard-content">
           
           {% if current_user.is_authenticated and current_user.is_counselor %}
-            
+            <div class="messenger-container">
+              <div class="sidebar">
+                  <div class="sidebar-header">
+                      <h3>Danh sách tư vấn</h3>
+                  </div>
+                  <ul id="studentList" class="student-list">
+                      </ul>
+              </div>
+
+              <div class="chat-area">
+                  <div class="chat-header" id="currentChatHeader">
+                      Chọn một sinh viên để bắt đầu
+                  </div>
+                  
+                  <div class="messages-box" id="expertMessagesBox">
+                      </div>
+
+                  <form id="expertReplyForm" class="chat-input-area" style="display: none;">
+                      <input type="text" id="expertInput" placeholder="Nhập tin nhắn tư vấn..." autocomplete="off">
+                      <button type="submit">Gửi</button>
+                  </form>
+              </div>
+          </div>
             <div id="view-overview">
                 <div class="stats-grid">
                     <div class="stat-card">

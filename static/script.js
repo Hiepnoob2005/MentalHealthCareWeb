@@ -41,6 +41,12 @@ async function checkLoginStatus() {
     if (data.logged_in && data.username) {
       // Nếu đã đăng nhập, cập nhật giao diện
       updateUIAfterLogin(data.username);
+      // Kiểm tra nếu giao diện Messenger tồn tại (tức là đang ở view Counselor)
+      const messengerContainer = document.querySelector('.messenger-container');
+      if (messengerContainer) {
+          // Gọi hàm khởi tạo chat cho chuyên gia với username thật lấy từ API
+          initializeCounselorChat(data.username);
+      }
     } else {
       // NẾU CHƯA ĐĂNG NHẬP:
       // Gán sự kiện cho các nút CTA khác để MỞ MODAL
@@ -1712,4 +1718,197 @@ function closeExpertChatModal() {
     expertSocket = null;
     currentExpertRoom = null;
   }
+}
+
+// =========================================================
+// PHẦN 2: LOGIC DÀNH RIÊNG CHO CHUYÊN GIA (MESSENGER MODE)
+// =========================================================
+
+function initializeCounselorChat(expertUsername) {
+    console.log("Khởi tạo Messenger cho chuyên gia:", expertUsername);
+
+    // 1. Sử dụng lại biến expertSocket toàn cục đã khai báo ở trên
+    // Nếu chưa có kết nối, tạo mới
+    if (!expertSocket) {
+        expertSocket = io("http://127.0.0.1:5000");
+    }
+
+    let currentStudentId = null; 
+    let chatsData = {}; 
+
+    // 2. Kết nối và Join Room (Dùng sự kiện counselor_join_room)
+    expertSocket.on('connect', () => {
+        console.log("Expert socket connected");
+        expertSocket.emit('counselor_join_room', { room: expertUsername });
+    });
+
+    // 3. Xử lý tin nhắn đến
+    expertSocket.on('receive_message', (data) => {
+        // Nếu là tin hệ thống -> Bỏ qua hoặc log
+        if (data.sender_type === 'system') return;
+
+        // Nếu tin nhắn do chính mình (Counselor) gửi -> Hiển thị bên phải
+        if (data.sender_type === 'counselor' || data.sender_id === expertUsername) {
+            // Lưu vào data của student đang chat (nếu có target)
+             if (data.target_student_id) {
+                saveMessageToLocal(data.target_student_id, data);
+                if (currentStudentId === data.target_student_id) {
+                    renderMessages(currentStudentId);
+                }
+             }
+             return;
+        }
+
+        // --- Logic xử lý tin nhắn từ USER ---
+        const studentId = data.sender_id; // Đây là username của sinh viên
+        
+        // a. Lưu tin nhắn
+        saveMessageToLocal(studentId, data);
+
+        // b. Nếu đang mở chat với sinh viên này -> Vẽ tin nhắn
+        if (currentStudentId === studentId) {
+            addMessageToUI(data.text, 'received');
+            scrollToBottom();
+        } else {
+            // c. Nếu đang chat người khác -> Hiện badge đỏ
+            showNotification(studentId, data.text);
+        }
+    });
+
+    // 4. Khi có User mới vào phòng (Backend emit 'show_chat_notification')
+    expertSocket.on('show_chat_notification', (data) => {
+        const studentId = data.username;
+        // Tự động thêm vào sidebar nhưng chưa có tin nhắn
+        if (!chatsData[studentId]) {
+            chatsData[studentId] = [];
+            addStudentToSidebar(studentId);
+            showNotification(studentId, "Đã tham gia phòng chat");
+        }
+    });
+
+    // --- CÁC HÀM UI ---
+    
+    function saveMessageToLocal(studentId, msgData) {
+        if (!chatsData[studentId]) {
+            chatsData[studentId] = [];
+            addStudentToSidebar(studentId);
+        }
+        chatsData[studentId].push(msgData);
+    }
+
+    function addStudentToSidebar(studentId) {
+        const list = document.getElementById('studentList');
+        if (!list || document.getElementById(`item-${studentId}`)) return;
+
+        const li = document.createElement('li');
+        li.className = 'student-item';
+        li.id = `item-${studentId}`;
+        li.onclick = () => selectStudent(studentId);
+        
+        li.innerHTML = `
+            <div class="avatar">${studentId.charAt(0).toUpperCase()}</div>
+            <div class="info">
+                <span class="name">${studentId}</span>
+                <span class="preview" id="preview-${studentId}">Tin nhắn mới...</span>
+            </div>
+            <span class="badge" id="badge-${studentId}">0</span>
+        `;
+        list.appendChild(li);
+    }
+
+    function showNotification(studentId, lastText) {
+        const preview = document.getElementById(`preview-${studentId}`);
+        if (preview) preview.textContent = lastText;
+
+        const badge = document.getElementById(`badge-${studentId}`);
+        if (badge) {
+            let count = parseInt(badge.textContent) || 0;
+            badge.textContent = count + 1;
+            badge.classList.add('show');
+        }
+    }
+
+    function selectStudent(studentId) {
+        currentStudentId = studentId;
+        
+        // Active UI
+        document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
+        const activeItem = document.getElementById(`item-${studentId}`);
+        if(activeItem) activeItem.classList.add('active');
+
+        // Reset Badge
+        const badge = document.getElementById(`badge-${studentId}`);
+        if (badge) {
+            badge.textContent = '0';
+            badge.classList.remove('show');
+        }
+
+        // Show Chat Area
+        const header = document.getElementById('currentChatHeader');
+        const form = document.getElementById('expertReplyForm');
+        if(header) header.textContent = `Đang chat với: ${studentId}`;
+        if(form) form.style.display = 'flex';
+
+        renderMessages(studentId);
+    }
+
+    function renderMessages(studentId) {
+        const container = document.getElementById('expertMessagesBox');
+        if(!container) return;
+        container.innerHTML = '';
+        
+        const messages = chatsData[studentId] || [];
+        messages.forEach(msg => {
+            // Logic phân biệt màu: counselor = sent, user = received
+            const type = (msg.sender_type === 'counselor') ? 'sent' : 'received';
+            addMessageToUI(msg.text, type);
+        });
+        scrollToBottom();
+    }
+
+    function addMessageToUI(text, type) {
+        const container = document.getElementById('expertMessagesBox');
+        if(!container) return;
+        const div = document.createElement('div');
+        div.className = `message ${type}`;
+        div.innerHTML = `<div class="bubble">${text}</div>`;
+        container.appendChild(div);
+    }
+
+    function scrollToBottom() {
+        const container = document.getElementById('expertMessagesBox');
+        if(container) container.scrollTop = container.scrollHeight;
+    }
+
+    // Gửi tin nhắn
+    const replyForm = document.getElementById('expertReplyForm');
+    if (replyForm) {
+        replyForm.onsubmit = (e) => {
+            e.preventDefault();
+            const input = document.getElementById('expertInput');
+            const text = input.value.trim();
+            
+            if (text && currentStudentId) {
+                // Emit lên server
+                expertSocket.emit('send_expert_message', {
+                    room: expertUsername, // Room của chuyên gia
+                    message: text
+                    // Server session sẽ tự gắn sender_type='counselor'
+                });
+                
+                // Lưu cục bộ để hiển thị ngay
+                const myMsg = { 
+                    text: text, 
+                    sender_type: 'counselor', 
+                    sender_id: expertUsername,
+                    target_student_id: currentStudentId 
+                };
+                
+                saveMessageToLocal(currentStudentId, myMsg);
+                renderMessages(currentStudentId);
+                
+                input.value = '';
+            }
+        };
+    }
 }

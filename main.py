@@ -1815,6 +1815,9 @@ def handle_counselor_join(data):
     )
 
 
+# Mock database lưu tin nhắn (Trong thực tế hãy dùng SQL/MongoDB)
+# Cấu trúc: messages_db = { 'room_id': [ {sender, text, time}, ... ] }
+messages_db = {}
 # Khi NGƯỜI DÙNG tham gia phòng chat
 @socketio.on("join_expert_chat")
 def handle_join_room(data):
@@ -1829,6 +1832,8 @@ def handle_join_room(data):
     user_username = session.get("username", "Một người dùng")
 
     join_room(room)
+    if room in messages_db:
+        emit('load_history', messages_db[room], to=request.sid)
     print(f"*** GUEST (User) {user_username} ĐÃ VÀO PHÒNG: {room} ***")
 
     # 1. Báo cho USER (chỉ họ) là đã vào phòng
