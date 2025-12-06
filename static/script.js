@@ -64,6 +64,7 @@ async function checkLoginStatus() {
  */
 function updateUIAfterLogin(username) {
   const ctaButton = document.getElementById("navbarCtaButton");
+  currentUserUsername = username;
   
   if (ctaButton) {
     // SỬA LỖI: Hiển thị đúng tên username
@@ -1523,6 +1524,7 @@ async function cancelBooking(apptId) {
 // Biến toàn cục để giữ kết nối socket
 let expertSocket = null;
 let currentExpertRoom = null;
+let currentUserUsername = null;
 
 /**
  * 1. Hàm chính được gọi từ nút "Chat với chuyên gia"
@@ -1610,17 +1612,6 @@ function launchExpertChatModal(counselorUsername, expertName) {
 
   // Cập nhật tên chuyên gia
   document.getElementById('expertChatName').textContent = `Chat với ${expertName}`;
-  
-  // ----- SỬA LỖI HIỂN THỊ -----
-  // 1. XÓA SẠCH tất cả tin nhắn cũ
-  const messagesContainer = document.getElementById("expertChatMessages");
-  messagesContainer.innerHTML = ''; 
-  
-  // 2. Thêm tin nhắn hệ thống ĐẦU TIÊN bằng hàm chuẩn
-  addMessageToExpertChat('Đã kết nối. Đang chờ chuyên gia chấp nhận...', 'system');
-  // ------------------------------
-
-  // Hiển thị cửa sổ chat
   chatWindow.classList.add('active'); 
 
   // --- Khởi tạo Socket.IO (Giữ nguyên logic của bạn) ---
@@ -1635,10 +1626,24 @@ function launchExpertChatModal(counselorUsername, expertName) {
   
   // Gán sự kiện cho form
   const chatForm = document.getElementById('expertChatForm');
+  const chatInput = document.getElementById('expertChatInput');
+  
   chatForm.onsubmit = function(e) {
     e.preventDefault();
     sendExpertMessage();
   };
+
+  if (chatInput) {
+      // Xóa các event cũ (nếu có) bằng cách gán lại
+      chatInput.onkeypress = null; 
+      
+      chatInput.onkeydown = function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              sendExpertMessage();
+          }
+      };
+  }
   
   // Gán các listener cho socket
   setupSocketListeners();
@@ -1652,15 +1657,16 @@ function sendExpertMessage() {
   const input = document.getElementById('expertChatInput');
   const messageText = input.value.trim();
   
+  if (input) {
+    input.addEventListener("keypress", handleChatInputKey);
+  }
+
   if (messageText && expertSocket && currentExpertRoom) {
     // 1. Chỉ gửi tin nhắn lên server
     expertSocket.emit('send_expert_message', {
       room: currentExpertRoom,
       message: messageText
     });
-    
-    // 2. (ĐÃ XÓA) KHÔNG tự hiển thị tin nhắn
-    // addMessageToExpertChat(messageText, 'sent'); // <-- XÓA DÒNG NÀY
     
     input.value = ''; // Xóa input
   }
@@ -1674,29 +1680,33 @@ function setupSocketListeners() {
   if (!expertSocket) return;
 
   expertSocket.on('connect', () => {
-    addMessageToExpertChat('Đã kết nối thành công!', 'system');
     expertSocket.emit('join_expert_chat', { room: currentExpertRoom });
   });
 
-  // ---- LOGIC "THÔNG MINH" TẠI ĐÂY ----
   expertSocket.on('receive_message', (data) => {
-    
-    if (data.sender_type === 'system') {
-      addMessageToExpertChat(data.text, 'system');
-    } 
-    // "TÔI LÀ USER"
-    else if (data.sender_type === 'user') {
-      // Tin nhắn này là của TÔI
-      addMessageToExpertChat(data.text, 'sent'); // Màu xanh
+  
+    // 2. Tin nhắn từ NGƯỜI DÙNG KHÁC (User khác chat cùng chuyên gia) -> BỎ QUA
+    // Nếu sender là user, nhưng không phải là TÔI -> return
+    if (data.sender_type === 'user' && data.sender_id !== currentUserUsername) {
+        return; 
+    }
+
+    // 3. Tin nhắn từ CHUYÊN GIA gửi cho NGƯỜI KHÁC -> BỎ QUA
+    // Nếu sender là counselor, nhưng target không phải TÔI -> return
+    if (data.sender_type === 'counselor' && data.target_student_id && data.target_student_id !== currentUserUsername) {
+        return;
+    }
+
+    // --- NẾU VƯỢT QUA CÁC BỘ LỌC TRÊN THÌ MỚI HIỂN THỊ ---
+
+    if (data.sender_type === 'user') {
+      // Tin nhắn của CHÍNH TÔI
+      addMessageToExpertChat(data.text, 'sent'); 
     } 
     else if (data.sender_type === 'counselor') {
-      // Tin nhắn này là của CHUYÊN GIA
-      addMessageToExpertChat(data.text, 'received'); // Màu xám
+      // Tin nhắn của CHUYÊN GIA gửi cho TÔI
+      addMessageToExpertChat(data.text, 'received'); 
     }
-  });
-  
-  expertSocket.on('expert_left', () => {
-    addMessageToExpertChat('Chuyên gia đã rời khỏi phòng chat.', 'system');
   });
 }
 
@@ -1785,6 +1795,32 @@ function initializeCounselorChat(expertUsername) {
             showNotification(studentId, "Đã tham gia phòng chat");
         }
     });
+
+    expertSocket.on('load_history', (history) => {
+        // history là mảng chứa tin nhắn của TẤT CẢ sinh viên chat với chuyên gia này
+        history.forEach(msg => {
+            let studentId = null;
+
+            // Xác định tin nhắn này thuộc về hội thoại với sinh viên nào
+            if (msg.sender_type === 'user') {
+                studentId = msg.sender_id;
+            } else if (msg.sender_type === 'counselor' && msg.target_student_id) {
+                studentId = msg.target_student_id;
+            }
+
+            if (studentId) {
+                // Lưu vào bộ nhớ local
+                saveMessageToLocal(studentId, msg);
+                
+                // Nếu đang mở chat với sinh viên này thì render ra luôn
+                if (currentStudentId === studentId) {
+                    // Logic phân biệt sent/received
+                    const type = (msg.sender_type === 'counselor') ? 'sent' : 'received';
+                    addMessageToUI(msg.text, type); 
+                }
+            }
+        });
+      });
 
     // --- CÁC HÀM UI ---
     
@@ -1892,21 +1928,10 @@ function initializeCounselorChat(expertUsername) {
                 // Emit lên server
                 expertSocket.emit('send_expert_message', {
                     room: expertUsername, // Room của chuyên gia
-                    message: text
+                    message: text,
+                    target_student_id: currentStudentId
                     // Server session sẽ tự gắn sender_type='counselor'
                 });
-                
-                // Lưu cục bộ để hiển thị ngay
-                const myMsg = { 
-                    text: text, 
-                    sender_type: 'counselor', 
-                    sender_id: expertUsername,
-                    target_student_id: currentStudentId 
-                };
-                
-                saveMessageToLocal(currentStudentId, myMsg);
-                renderMessages(currentStudentId);
-                
                 input.value = '';
             }
         };

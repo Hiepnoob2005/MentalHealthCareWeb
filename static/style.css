@@ -67,14 +67,18 @@ body {
 /* 2. "Box List" (Dropdown) */
 .profile-dropdown {
   position: absolute;
-  top: 130%; /* Vị trí ngay dưới nút CTA */
+  top: 130%;
+  /* Vị trí ngay dưới nút CTA */
   right: 0;
-  width: 230px; /* Độ rộng của box list */
+  width: 230px;
+  /* Độ rộng của box list */
   background: var(--white);
-  border-radius: 10px; /* Bo góc giống các card */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Đổ bóng */
+  border-radius: 10px;
+  /* Bo góc giống các card */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  /* Đổ bóng */
   z-index: 1001;
-  
+
   /* Ẩn theo mặc định */
   opacity: 0;
   visibility: hidden;
@@ -92,17 +96,20 @@ body {
 /* 4. Menu bên trong */
 .dropdown-menu {
   list-style: none;
-  padding: 0.5rem; /* Đệm lót nhỏ */
+  padding: 0.5rem;
+  /* Đệm lót nhỏ */
 }
 
 .dropdown-menu li a {
   display: flex;
   align-items: center;
-  gap: 0.75rem; /* Khoảng cách icon và chữ */
+  gap: 0.75rem;
+  /* Khoảng cách icon và chữ */
   padding: 0.8rem 1rem;
   color: var(--dark);
   text-decoration: none;
-  border-radius: 8px; /* Bo góc cho link */
+  border-radius: 8px;
+  /* Bo góc cho link */
   transition: all 0.2s ease;
   font-weight: 500;
 }
@@ -126,15 +133,18 @@ body {
 
 /* 6. Đường kẻ ngang trước nút "Đăng xuất" */
 .dropdown-menu li:last-child {
-  border-top: 1px solid #f0f0f0; /* var(--light) hơi mờ */
+  border-top: 1px solid #f0f0f0;
+  /* var(--light) hơi mờ */
   margin-top: 0.25rem;
   padding-top: 0.25rem;
 }
 
 .dropdown-menu li:last-child a:hover {
-  background: #fbebee; /* Màu đỏ nhạt khi hover Đăng xuất */
+  background: #fbebee;
+  /* Màu đỏ nhạt khi hover Đăng xuất */
   color: var(--danger);
 }
+
 .dropdown-menu li:last-child a:hover i {
   color: var(--danger);
 }
@@ -336,10 +346,12 @@ body {
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-20px);
   }
@@ -491,6 +503,7 @@ body {
     opacity: 0;
     transform: translateX(50px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -633,7 +646,7 @@ body {
 
 #connectBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
 }
 
 #connectBtn:active {
@@ -645,6 +658,7 @@ body {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -680,17 +694,17 @@ body {
 }
 
 .chatbot-cancel {
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 18px;
-    cursor: pointer;
-    margin-left: auto;
-    transition: color 0.2s;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  margin-left: auto;
+  transition: color 0.2s;
 }
 
 .chatbot-cancel:hover {
-    color: #ff6b6b;
+  color: #ff6b6b;
 }
 
 .status-dot {
@@ -702,10 +716,12 @@ body {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -730,6 +746,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -801,16 +818,19 @@ body {
 .typing-dot:nth-child(2) {
   animation-delay: 0.2s;
 }
+
 .typing-dot:nth-child(3) {
   animation-delay: 0.4s;
 }
 
 @keyframes typing {
+
   0%,
   60%,
   100% {
     transform: translateY(0);
   }
+
   30% {
     transform: translateY(-10px);
   }
@@ -972,12 +992,15 @@ body {
 }
 
 .btn-connect.btn-chat {
-  background-color: #ffffff; /* Nền trắng */
-  color: #007bff; /* Chữ màu chính (giống màu viền) */
+  background-color: #ffffff;
+  /* Nền trắng */
+  color: #007bff;
+  /* Chữ màu chính (giống màu viền) */
 }
 
 .btn-connect.btn-chat:hover {
-  background-color: #f8f9fa; /* Màu nền hơi xám khi hover */
+  background-color: #f8f9fa;
+  /* Màu nền hơi xám khi hover */
 }
 
 /* Resources Section */
@@ -1166,14 +1189,17 @@ body {
   background: rgba(99, 102, 241, 0.1);
   color: var(--primary);
 }
+
 .stat-icon.success {
   background: rgba(16, 185, 129, 0.1);
   color: var(--success);
 }
+
 .stat-icon.warning {
   background: rgba(245, 158, 11, 0.1);
   color: var(--warning);
 }
+
 .stat-icon.danger {
   background: rgba(239, 68, 68, 0.1);
   color: var(--danger);
@@ -1352,6 +1378,7 @@ footer {
     transform: translateY(50px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -1516,285 +1543,285 @@ footer {
 /* thêm vào ngày 10/11/2025 */
 /* Matching Modal Styles */
 .matching-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10001;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10001;
 }
 
 .matching-modal-content {
-    background: white;
-    border-radius: 20px;
-    padding: 2rem;
-    max-width: 800px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    position: relative;
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 800px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
 }
 
 .close-modal {
-    position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-    font-size: 2rem;
-    cursor: pointer;
-    color: #666;
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #666;
 }
 
 .close-modal:hover {
-    color: #000;
+  color: #000;
 }
 
 .detected-tags {
-    color: var(--primary);
-    margin-bottom: 1.5rem;
-    font-weight: 500;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
 }
 
 .matching-results {
-    display: grid;
-    gap: 1.5rem;
+  display: grid;
+  gap: 1.5rem;
 }
 
 .match-card {
-    background: var(--light);
-    padding: 1.5rem;
-    border-radius: 15px;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
+  background: var(--light);
+  padding: 1.5rem;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
 }
 
 .match-card:hover {
-    border-color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .match-info h3 {
-    color: var(--dark);
-    margin-bottom: 0.5rem;
+  color: var(--dark);
+  margin-bottom: 0.5rem;
 }
 
 .match-score {
-    font-weight: 600;
-    color: var(--success);
-    margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--success);
+  margin-bottom: 0.5rem;
 }
 
 .specialties {
-    margin: 1rem 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  margin: 1rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .specialties .tag {
-    background: var(--primary);
-    color: white;
-    padding: 0.3rem 0.8rem;
-    border-radius: 15px;
-    font-size: 0.85rem;
+  background: var(--primary);
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
 }
 
 .btn-connect-counselor {
-    width: 100%;
-    padding: 0.8rem;
-    background: var(--gradient-1);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 1rem;
+  width: 100%;
+  padding: 0.8rem;
+  background: var(--gradient-1);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
 }
 
 .btn-connect-counselor:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
 .btn-find-expert {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: var(--secondary);
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--secondary);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .btn-find-expert:hover {
-    background: var(--secondary-dark);
-    transform: scale(1.1);
+  background: var(--secondary-dark);
+  transform: scale(1.1);
 }
 
 /* Test Result Modal */
 .test-result-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10001;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10001;
 }
 
 .test-result-content {
-    background: white;
-    border-radius: 20px;
-    padding: 2.5rem;
-    max-width: 500px;
-    width: 90%;
-    text-align: center;
-    position: relative;
+  background: white;
+  border-radius: 20px;
+  padding: 2.5rem;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  position: relative;
 }
 
 .result-score {
-    margin: 2rem 0;
+  margin: 2rem 0;
 }
 
 .score-circle {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    margin: 0 auto;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin: 0 auto;
 }
 
 .score-circle.good {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
 }
 
 .score-circle.medium {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: white;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
 }
 
 .score-circle.need-support {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
 }
 
 .score-number {
-    font-size: 2.5rem;
+  font-size: 2.5rem;
 }
 
 .score-max {
-    font-size: 1rem;
-    opacity: 0.9;
+  font-size: 1rem;
+  opacity: 0.9;
 }
 
 .score-level {
-    margin-top: 1rem;
-    font-size: 1.5rem;
-    color: var(--dark);
+  margin-top: 1rem;
+  font-size: 1.5rem;
+  color: var(--dark);
 }
 
 .result-message {
-    color: var(--gray);
-    line-height: 1.6;
-    margin: 1.5rem 0;
+  color: var(--gray);
+  line-height: 1.6;
+  margin: 1.5rem 0;
 }
 
 .detected-issues {
-    background: var(--light);
-    padding: 1.5rem;
-    border-radius: 15px;
-    margin: 1.5rem 0;
+  background: var(--light);
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin: 1.5rem 0;
 }
 
 .detected-issues h4 {
-    margin-bottom: 1rem;
-    color: var(--dark);
+  margin-bottom: 1rem;
+  color: var(--dark);
 }
 
 .issue-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
 }
 
 .issue-tag {
-    background: var(--primary);
-    color: white;
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
+  background: var(--primary);
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
 }
 
 .result-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-    justify-content: center;
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-content: center;
 }
 
 .btn-find-counselor,
 .btn-retake {
-    padding: 0.8rem 1.5rem;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .btn-find-counselor {
-    background: var(--gradient-1);
-    color: white;
+  background: var(--gradient-1);
+  color: white;
 }
 
 .btn-retake {
-    background: var(--light);
-    color: var(--dark);
+  background: var(--light);
+  color: var(--dark);
 }
 
 .btn-find-counselor:hover,
 .btn-retake:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* Loading Modal */
 .loading-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10002;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10002;
 }
 
 .loading-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 15px;
-    text-align: center;
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  text-align: center;
 }
 
 /* --- THÊM MỚI NGÀY 12/11: BOX XÁC THỰC CỐ VẤN --- */
@@ -1803,7 +1830,8 @@ footer {
   position: fixed;
   bottom: 30px;
   left: 30px;
-  z-index: 998; /* Dưới chatbot 1 bậc */
+  z-index: 998;
+  /* Dưới chatbot 1 bậc */
   background: var(--white);
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
@@ -1850,44 +1878,46 @@ footer {
 }
 
 .spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid var(--light);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    margin: 0 auto 1rem;
-    animation: spin 1s linear infinite;
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--light);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Style cho ô chọn giờ của Counselor */
 .time-slot-item {
-    padding: 12px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: white;
-    cursor: pointer;
-    text-align: center;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    color: var(--dark);
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: var(--dark);
 }
 
 .time-slot-item:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .time-slot-item.selected {
-    background: var(--gradient-1);
-    color: white;
-    border-color: transparent;
-    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+  background: var(--gradient-1);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
 }
 
 /* --- CSS CHO CỬA SỔ CHAT MỚI --- */
@@ -1910,14 +1940,16 @@ footer {
   opacity: 0;
   transform: scale(0.9);
   transform-origin: bottom left;
-  display: none; /* Dùng none để không tương tác được */
-  
+  display: none;
+  /* Dùng none để không tương tác được */
+
   /* Định vị ở góc TRÁI (để không đè lên bot AI ở góc phải) */
   position: fixed;
   bottom: 20px;
-  left: 20px; /* <- Khác với bot AI */
+  left: 20px;
+  /* <- Khác với bot AI */
   z-index: 999;
-  
+
   /* Các thuộc tính khác được kế thừa từ .chatbot-window
      (ví dụ: width, height, box-shadow, border-radius) 
      Nhờ vậy, 2 box sẽ có "tính chất tương tự" nhau
@@ -1928,7 +1960,8 @@ footer {
   (JavaScript sẽ thêm/xóa lớp này)
 */
 #expertChatWindow.active {
-  display: flex; /* Hoặc 'block' tùy vào .chatbot-window của bạn */
+  display: flex;
+  /* Hoặc 'block' tùy vào .chatbot-window của bạn */
   opacity: 1;
   transform: scale(1);
   transition: all 0.3s ease-out;
@@ -1944,113 +1977,166 @@ footer {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: white; /* Thêm nền trắng */
+  background: white;
+  /* Thêm nền trắng */
 }
 
 .chat-header {
   padding: 15px 20px;
-  background: var(--primary, #007bff); /* Dùng màu chính của bạn */
+  background: var(--primary, #007bff);
+  /* Dùng màu chính của bạn */
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-shrink: 0; /* Không co lại */
-}
-.chat-header h3 { margin: 0; font-size: 1.1rem; }
-.chat-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
-
-.chat-messages {
-  flex: 1; /* Quan trọng: Tự co giãn */
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  background: #f9f9f9; /* Thêm màu nền cho khung chat */
+  flex-shrink: 0;
+  /* Không co lại */
 }
 
-/* (Thêm CSS cho .message.sent, .message.received... nếu bạn chưa có) */
-/* ... */
-
-.chat-input-form {
-  display: flex;
-  padding: 15px;
-  border-top: 1px solid #f0f0f0;
-  background: #fff;
-  flex-shrink: 0; /* Không co lại */
-}
-#expertChatInput {
-  flex: 1;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  padding: 10px 15px;
-  font-size: 1rem;
-  resize: none;
-}
-#expertChatSendBtn {
-  background: var(--primary, #007bff);
-  color: white;
-  border: none;
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  margin-left: 10px;
-  cursor: pointer;
+.chat-header h3 {
+  margin: 0;
   font-size: 1.1rem;
 }
 
+.chat-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
 .chat-messages {
-  display: flex;
-  flex-direction: column; /* Tin nhắn xếp chồng lên nhau */
-  padding: 20px;
-  background: #f9f9f9;
   flex: 1;
-  overflow-y: auto;
+  /* Quan trọng: Tự co giãn */
+  overflow-y: scroll;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+
+  background: #f9f9f9;
+  /* Thêm màu nền cho khung chat */
 }
 
 .message {
   margin-bottom: 15px;
   max-width: 85%;
-  display: flex; 
+  display: flex;
 }
 
 .bubble {
-  padding: 10px 15px;
   border-radius: 18px;
   line-height: 1.5;
-  word-wrap: break-word; /* Tự xuống dòng khi tin nhắn dài */
 }
 
 /* Tin nhắn GỬI ĐI (của bạn) - Sửa lỗi "chuyên gia ơi"
 */
 .message.sent {
-  align-self: flex-end; /* Đẩy sang phải */
+  align-self: flex-end;
+  /* Đẩy sang phải */
 }
+
 .message.sent .bubble {
-  background: var(--primary, #007bff); /* Màu xanh */
-  color: white;
-  border-bottom-right-radius: 4px; 
+  background: var(--primary, #007bff);
+  /* Màu xanh */
+  color: rgb(255, 255, 255);
+  border-bottom-right-radius: 4px;
 }
 
 /* Tin nhắn NHẬN ĐƯỢC (của chuyên gia) 
 */
 .message.received {
-  align-self: flex-start; /* Đẩy sang trái */
+  align-self: flex-start;
+  /* Đẩy sang trái */
 }
+
 .message.received .bubble {
-  background: #f1f1f1; /* Màu xám nhạt */
-  color: #333;
+  background: #333;
+  /* Màu xám nhạt */
+  color: #fff;
   border-bottom-left-radius: 4px;
 }
 
+.chat-input-form {
+  display: flex;
+  align-items: center; /* Căn giữa theo chiều dọc */
+  padding: 12px 10px;
+  background-color: #ffffff;
+  border-top: 1px solid #eff2f5; /* Đường kẻ mờ phía trên */
+  gap: 8px; /* Khoảng cách giữa các phần tử */
+}
+
+/* Ô nhập liệu (Textarea) */
+#expertChatInput {
+  flex: 1; /* Chiếm toàn bộ không gian còn lại */
+  background-color: #f0f2f5; /* Màu xám đặc trưng của Messenger */
+  border: none;
+  border-radius: 20px; /* Bo tròn hình viên thuốc */
+  padding: 10px 15px;
+  font-size: 15px;
+  color: #050505;
+  outline: none; /* Bỏ viền xanh khi click vào */
+  resize: none; /* Không cho kéo giãn */
+  font-family: inherit;
+  line-height: 1.4;
+  height: 40px; /* Chiều cao cố định ban đầu */
+  transition: background-color 0.2s;
+}
+
+#expertChatInput:focus {
+  background-color: #e4e6eb; /* Đậm hơn chút khi focus */
+}
+
+/* Style chung cho các nút (Video & Gửi) */
+#connectBtn, 
+#expertChatSendBtn {
+  background: transparent; /* Nền trong suốt */
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%; /* Hình tròn */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+/* Hiệu ứng khi di chuột vào nút */
+#connectBtn:hover, 
+#expertChatSendBtn:hover {
+  background-color: #f0f2f5; /* Hiện vòng tròn xám mờ */
+}
+
+/* Hiệu ứng khi nhấn nút */
+#connectBtn:active, 
+#expertChatSendBtn:active {
+  transform: scale(0.95);
+}
+
+/* Màu sắc icon */
+#connectBtn i {
+  color: #0084ff; /* Màu xanh Messenger (hoặc dùng var(--primary)) */
+  font-size: 20px;
+}
+
+#expertChatSendBtn i {
+  color: #0084ff; /* Màu xanh Messenger */
+  font-size: 18px;
+  margin-left: -2px; /* Căn chỉnh nhẹ cho icon máy bay giấy */
+}
 /* Tin nhắn HỆ THỐNG - Sửa lỗi "Đã kết nối..."
 */
 .message.system {
-  align-self: center; /* Ra giữa */
+  align-self: center;
+  /* Ra giữa */
   max-width: 100%;
   font-size: 0.8rem;
   color: #aaa;
   text-align: center;
 }
+
 /* Hệ thống không cần bubble */
 .message.system .bubble {
   padding: 0;
@@ -2076,7 +2162,8 @@ footer {
   border-radius: 20px;
   padding: 2.5rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  height: fit-content; /* Tự co giãn chiều cao */
+  height: fit-content;
+  /* Tự co giãn chiều cao */
 }
 
 .profile-card h2 {
@@ -2117,12 +2204,15 @@ footer {
   text-align: center;
   font-weight: 500;
 }
+
 .form-message.success {
   color: var(--success);
 }
+
 .form-message.error {
   color: var(--danger);
 }
+
 .form-message.loading {
   color: var(--gray);
 }
@@ -2140,12 +2230,12 @@ footer {
 
 /* Tái sử dụng style .issue-tag từ modal */
 .issue-tag {
-    background: var(--primary);
-    color: white;
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 500;
+  background: var(--primary);
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .spinner-container {
@@ -2156,98 +2246,190 @@ footer {
 }
 
 .messenger-container {
-    display: flex;
-    height: 600px;
-    width: 100%;
-    border: 1px solid #ddd;
-    font-family: Arial, sans-serif;
+  display: flex;
+  height: 600px;
+  width: 100%;
+  border: 1px solid #ddd;
+  font-family: Arial, sans-serif;
 }
 
 /* Sidebar */
 .sidebar {
-    width: 300px;
-    border-right: 1px solid #ddd;
-    background: #f5f5f5;
-    overflow-y: auto;
+  width: 300px;
+  border-right: 1px solid #ddd;
+  background: #f5f5f5;
+  overflow-y: auto;
 }
+
 .student-item {
-    padding: 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid #eee;
-    position: relative;
+  padding: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  position: relative;
 }
-.student-item:hover, .student-item.active {
-    background: #e9efff;
+
+.student-item:hover,
+.student-item.active {
+  background: #e9efff;
 }
-.student-item .info { margin-left: 10px; flex: 1; }
-.student-item .name { font-weight: bold; display: block; }
-.student-item .preview { font-size: 0.8em; color: #666; }
+
+.student-item .info {
+  margin-left: 10px;
+  flex: 1;
+}
+
+.student-item .name {
+  font-weight: bold;
+  display: block;
+}
+
+.student-item .preview {
+  font-size: 0.8em;
+  color: #666;
+}
 
 /* Notification Badge (Thông báo đỏ) */
 .badge {
-    background: red;
-    color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 12px;
-    display: none; /* Mặc định ẩn */
+  background: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  display: none;
+  /* Mặc định ẩn */
 }
-.badge.show { display: block; }
+
+.badge.show {
+  display: block;
+}
 
 .messenger-container {
-    display: flex;
-    height: 600px;
-    width: 100%;
-    border: 1px solid #ddd;
-    font-family: Arial, sans-serif;
+  display: flex;
+  height: 600px;
+  width: 100%;
+  border: 1px solid #ddd;
+  font-family: Arial, sans-serif;
 }
 
 /* Sidebar */
 .sidebar {
-    width: 300px;
-    border-right: 1px solid #ddd;
-    background: #f5f5f5;
-    overflow-y: auto;
+  width: 300px;
+  border-right: 1px solid #ddd;
+  background: #f5f5f5;
+  overflow-y: auto;
 }
+
 .student-item {
-    padding: 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid #eee;
-    position: relative;
+  padding: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  position: relative;
 }
-.student-item:hover, .student-item.active {
-    background: #e9efff;
+
+.student-item:hover,
+.student-item.active {
+  background: #e9efff;
 }
-.student-item .info { margin-left: 10px; flex: 1; }
-.student-item .name { font-weight: bold; display: block; }
-.student-item .preview { font-size: 0.8em; color: #666; }
+
+.student-item .info {
+  margin-left: 10px;
+  flex: 1;
+}
+
+.student-item .name {
+  font-weight: bold;
+  display: block;
+}
+
+.student-item .preview {
+  font-size: 0.8em;
+  color: #666;
+}
 
 /* Notification Badge (Thông báo đỏ) */
 .badge {
-    background: red;
-    color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 12px;
-    display: none; /* Mặc định ẩn */
+  background: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  display: none;
+  /* Mặc định ẩn */
 }
-.badge.show { display: block; }
+
+.badge.show {
+  display: block;
+}
 
 /* Chat Area */
-.chat-area { flex: 1; display: flex; flex-direction: column; }
-.messages-box { flex: 1; padding: 20px; overflow-y: auto; background: #fff; }
-.chat-input-area { padding: 15px; border-top: 1px solid #ddd; display: flex; }
-.chat-input-area input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 20px; }
-.chat-input-area button { margin-left: 10px; padding: 10px 20px; background: #0084ff; color: white; border: none; border-radius: 20px; cursor: pointer; }
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages-box {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.chat-input-area {
+  padding: 15px;
+  border-top: 1px solid #ddd;
+  display: flex;
+}
+
+.chat-input-area input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+}
+
+.chat-input-area button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  background: #0084ff;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+}
 
 /* Bong bóng chat */
-.message { margin-bottom: 10px; display: flex; }
-.message.sent { justify-content: flex-end; } /* Expert gửi - Bên phải */
-.message.received { justify-content: flex-start; } /* User gửi - Bên trái */
-.bubble { padding: 8px 12px; border-radius: 15px; max-width: 70%; word-wrap: break-word; }
-.message.sent .bubble { background: #0084ff; color: white; }
-.message.received .bubble { background: #f1f0f0; color: black; }
+.message {
+  margin-bottom: 10px;
+  display: flex;
+}
+
+.message.sent {
+  justify-content: flex-end;
+}
+
+/* Expert gửi - Bên phải */
+.message.received {
+  justify-content: flex-start;
+}
+
+/* User gửi - Bên trái */
+.bubble {
+  padding: 8px 12px;
+  border-radius: 15px;
+  word-wrap: normal;
+}
+
+.message.sent .bubble {
+  background: #0084ff;
+  color: white;
+}
+
+.message.received .bubble {
+  background: #f1f0f0;
+  color: black;
+}

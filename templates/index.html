@@ -204,7 +204,9 @@
           <span>5.0 (124 đánh giá)</span>
         </div>
         <button class="btn-connect" onclick="checkAndOpenBooking('nvan')">Đặt lịch hẹn</button>
-        <button class="btn-connect btn-chat" onclick="openChat('nvan')">Chat với chuyên gia</button>
+        <button class="btn-connect btn-chat" onclick="window.location.href='/user/chat?expert=nvan'">
+            Chat với chuyên gia
+        </button>
       </div>
     </div>
 
@@ -226,7 +228,9 @@
           <span>4.8 (98 đánh giá)</span>
         </div>
         <button class="btn-connect" onclick="checkAndOpenBooking('ttbinh')">Đặt lịch hẹn</button>
-        <button class="btn-connect btn-chat" onclick="openChat('ttbinh')">Chat với chuyên gia</button>
+        <button class="btn-connect btn-chat" onclick="window.location.href='/user/chat?expert=ttbinh'">
+            Chat với chuyên gia
+        </button>
       </div>
     </div>
 
@@ -248,7 +252,9 @@
           <span>4.9 (156 đánh giá)</span>
         </div>
         <button class="btn-connect" onclick="checkAndOpenBooking('lvcuong')">Đặt lịch hẹn</button>
-        <button class="btn-connect btn-chat" onclick="openChat('lvcuong')">Chat với chuyên gia</button>
+        <button class="btn-connect btn-chat" onclick="window.location.href='/user/chat?expert=lvcuong'">
+            Chat với chuyên gia
+        </button>
       </div>
     </div>
 
@@ -497,47 +503,6 @@
       </div>
     </div>
 
-  <div class="chatbot-window" id="expertChatWindow">
-    <div class="chat-container">
-      
-      <div class="chat-header">
-        <h3 id="expertChatName">Đang kết nối...</h3>
-        <button class="chat-close" onclick="closeExpertChatModal()">&times;</button>
-      </div>
-      
-      <div class="chat-messages" id="expertChatMessages">
-        <div class="message system">
-          <span>Đang chờ chuyên gia chấp nhận...</span>
-        </div>
-      </div>
-      
-      <div class="message system">
-          <div id="meetingLink"></div>
-      </div>
-
-      <form class="chat-input-form" id="expertChatForm">
-          <button id="connectBtn" style=" background: var(--primary, #007bff);
-                                          color: white;
-                                          border: none;
-                                          width: 45px;
-                                          height: 45px;
-                                          border-radius: 50%;
-                                          margin-left: 10px;
-                                          cursor: pointer;
-                                          font-size: 1.1rem;">
-            <i class="fa-solid fa-video"></i>
-          </button>
-        
-
-        <textarea id="expertChatInput" placeholder="Nhập tin nhắn..." rows="1"></textarea>
-        <button type="submit" id="expertChatSendBtn">
-          <i class="fa-solid fa-paper-plane"></i>
-        </button>
-      </form>
-      
-    </div>
-  </div>
-
     <div class="modal-overlay" id="loginModal">
       <div class="modal-container">
         <button class="modal-close" type="button" onclick="closeBookingModal()">
@@ -703,5 +668,6 @@
     <script src="{{ url_for('static', filename='admin_script.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='user_chat.js') }}"></script>
   </body>
 </html>

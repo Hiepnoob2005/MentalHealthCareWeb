@@ -1,0 +1,253 @@
+/* Reset & Base */
+body {
+    background-color: #f0f2f5;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navbar riêng cho trang chat */
+.chat-navbar {
+    background: white;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    height: 60px;
+    display: flex;
+    align-items: center;
+    z-index: 10;
+    padding: 0 20px;
+}
+
+.chat-navbar .nav-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.chat-navbar .logo {
+    color: #0084ff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* Layout chính */
+.chat-layout {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 60px);
+    max-width: 1600px;
+    width: 100%;
+    margin: 0 auto;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+/* --- Sidebar --- */
+.chat-sidebar {
+    width: 360px;
+    border-right: 1px solid #e5e5e5;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+.sidebar-header {
+    padding: 20px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.expert-list {
+    flex: 1;
+    overflow-y: auto;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.expert-item {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.expert-item:hover, .expert-item.active {
+    background-color: #eaf3ff;
+}
+
+.expert-item .avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #e4e6eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 1.2rem;
+    color: #050505;
+}
+
+.expert-item.active .avatar {
+    background: #0084ff;
+    color: white;
+}
+
+.expert-name {
+    font-weight: 600;
+    color: #050505;
+    margin-bottom: 4px;
+}
+
+.expert-specialty {
+    font-size: 0.85rem;
+    color: #65676b;
+}
+
+/* --- Main Chat Area --- */
+.chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+.chat-header {
+    height: 60px;
+    border-bottom: 1px solid #e5e5e5;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    background: #0084ff;
+}
+
+.expert-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#currentExpertAvatar {
+    width: 40px;
+    height: 40px;
+    background: #e4e6eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#currentExpertName {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+#currentExpertStatus {
+    font-size: 0.8rem;
+    color: #fff;
+}
+
+.messages-container {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.empty-state {
+    margin: auto;
+    color: #65676b;
+    font-size: 1.1rem;
+}
+
+/* Bong bóng chat */
+.message {
+    display: flex;
+    margin-bottom: 10px;
+    max-width: 70%;
+}
+
+.message.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.message.received {
+    align-self: flex-start;
+}
+
+.message .bubble {
+    padding: 10px 15px;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+/* Màu sắc giống Messenger */
+.message.sent .bubble {
+    background-color: #0084ff;
+    color: white;
+}
+
+.message.received .bubble {
+    background-color: #e4e6eb;
+    color: #050505;
+}
+
+.message.system {
+    align-self: center;
+    max-width: 100%;
+}
+.message.system .bubble {
+    background: none;
+    color: #65676b;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+/* Input Area */
+.input-area {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.input-area input {
+    flex: 1;
+    background: #f0f2f5;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 15px;
+    outline: none;
+    height: 36px;
+}
+
+.input-area button {
+    background: transparent;
+    border: none;
+    color: #0084ff;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.input-area button:hover {
+    background-color: #f0f2f5;
+}

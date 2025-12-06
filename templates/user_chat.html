@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messenger - StudentMind Connect</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='user_chat.css') }}">
+    
+    <script>
+        window.currentUser = {
+            username: "{{ current_user.username }}",
+            id: "{{ current_user.id }}"
+        };
+    </script>
+</head>
+<body>
+
+    <nav class="navbar chat-navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+            <div class="user-info">
+                Xin chào, <strong>{{ current_user.username }}</strong>
+            </div>
+        </div>
+    </nav>
+
+    <div class="chat-layout">
+        <div class="chat-sidebar">
+            <div class="sidebar-header">
+                <h2>Chat</h2>
+            </div>
+            <ul class="expert-list" id="expertList">
+                <li class="loading-text">Đang tải danh sách...</li>
+            </ul>
+        </div>
+
+        <div class="chat-main">
+            <div class="chat-header">
+                <div class="expert-profile">
+                    <div class="avatar" id="currentExpertAvatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="expert-details">
+                        <h3 id="currentExpertName">Chọn chuyên gia</h3>
+                        <span id="currentExpertStatus">Đang chờ kết nối...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="messages-container" id="expertChatMessages">
+                <div class="empty-state">
+                    Hãy chọn một chuyên gia từ danh sách bên trái để bắt đầu trò chuyện.
+                </div>
+            </div>
+
+            <form class="input-area" id="expertChatForm" style="display: none;">
+                <input type="text" id="expertChatInput" placeholder="Nhập tin nhắn..." autocomplete="off">
+                <button type="submit" id="expertChatSendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='user_chat.js') }}"></script>
+</body>
+</html>

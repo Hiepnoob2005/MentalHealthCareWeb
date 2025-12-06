@@ -1211,7 +1211,8 @@ def get_all_counselors():
         for c in matching_system.counselors:
             counselors.append(
                 {
-                    "id": c.id,
+                    "id": c.user_name,
+                    "real_id": c.id,
                     "name": c.name,
                     "specialties": c.specialties,
                     "rating": c.rating,
@@ -1225,6 +1226,54 @@ def get_all_counselors():
     except Exception as e:
         logging.error(f"Error getting counselors: {e}")
         return jsonify({"error": "Internal server error"}), 500  # Hết API matching
+    
+@app.route("/api/user/chat-partners", methods=["GET"])
+@login_required
+def get_chat_partners():
+    """
+    API lấy danh sách chuyên gia mà User hiện tại ĐÃ TỪNG chat.
+    """
+    try:
+        user_username = current_user.username
+        
+        # 1. Đọc lịch sử chat
+        history = load_chat_history() # Hàm này bạn đã có ở bước trước
+        
+        # 2. Tìm tập hợp các Counselor Username (room) mà user này có liên quan
+        partner_usernames = set()
+        
+        for msg in history:
+            # Case A: User gửi tin vào phòng của Counselor
+            if msg.get('sender_type') == 'user' and msg.get('sender_id') == user_username:
+                partner_usernames.add(msg.get('room'))
+            
+            # Case B: Counselor gửi tin CHO User này
+            elif msg.get('sender_type') == 'counselor' and msg.get('target_student_id') == user_username:
+                partner_usernames.add(msg.get('room'))
+        
+        # 3. Lấy thông tin chi tiết của các Counselor này từ MatchingSystem
+        # (Để lấy Tên thật, chuyên môn, avatar...)
+        partners = []
+        
+        # Duyệt qua danh sách tất cả counselor trong hệ thống để tìm info
+        # Lưu ý: matching_system.counselors là danh sách object Counselor
+        for c in matching_system.counselors:
+            if c.id in partner_usernames:
+                partners.append({
+                   "id": c.user_name,
+                    "real_id": c.id,
+                    "name": c.name,
+                    "specialties": c.specialties,
+                    "rating": c.rating,
+                    "status": c.status,
+                    # Có thể thêm last_message nếu muốn hiển thị preview
+                })
+                
+        return jsonify({"counselors": partners}), 200
+
+    except Exception as e:
+        logging.error(f"Error getting chat partners: {e}")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @app.route("/register_page.html")
@@ -1787,98 +1836,6 @@ def handle_disconnect():
     print(f"--- NGẮT KẾT NỐI: Client {username} (Role: {session.get('role')})")
     # TODO: Thêm logic báo cho người trong phòng biết
 
-
-# Khi CHUYÊN GIA tải trang dashboard
-@socketio.on("counselor_join_room")
-def handle_counselor_join(data):
-    # Xác thực: Phải là counselor
-    if "role" not in session or session["role"] != "counselor":
-        print(
-            f"--- LỖI: {session.get('username')} (không phải counselor) cố vào phòng host."
-        )
-        return False
-
-    username = session["username"]
-    room = data["room"]
-
-    if username != room:
-        print(f"--- LỖI: Counselor {username} cố vào phòng {room}.")
-        return False
-
-    join_room(room)
-    print(f"*** HOST (Counselor) {username} ĐÃ VÀO PHÒNG: {room} ***")
-
-    emit(
-        "receive_message",
-        {"text": "Bạn đã kết nối với phòng chat của mình.", "sender_type": "system"},
-        to=request.sid,
-    )
-
-
-# Mock database lưu tin nhắn (Trong thực tế hãy dùng SQL/MongoDB)
-# Cấu trúc: messages_db = { 'room_id': [ {sender, text, time}, ... ] }
-messages_db = {}
-# Khi NGƯỜI DÙNG tham gia phòng chat
-@socketio.on("join_expert_chat")
-def handle_join_room(data):
-    # Xác thực: Phải là user
-    if "role" not in session or session["role"] != "user":
-        print(
-            f"--- LỖI: {session.get('username')} (không phải user) cố vào phòng chat."
-        )
-        return False
-
-    room = data["room"]  # Tên phòng (username của chuyên gia)
-    user_username = session.get("username", "Một người dùng")
-
-    join_room(room)
-    if room in messages_db:
-        emit('load_history', messages_db[room], to=request.sid)
-    print(f"*** GUEST (User) {user_username} ĐÃ VÀO PHÒNG: {room} ***")
-
-    # 1. Báo cho USER (chỉ họ) là đã vào phòng
-    emit(
-        "receive_message",
-        {
-            "text": "Đã kết nối, vui lòng chờ chuyên gia chấp nhận.",
-            "sender_type": "system",
-        },
-        to=request.sid,
-    )
-
-    # 2. Báo cho CHUYÊN GIA (chủ phòng) biết có người vào
-    print(f"--- GỬI THÔNG BÁO 'show_chat_notification' TỚI PHÒNG: {room} ---")
-
-    emit(
-        "show_chat_notification",
-        {"user_id": session["user_id"], "username": user_username},
-        to=room,
-        skip_sid=request.sid,
-    )  # Vẫn skip_sid cho thông báo này
-
-
-# Khi BẤT KỲ AI gửi tin nhắn
-@socketio.on("send_expert_message")
-def handle_send_message(data):
-    if "user_id" not in session:
-        return False
-
-    room = data["room"]
-    message = data["message"]
-
-    # Lấy vai trò từ session (mặc định là 'user' nếu không có)
-    sender_type = session.get("role", "user")
-
-    print(f"--- TIN NHẮN PHÒNG {room} (từ {sender_type}): {message} ---")
-
-    # GỬI CHO TẤT CẢ MỌI NGƯỜI (KỂ CẢ NGƯỜI GỬI)
-    emit(
-        "receive_message",
-        {"text": message, "sender_id": session["user_id"], "sender_type": sender_type},
-        to=room,
-    )  # <-- KHÔNG DÙNG skip_sid
-
-
 # Khi CHUYÊN GIA từ chối chat
 @socketio.on("reject_chat")
 def handle_reject_chat(data):
@@ -1917,6 +1874,135 @@ def handle_leave_room(data):
         skip_sid=request.sid,
     )
 
+@app.route("/user/chat")
+@login_required
+def user_chat_page():
+    """
+    Route để hiển thị trang chat riêng cho User (Giao diện Messenger)
+    """
+    # Nếu là counselor thì chặn lại (hoặc chuyển hướng sang dashboard của họ)
+    if current_user.is_counselor:
+        return "Trang này chỉ dành cho sinh viên. Vui lòng dùng Dashboard chuyên gia.", 403
+        
+    return render_template("user_chat.html")
+
+
+# --- Thêm vào phần import ---
+import json
+from datetime import datetime
+
+# --- CẤU HÌNH FILE LƯU CHAT ---
+CHAT_DB_FILE = 'chat_history.json'
+
+# 1. Hàm hỗ trợ: Đọc lịch sử từ file
+def load_chat_history():
+    if not os.path.exists(CHAT_DB_FILE):
+        return []
+    try:
+        with open(CHAT_DB_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+# 2. Hàm hỗ trợ: Lưu tin nhắn mới
+def save_chat_message(room, sender_id, sender_type, text, target_student_id=None):
+    history = load_chat_history()
+    
+    new_msg = {
+        "room": room, # Username của chuyên gia
+        "sender_id": sender_id,
+        "sender_type": sender_type,
+        "text": text,
+        "target_student_id": target_student_id,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    
+    history.append(new_msg)
+    
+    with open(CHAT_DB_FILE, 'w', encoding='utf-8') as f:
+        json.dump(history, f, indent=4, ensure_ascii=False)
+        
+    return new_msg
+
+# 3. Hàm hỗ trợ: Lọc lịch sử cho User (Chỉ lấy tin của User này với Expert này)
+def get_history_for_user(expert_username, student_username):
+    all_history = load_chat_history()
+    filtered = []
+    
+    for msg in all_history:
+        # Chỉ xét tin nhắn trong phòng của Expert này
+        if msg.get('room') == expert_username:
+            # Case 1: User gửi
+            if msg.get('sender_type') == 'user' and msg.get('sender_id') == student_username:
+                filtered.append(msg)
+            # Case 2: Expert gửi CHO User này
+            elif msg.get('sender_type') == 'counselor' and msg.get('target_student_id') == student_username:
+                filtered.append(msg)
+                
+    return filtered
+
+# ---------------------------------------------------------
+# --- CẬP NHẬT CÁC SỰ KIỆN SOCKET (Thay thế code cũ) ---
+# ---------------------------------------------------------
+
+@socketio.on("join_expert_chat")
+def handle_join_room(data):
+    # (Giữ nguyên logic kiểm tra session cũ...)
+    if "role" not in session or session["role"] != "user":
+        return False
+
+    room = data["room"] # Expert username
+    user_username = session.get("username")
+
+    join_room(room)
+    
+    # [MỚI] Tải và gửi lại lịch sử chat riêng của User này
+    history = get_history_for_user(room, user_username)
+    emit('load_history', history, to=request.sid) # Chỉ gửi cho người mới vào
+    
+    # (Giữ nguyên các thông báo system...)
+    emit("receive_message", {"text": "Đã kết nối, vui lòng chờ chuyên gia chấp nhận.", "sender_type": "system"}, to=request.sid)
+    emit("show_chat_notification", {"user_id": session["user_id"], "username": user_username}, to=room, skip_sid=request.sid)
+
+
+@socketio.on("send_expert_message")
+def handle_send_message(data):
+    if "user_id" not in session:
+        return False
+
+    room = data["room"]
+    message = data["message"]
+    sender_type = session.get("role", "user")
+    sender_username = session.get("username")
+    target_student_id = data.get('target_student_id', None)
+
+    # [MỚI] Lưu vào file JSON
+    saved_msg = save_chat_message(room, sender_username, sender_type, message, target_student_id)
+
+    print(f"--- TIN NHẮN: {message} (Từ: {sender_username} -> Phòng: {room}) ---")
+
+    # Gửi cho mọi người trong phòng (Client sẽ tự lọc hiển thị)
+    emit("receive_message", saved_msg, to=room)
+
+# [MỚI] Sự kiện dành cho CHUYÊN GIA khi vào phòng (để load lại chat với từng SV)
+@socketio.on("counselor_join_room")
+def handle_counselor_join(data):
+    if "role" not in session or session["role"] != "counselor":
+        return False
+
+    username = session["username"]
+    room = data["room"]
+    
+    join_room(room)
+    
+    # Chuyên gia cần load TOÀN BỘ lịch sử của phòng mình
+    # Client JS của chuyên gia sẽ tự phân chia tin nhắn vào các tab user
+    all_history = load_chat_history()
+    my_room_history = [msg for msg in all_history if msg.get('room') == username]
+    
+    emit('load_history', my_room_history, to=request.sid)
+    
+    emit("receive_message", {"text": "Bạn đã kết nối lại. Lịch sử chat đã được tải.", "sender_type": "system"}, to=request.sid)
 
 # --- CÁCH CHẠY SERVER ---
 if __name__ == "__main__":

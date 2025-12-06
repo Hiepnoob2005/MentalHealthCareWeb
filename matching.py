@@ -10,6 +10,7 @@ class Counselor:
     """Class để lưu thông tin chuyên gia"""
     id: str
     name: str
+    user_name: str
     email: str
     specialties: List[str]
     rating: float
@@ -59,7 +60,8 @@ class MatchingSystem:
 
                             counselor = Counselor(
                                 id=parts[0],
-                                name=parts[2], # Index lệch +1 so với cũ
+                                user_name=parts[1],
+                                name=parts[2],
                                 email=parts[3],
                                 specialties=parts[5].split(','),
                                 rating=float(parts[6]),
