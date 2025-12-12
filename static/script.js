@@ -1822,6 +1822,74 @@ function initializeCounselorChat(expertUsername) {
         });
       });
 
+    // Hàm hiển thị thông báo nhỏ góc màn hình (Toast)
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'custom-toast';
+        toast.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+        document.body.appendChild(toast);
+
+        // Xóa element khỏi DOM sau 2.5s (animation chạy 2s + 0.5s buffer)
+        setTimeout(() => {
+            toast.remove();
+        }, 2500);
+    }
+
+    // Logic nút bấm Zoom
+    const btnZoom = document.getElementById('meetingLink');
+    if (btnZoom) {
+        btnZoom.onclick = async function() {
+            if (!currentStudentId) {
+                showToast("⚠️ Vui lòng chọn người cần gửi link!");
+                return;
+            }
+
+            // Hiển thị thông báo đang tạo
+            showToast("⏳ Đang tạo phòng họp Zoom...");
+
+            try {
+                const res = await fetch("/create_meeting");
+                const data = await res.json();
+
+                if (data.join_url) {
+                    // Tạo nội dung HTML đẹp mắt
+                    const htmlContent = `
+                        <div class="zoom-invite-card">
+                            <div class="zoom-header">
+                                <i class="fas fa-video"></i> Video Call
+                            </div>
+                            <div style="font-size: 0.9em; color: #555;">
+                                Bác sĩ mời bạn tham gia cuộc họp trực tuyến.
+                            </div>
+                            <a href="${data.join_url}" target="_blank" class="zoom-btn">
+                                Tham gia ngay
+                            </a>
+                        </div>
+                    `;
+
+                    // Gửi HTML qua Socket
+                    expertSocket.emit('send_expert_message', {
+                        room: expertUsername,
+                        message: htmlContent, // Gửi cả cục HTML
+                        target_student_id: currentStudentId
+                    });
+
+                    showToast("✅ Đã gửi link Zoom thành công!");
+                    
+                    // (Tùy chọn) Tự vẽ tin nhắn lên màn hình mình luôn nếu server không emit lại cho sender
+                    // addMessageToUI(htmlContent, 'sent'); 
+
+                } else {
+                    showToast("❌ Không tạo được link Zoom.");
+                }
+
+            } catch (err) {
+                console.error("Zoom error:", err);
+                showToast("❌ Lỗi kết nối Server.");
+            }
+        };
+    }
+
     // --- CÁC HÀM UI ---
     
     function saveMessageToLocal(studentId, msgData) {
@@ -1937,3 +2005,4 @@ function initializeCounselorChat(expertUsername) {
         };
     }
 }
+

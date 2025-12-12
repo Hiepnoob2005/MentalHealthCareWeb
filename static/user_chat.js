@@ -66,7 +66,7 @@ function initializeSocket() {
         }
     });
 
-    // [MỚI] Tải lịch sử chat từ Server
+    // [CẬP NHẬT] Tải lịch sử chat từ Server và xử lý hiển thị HTML
     expertSocket.on('load_history', (history) => {
         console.log("Đang tải lịch sử chat...", history);
         
@@ -76,11 +76,26 @@ function initializeSocket() {
 
         // Duyệt qua từng tin nhắn trong lịch sử
         history.forEach(msg => {
+            let content = msg.text;
+
+            // --- ĐIỀU KIỆN MỚI: Xử lý nếu tin nhắn chứa thẻ HTML (div) ---
+            if (content && typeof content === 'string' && content.includes('<div')) {
+                // 1. Loại bỏ dấu ngoặc kép bao quanh (nếu có)
+                if (content.startsWith('"') && content.endsWith('"')) {
+                    content = content.slice(1, -1);
+                }
+                
+                // 2. Loại bỏ các ký tự escape do JSON tạo ra (ví dụ \" thành ")
+                content = content.replace(/\\"/g, '"');
+            }
+            // ------------------------------------------------------------
+
+            // Hiển thị tin nhắn
             if (msg.sender_type === 'user' && msg.sender_id === currentUserUsername) {
-                addMessageToExpertChat(msg.text, 'sent');
+                addMessageToExpertChat(content, 'sent');
             }
             else if (msg.sender_type === 'counselor' && msg.target_student_id === currentUserUsername) {
-                addMessageToExpertChat(msg.text, 'received');
+                addMessageToExpertChat(content, 'received');
             }
         });
         
@@ -182,7 +197,8 @@ async function openChat(counselorUsername, expertName) {
 }
 
 /**
- * Hàm thêm tin nhắn vào giao diện (Giữ logic cũ, đổi ID container)
+ * Hàm thêm tin nhắn vào giao diện
+ * [ĐÃ SỬA] Dùng innerHTML để hiển thị thẻ HTML (Zoom card)
  */
 function addMessageToExpertChat(text, type) {
     const messagesContainer = document.getElementById("expertChatMessages");
@@ -197,7 +213,12 @@ function addMessageToExpertChat(text, type) {
 
     const bubbleDiv = document.createElement("div");
     bubbleDiv.className = "bubble";
-    bubbleDiv.textContent = text;
+    
+    // --- SỬA TẠI ĐÂY ---
+    // Cũ: bubbleDiv.textContent = text; 
+    // Mới: Dùng innerHTML để render thẻ <a>, <div>
+    bubbleDiv.innerHTML = text; 
+    // -------------------
 
     messageDiv.appendChild(bubbleDiv);
     messagesContainer.appendChild(messageDiv);

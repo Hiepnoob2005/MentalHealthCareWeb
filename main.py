@@ -233,35 +233,56 @@ def home():
     return render_template("index.html")
 
 
+from datetime import datetime, timedelta # Nhớ import thêm
+
 @app.route("/create_meeting")
 def create_meeting():
-    """Create a real Zoom meeting"""
+    """Create a Scheduled Meeting (Type 2) to force Join Before Host working"""
     try:
-        # Validate credentials
+        # 1. Auth (Giữ nguyên)
         if not all([ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET]):
-            return jsonify({"error": "Zoom credentials missing in .env"}), 500
-
-        logging.info("🔍 Getting Zoom access token...")
+            return jsonify({"error": "Credential error"}), 500
         token = get_zoom_token()
-
-        if not token:
-            return jsonify({"error": "Failed to authenticate with Zoom"}), 500
-
-        logging.info("✅ Token OK — creating meeting...")
-
+        if not token: return jsonify({"error": "Auth failed"}), 500
+        
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
         }
 
+        # 2. Lấy thời gian hiện tại (UTC)
+        # Zoom yêu cầu format: 'yyyy-MM-ddTHH:mm:ssZ'
+        now_utc = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        # 3. Payload ĐÃ SỬA ĐỔI
         payload = {
             "topic": "Mental Health Consultation",
-            "type": 1,
+            
+            # QUAN TRỌNG 1: Chuyển thành Type 2 (Scheduled)
+            "type": 2, 
+            
+            # Đặt thời gian là ngay bây giờ
+            "start_time": now_utc,
+            "duration": 60, # Mặc định 60 phút (không ảnh hưởng việc join)
+            
             "settings": {
+                # QUAN TRỌNG 2: Cho phép vào trước Host
                 "join_before_host": True,
+                
+                # QUAN TRỌNG 3: Cho phép vào trước bao lâu? 
+                # 0 = Vào bất cứ lúc nào (Anytime)
+                # 5 = Vào trước 5 phút, 10 = 10 phút...
+                "jbh_time": 0, 
+
+                # QUAN TRỌNG 4: Tắt phòng chờ
+                "waiting_room": False,
+
+                # Các setting phụ trợ để vào nhanh
+                "approval_type": 2, # Tự động duyệt
+                "meeting_authentication": False, # Không cần login
                 "participant_video": True,
                 "host_video": True,
-                "waiting_room": False,
+                "mute_upon_entry": False
             },
         }
 
@@ -272,23 +293,17 @@ def create_meeting():
             timeout=30,
         )
 
-        logging.info(f"📡 Zoom API status: {response.status_code}")
-
         if response.status_code == 201:
-            meeting_data = response.json()
+            data = response.json()
             return jsonify({
-                "join_url": meeting_data.get("join_url"),
-                "meeting_id": meeting_data.get("id"),
+                "join_url": data.get("join_url"),
+                "meeting_id": data.get("id"),
             })
+        
+        return jsonify({"error": response.text}), response.status_code
 
-        return jsonify({
-            "error": f"Zoom API Error {response.status_code}: {response.text}"
-        }), response.status_code
-
-    except requests.exceptions.Timeout:
-        return jsonify({"error": "Zoom API timeout"}), 500
     except Exception as e:
-        return jsonify({"error": f"Unexpected error: {e}"}), 500
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/check_credentials")

@@ -1983,7 +1983,7 @@ footer {
 
 .chat-header {
   padding: 15px 20px;
-  background: var(--primary, #007bff);
+  background: #0084ff;
   /* Dùng màu chính của bạn */
   color: white;
   display: flex;
@@ -2016,12 +2016,6 @@ footer {
 
   background: #f9f9f9;
   /* Thêm màu nền cho khung chat */
-}
-
-.message {
-  margin-bottom: 15px;
-  max-width: 85%;
-  display: flex;
 }
 
 .bubble {
@@ -2059,42 +2053,54 @@ footer {
 
 .chat-input-form {
   display: flex;
-  align-items: center; /* Căn giữa theo chiều dọc */
+  align-items: center;
+  /* Căn giữa theo chiều dọc */
   padding: 12px 10px;
   background-color: #ffffff;
-  border-top: 1px solid #eff2f5; /* Đường kẻ mờ phía trên */
-  gap: 8px; /* Khoảng cách giữa các phần tử */
+  border-top: 1px solid #eff2f5;
+  /* Đường kẻ mờ phía trên */
+  gap: 8px;
+  /* Khoảng cách giữa các phần tử */
 }
 
 /* Ô nhập liệu (Textarea) */
 #expertChatInput {
-  flex: 1; /* Chiếm toàn bộ không gian còn lại */
-  background-color: #f0f2f5; /* Màu xám đặc trưng của Messenger */
+  flex: 1;
+  /* Chiếm toàn bộ không gian còn lại */
+  background-color: #f0f2f5;
+  /* Màu xám đặc trưng của Messenger */
   border: none;
-  border-radius: 20px; /* Bo tròn hình viên thuốc */
+  border-radius: 20px;
+  /* Bo tròn hình viên thuốc */
   padding: 10px 15px;
   font-size: 15px;
   color: #050505;
-  outline: none; /* Bỏ viền xanh khi click vào */
-  resize: none; /* Không cho kéo giãn */
+  outline: none;
+  /* Bỏ viền xanh khi click vào */
+  resize: none;
+  /* Không cho kéo giãn */
   font-family: inherit;
   line-height: 1.4;
-  height: 40px; /* Chiều cao cố định ban đầu */
+  height: 40px;
+  /* Chiều cao cố định ban đầu */
   transition: background-color 0.2s;
 }
 
 #expertChatInput:focus {
-  background-color: #e4e6eb; /* Đậm hơn chút khi focus */
+  background-color: #e4e6eb;
+  /* Đậm hơn chút khi focus */
 }
 
 /* Style chung cho các nút (Video & Gửi) */
-#connectBtn, 
+#connectBtn,
 #expertChatSendBtn {
-  background: transparent; /* Nền trong suốt */
+  background: transparent;
+  /* Nền trong suốt */
   border: none;
   cursor: pointer;
   padding: 8px;
-  border-radius: 50%; /* Hình tròn */
+  border-radius: 50%;
+  /* Hình tròn */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2104,28 +2110,33 @@ footer {
 }
 
 /* Hiệu ứng khi di chuột vào nút */
-#connectBtn:hover, 
+#connectBtn:hover,
 #expertChatSendBtn:hover {
-  background-color: #f0f2f5; /* Hiện vòng tròn xám mờ */
+  background-color: #f0f2f5;
+  /* Hiện vòng tròn xám mờ */
 }
 
 /* Hiệu ứng khi nhấn nút */
-#connectBtn:active, 
+#connectBtn:active,
 #expertChatSendBtn:active {
   transform: scale(0.95);
 }
 
 /* Màu sắc icon */
 #connectBtn i {
-  color: #0084ff; /* Màu xanh Messenger (hoặc dùng var(--primary)) */
+  color: #0084ff;
+  /* Màu xanh Messenger (hoặc dùng var(--primary)) */
   font-size: 20px;
 }
 
 #expertChatSendBtn i {
-  color: #0084ff; /* Màu xanh Messenger */
+  color: #0084ff;
+  /* Màu xanh Messenger */
   font-size: 18px;
-  margin-left: -2px; /* Căn chỉnh nhẹ cho icon máy bay giấy */
+  margin-left: -2px;
+  /* Căn chỉnh nhẹ cho icon máy bay giấy */
 }
+
 /* Tin nhắn HỆ THỐNG - Sửa lỗi "Đã kết nối..."
 */
 .message.system {
@@ -2432,4 +2443,97 @@ footer {
 .message.received .bubble {
   background: #f1f0f0;
   color: black;
+}
+
+.chat-meeting-notification {
+  background: color-mix(in srgb, var(--popup-chat-theme-color) 10%, white);
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  border: 1px solid color-mix(in srgb, var(--popup-chat-theme-color) 25%, white);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+
+  width: fit-content;
+  max-width: 75%;
+  margin: 12px auto;
+  text-align: center;
+}
+
+.chat-meeting-notification .note-text {
+  color: #333;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.chat-meeting-notification .note-link {
+  color: var(--popup-chat-theme-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.chat-meeting-notification .note-link:hover {
+  text-decoration: underline;
+}
+
+/* 1. CSS cho Thông báo tự biến mất (Toast) */
+.custom-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #333;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 9999;
+    font-size: 14px;
+    animation: slideIn 0.3s ease, fadeOut 0.5s ease 2s forwards; /* Tự biến mất sau 2s */
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes fadeOut {
+    to { opacity: 0; visibility: hidden; }
+}
+
+/* 2. CSS cho Thẻ Zoom Meeting đẹp (Bubble Chat) */
+.zoom-invite-card {
+    background: #fff;
+    border: 1px solid #e0e7ff;
+    border-radius: 8px;
+    padding: 10px;
+    max-width: 250px;
+    text-align: left;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.bubble:has(.zoom-invite-card) {
+  padding: 10px;
+}
+
+.zoom-header {
+    font-weight: bold;
+    color: #2D8CFF; /* Màu xanh Zoom */
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.zoom-btn {
+    display: block;
+    background: #2D8CFF;
+    color: white !important;
+    text-decoration: none;
+    text-align: center;
+    padding: 8px 0;
+    border-radius: 6px;
+    margin-top: 8px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+.zoom-btn:hover {
+    background: #1a73e8;
 }
