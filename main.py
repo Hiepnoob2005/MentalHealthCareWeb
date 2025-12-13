@@ -660,6 +660,80 @@ class User(UserMixin):
     @staticmethod
     def get_by_username(username):
         return User.get_by_id(username)
+    
+    @staticmethod
+    def get_by_email(email):
+        """
+        Kiểm tra xem email đã tồn tại trong hệ thống (Admin, Counselor, User) hay chưa.
+        Trả về object User nếu tìm thấy, ngược lại trả về None.
+        """
+        # Chuẩn hóa email đầu vào để so sánh (thường email không phân biệt hoa thường)
+        target_email = email.strip().lower()
+
+        # 1. Tìm trong Admin
+        # Cấu trúc Admin: Username(0);Email(1);Pass(2)...
+        try:
+            if os.path.exists(ADMIN_FILE):
+                with open(ADMIN_FILE, "r", encoding="utf-8") as f:
+                    # Bỏ qua dòng header
+                    lines = f.readlines()[1:]
+                    for line in lines:
+                        parts = line.strip().split(";")
+                        # Kiểm tra độ dài và so sánh email ở vị trí [1]
+                        if len(parts) >= 3 and parts[1].strip().lower() == target_email:
+                            return User(
+                                id=parts[0],
+                                username=parts[0],
+                                email=parts[1],
+                                password_hash=parts[2],
+                                is_admin=True
+                            )
+        except Exception as e:
+            logging.error(f"Lỗi kiểm tra email Admin: {e}")
+
+        # 2. Tìm trong Counselor
+        # Cấu trúc Counselor: ID(0);Username(1);Name(2);Email(3);Pass(4)...;Verified(9)
+        try:
+            if os.path.exists(COUNSELOR_FILE):
+                with open(COUNSELOR_FILE, "r", encoding="utf-8") as f:
+                    lines = f.readlines()[1:]
+                    for line in lines:
+                        parts = line.strip().split(";")
+                        # Kiểm tra độ dài và so sánh email ở vị trí [3]
+                        if len(parts) >= 10 and parts[3].strip().lower() == target_email:
+                            is_verified = parts[9].strip().lower() == "yes"
+                            return User(
+                                id=parts[1],        # Dùng username làm ID cho thống nhất
+                                username=parts[1],
+                                email=parts[3],     # Email nằm ở index 3
+                                password_hash=parts[4],
+                                is_counselor=True,
+                                verified=is_verified
+                            )
+        except Exception as e:
+            logging.error(f"Lỗi kiểm tra email Counselor: {e}")
+
+        # 3. Tìm trong User thường
+        # Cấu trúc User: Username(0);Email(1);Pass(2)...
+        try:
+            if os.path.exists(USER_FILE):
+                with open(USER_FILE, "r", encoding="utf-8") as f:
+                    lines = f.readlines()[1:]
+                    for line in lines:
+                        parts = line.strip().split(";")
+                        # Kiểm tra độ dài và so sánh email ở vị trí [1]
+                        if len(parts) >= 3 and parts[1].strip().lower() == target_email:
+                            return User(
+                                id=parts[0],
+                                username=parts[0],
+                                email=parts[1],
+                                password_hash=parts[2]
+                            )
+        except Exception as e:
+            logging.error(f"Lỗi kiểm tra email User: {e}")
+
+        # Không tìm thấy trong cả 3 file
+        return None
 
 
 @login_manager.user_loader
@@ -1247,44 +1321,30 @@ def get_all_counselors():
 def get_chat_partners():
     """
     API lấy danh sách chuyên gia mà User hiện tại ĐÃ TỪNG chat.
+    Sử dụng hàm load_Chatted_Counselors từ MatchingSystem.
     """
     try:
         user_username = current_user.username
         
-        # 1. Đọc lịch sử chat
-        history = load_chat_history() # Hàm này bạn đã có ở bước trước
+        # 1. Gọi hàm xử lý logic từ matching_system
+        # Hàm này trả về một List[Counselor] (các object Counselor)
+        counselor_objects = matching_system.load_Chatted_Counselors(user_username)
         
-        # 2. Tìm tập hợp các Counselor Username (room) mà user này có liên quan
-        partner_usernames = set()
+        # 2. Serialize dữ liệu (Chuyển Object thành Dict để trả về JSON)
+        partners_data = []
         
-        for msg in history:
-            # Case A: User gửi tin vào phòng của Counselor
-            if msg.get('sender_type') == 'user' and msg.get('sender_id') == user_username:
-                partner_usernames.add(msg.get('room'))
+        for c in counselor_objects:
+            partners_data.append({
+                "id": c.user_name,       # QUAN TRỌNG: Frontend dùng user_name làm Room ID để chat
+                "real_id": c.id,         # ID số trong database (dùng để tham chiếu nếu cần)
+                "name": c.name,          # Tên hiển thị (VD: ThS. Nguyễn Văn A)
+                "specialties": c.specialties,
+                "rating": c.rating,
+                "status": c.status,
+                "experience": c.experience
+            })
             
-            # Case B: Counselor gửi tin CHO User này
-            elif msg.get('sender_type') == 'counselor' and msg.get('target_student_id') == user_username:
-                partner_usernames.add(msg.get('room'))
-        
-        # 3. Lấy thông tin chi tiết của các Counselor này từ MatchingSystem
-        # (Để lấy Tên thật, chuyên môn, avatar...)
-        partners = []
-        
-        # Duyệt qua danh sách tất cả counselor trong hệ thống để tìm info
-        # Lưu ý: matching_system.counselors là danh sách object Counselor
-        for c in matching_system.counselors:
-            if c.id in partner_usernames:
-                partners.append({
-                   "id": c.user_name,
-                    "real_id": c.id,
-                    "name": c.name,
-                    "specialties": c.specialties,
-                    "rating": c.rating,
-                    "status": c.status,
-                    # Có thể thêm last_message nếu muốn hiển thị preview
-                })
-                
-        return jsonify({"counselors": partners}), 200
+        return jsonify({"counselors": partners_data}), 200
 
     except Exception as e:
         logging.error(f"Error getting chat partners: {e}")

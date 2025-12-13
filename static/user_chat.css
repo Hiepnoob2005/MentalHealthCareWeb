@@ -3,6 +3,24 @@
     box-sizing: border-box;
 }
 
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #8b5cf6;
+    --accent: #ec4899;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark: #1f2937;
+    --gray: #6b7280;
+    --light: #f9fafb;
+    --white: #ffffff;
+    --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+
 body {
     background-color: #f0f2f5;
     height: 100vh;
@@ -16,14 +34,15 @@ body {
 
 /* --- Navbar (Mô phỏng thanh header của Facebook) --- */
 .chat-navbar {
-    background: #fff;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    height: 56px; /* Chiều cao chuẩn FB */
+    height: 56px;
+    /* Chiều cao chuẩn FB */
     display: flex;
     align-items: center;
     z-index: 100;
     padding: 0 16px;
     position: relative;
+    background: var(--gradient-1) !important;
 }
 
 .chat-navbar .nav-container {
@@ -31,20 +50,21 @@ body {
     justify-content: space-between;
     width: 100%;
     align-items: center;
+    color: white !important;
+
 }
 
 .chat-navbar .logo {
-    color: #050505;
     text-decoration: none;
     font-size: 1.2rem;
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #e4e6eb;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: 0.2s;
+    color: white !important;
 }
 
 .chat-navbar .logo:hover {
@@ -53,27 +73,30 @@ body {
 
 .chat-navbar .user-info {
     font-size: 0.95rem;
-    color: #050505;
 }
 
 /* --- Layout chính --- */
 .chat-layout {
     display: flex;
+    gap: 20px;
     flex: 1;
     height: calc(100vh - 56px);
     width: 100%;
-    background: white;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    background-color: #cecece;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* --- Sidebar (Danh sách người dùng) --- */
 .chat-sidebar {
     width: 360px;
-    border-right: 1px solid #e5e5e5; /* Đường viền mỏng */
+    border-right: 1px solid #e5e5e5;
+    border-radius: 10px;
+    /* Đường viền mỏng */
     display: flex;
     flex-direction: column;
     background: #fff;
-    flex-shrink: 0; /* Không bị co lại */
+    flex-shrink: 0;
+    /* Không bị co lại */
 }
 
 .sidebar-header {
@@ -94,7 +117,8 @@ body {
     flex: 1;
     overflow-y: auto;
     list-style: none;
-    padding: 8px; /* Padding xung quanh list để tạo khoảng cách */
+    padding: 8px;
+    /* Padding xung quanh list để tạo khoảng cách */
     margin: 0;
 }
 
@@ -103,11 +127,13 @@ body {
 .messages-container::-webkit-scrollbar {
     width: 8px;
 }
+
 .expert-list::-webkit-scrollbar-thumb,
 .messages-container::-webkit-scrollbar-thumb {
     background: #bcc0c4;
     border-radius: 4px;
 }
+
 .expert-list::-webkit-scrollbar-track,
 .messages-container::-webkit-scrollbar-track {
     background: transparent;
@@ -119,7 +145,8 @@ body {
     display: flex;
     align-items: center;
     cursor: pointer;
-    border-radius: 8px; /* Bo góc giống Messenger */
+    border-radius: 8px;
+    /* Bo góc giống Messenger */
     transition: background-color 0.2s;
     margin-bottom: 2px;
 }
@@ -129,11 +156,13 @@ body {
 }
 
 .expert-item.active {
-    background-color: rgba(45, 136, 255, 0.1); /* Xanh nhạt khi active */
+    background-color: rgba(45, 136, 255, 0.1);
+    /* Xanh nhạt khi active */
 }
 
 .expert-item .avatar {
-    width: 48px; /* Kích thước avatar chuẩn */
+    width: 48px;
+    /* Kích thước avatar chuẩn */
     height: 48px;
     border-radius: 50%;
     background: #e4e6eb;
@@ -152,7 +181,8 @@ body {
 }
 
 .expert-name {
-    font-weight: 500; /* Medium weight */
+    font-weight: 500;
+    /* Medium weight */
     color: #050505;
     margin-bottom: 2px;
     font-size: 0.95rem;
@@ -172,7 +202,9 @@ body {
     display: flex;
     flex-direction: column;
     background: #fff;
-    min-width: 0; /* Fix lỗi flexbox bị tràn */
+    min-width: 0;
+    border-radius: 20px !important;
+    /* Fix lỗi flexbox bị tràn */
 }
 
 /* Header Chat - Chuyển sang màu TRẮNG */
@@ -182,8 +214,9 @@ body {
     display: flex;
     align-items: center;
     padding: 0 16px;
-    background: #fff; /* Messenger header màu trắng */
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    background: #fff;
+    /* Messenger header màu trắng */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     z-index: 10;
 }
 
@@ -225,18 +258,16 @@ body {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    
-    /* Background Cloudy Effect */
-    background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-    /* Hoặc dùng màu này cho giống trời hơn: */
-    /* background: linear-gradient(to top, #accbee 0%, #e7f0fd 100%); */
+    border-radius: 10px;
+
+    background-color: #fefefe;
 }
 
 .empty-state {
     margin: auto;
-    color: rgba(0,0,0,0.5);
+    color: rgba(0, 0, 0, 0.5);
     font-size: 1rem;
-    background: rgba(255,255,255,0.6);
+    background: rgba(255, 255, 255, 0.6);
     padding: 10px 20px;
     border-radius: 20px;
     backdrop-filter: blur(5px);
@@ -245,15 +276,23 @@ body {
 /* --- Bong bóng chat (Messages) --- */
 .message {
     display: flex;
-    margin-bottom: 8px; /* Khoảng cách giữa các tin nhắn gần hơn */
+    margin-bottom: 8px;
+    /* Khoảng cách giữa các tin nhắn gần hơn */
     max-width: 70%;
     position: relative;
     animation: fadeIn 0.2s ease;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .message.sent {
@@ -266,27 +305,32 @@ body {
 }
 
 .message .bubble {
-    padding: 10px 16px; /* Padding rộng hơn chút */
-    border-radius: 18px; /* Bo tròn mạnh */
+    padding: 10px 16px;
+    /* Padding rộng hơn chút */
+    border-radius: 18px;
+    /* Bo tròn mạnh */
     font-size: 0.95rem;
     line-height: 1.4;
     word-wrap: break-word;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Đổ bóng nhẹ */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    /* Đổ bóng nhẹ */
 }
 
 /* Màu tin nhắn GỬI ĐI (Gradient Blue) */
 .message.sent .bubble {
     /* Gradient đặc trưng của Messenger */
-    background: linear-gradient(to right, #0084ff, #0099ff);
+    background: var(--gradient-1);
     color: white;
-    border-bottom-right-radius: 4px; /* Tạo góc nhọn cho tin nhắn cuối */
+    border-bottom-right-radius: 4px;
+    /* Tạo góc nhọn cho tin nhắn cuối */
 }
 
 /* Màu tin nhắn NHẬN (Xám) */
 .message.received .bubble {
-    background-color: #f0f0f0; /* Hoặc #e4e6eb */
+    background-color: #e2dfdf;
     color: #050505;
-    border-bottom-left-radius: 4px; /* Tạo góc nhọn cho tin nhắn nhận */
+    border-bottom-left-radius: 4px;
+    /* Tạo góc nhọn cho tin nhắn nhận */
 }
 
 .message.system {
@@ -294,6 +338,7 @@ body {
     max-width: 100%;
     margin: 15px 0;
 }
+
 .message.system .bubble {
     background: none;
     box-shadow: none;
@@ -309,15 +354,18 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #fff;
+    background: #fefefe;
+    border-top: #0505054d solid 1px;
 }
 
 .input-area input {
     flex: 1;
-    background: #f0f2f5; /* Nền xám nhạt */
+    background: #f0f2f5;
+    /* Nền xám nhạt */
     border: none;
     padding: 10px 16px;
-    border-radius: 20px; /* Bo tròn dạng viên thuốc */
+    border-radius: 20px;
+    /* Bo tròn dạng viên thuốc */
     font-size: 15px;
     outline: none;
     height: 40px;
@@ -358,7 +406,8 @@ body {
 
 /* Header của Sidebar */
 .sidebar-header {
-    padding: 20px 16px 10px 16px; /* Căn chỉnh lại padding */
+    padding: 20px 16px 10px 16px;
+    /* Căn chỉnh lại padding */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -366,7 +415,8 @@ body {
 
 .sidebar-header h2 {
     font-size: 1.5rem;
-    font-weight: 800; /* Chữ đậm hơn cho hiện đại */
+    font-weight: 800;
+    /* Chữ đậm hơn cho hiện đại */
     margin: 0;
     color: #050505;
     letter-spacing: -0.5px;
@@ -385,6 +435,7 @@ body {
     color: #050505;
     transition: background 0.2s;
 }
+
 .header-icons i:hover {
     background: #e4e6eb;
 }
@@ -396,7 +447,8 @@ body {
 
 .search-box {
     background: #f0f2f5;
-    border-radius: 20px; /* Bo tròn hình viên thuốc */
+    border-radius: 20px;
+    /* Bo tròn hình viên thuốc */
     height: 36px;
     display: flex;
     align-items: center;
@@ -406,7 +458,7 @@ body {
 
 /* Hiệu ứng focus vào thanh tìm kiếm */
 .search-box:focus-within {
-    background: #e4e6eb; 
+    background: #e4e6eb;
 }
 
 .search-box i {
@@ -428,7 +480,8 @@ body {
 .expert-list {
     flex: 1;
     overflow-y: auto;
-    padding: 8px; /* Cách lề một chút để item không dính sát mép */
+    padding: 8px;
+    /* Cách lề một chút để item không dính sát mép */
 }
 
 /* Từng dòng chuyên gia (Item) */
@@ -436,11 +489,14 @@ body {
     padding: 12px;
     display: flex;
     align-items: center;
-    border-radius: 10px; /* Bo góc mềm mại */
+    border-radius: 10px;
+    /* Bo góc mềm mại */
     cursor: pointer;
-    transition: all 0.2s ease; /* Hiệu ứng chuyển động mượt */
+    transition: all 0.2s ease;
+    /* Hiệu ứng chuyển động mượt */
     margin-bottom: 4px;
-    position: relative; /* Để căn chỉnh chấm online */
+    position: relative;
+    /* Để căn chỉnh chấm online */
 }
 
 /* Hover effect: Nền xám nhẹ */
@@ -450,12 +506,14 @@ body {
 
 /* Active effect: Nền xanh nhạt + Chữ đậm */
 .expert-item.active {
-    background-color: #eaf3ff; /* Màu xanh rất nhạt đặc trưng của Messenger */
+    background-color: #eaf3ff;
+    /* Màu xanh rất nhạt đặc trưng của Messenger */
 }
 
 /* Avatar Container */
 .expert-item .avatar {
-    width: 56px; /* Avatar to hơn chút để nổi bật */
+    width: 56px;
+    /* Avatar to hơn chút để nổi bật */
     height: 56px;
     border-radius: 50%;
     background: #e4e6eb;
@@ -467,7 +525,8 @@ body {
     color: #555;
     flex-shrink: 0;
     position: relative;
-    border: 1px solid rgba(0,0,0,0.05); /* Viền mỏng cho avatar */
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    /* Viền mỏng cho avatar */
 }
 
 /* Chấm xanh báo Online (Giả lập) */
@@ -478,10 +537,12 @@ body {
     right: 2px;
     width: 14px;
     height: 14px;
-    background-color: #31a24c; /* Màu xanh lá online */
-    border: 2px solid #fff; /* Viền trắng để tách biệt với avatar */
+    background-color: #31a24c;
+    /* Màu xanh lá online */
+    border: 2px solid #fff;
+    /* Viền trắng để tách biệt với avatar */
     border-radius: 50%;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Thông tin Text */
@@ -489,7 +550,8 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    overflow: hidden; /* Cắt bớt chữ nếu quá dài */
+    overflow: hidden;
+    /* Cắt bớt chữ nếu quá dài */
 }
 
 .expert-name {
@@ -526,34 +588,34 @@ body {
 }
 
 .chat-meeting-notification {
-  background: color-mix(in srgb, var(--popup-chat-theme-color) 10%, white);
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 13px;
-  line-height: 1.4;
-  border: 1px solid color-mix(in srgb, var(--popup-chat-theme-color) 25%, white);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    background: color-mix(in srgb, var(--popup-chat-theme-color) 10%, white);
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    border: 1px solid color-mix(in srgb, var(--popup-chat-theme-color) 25%, white);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 
-  width: fit-content;
-  max-width: 75%;
-  margin: 12px auto;
-  text-align: center;
+    width: fit-content;
+    max-width: 75%;
+    margin: 12px auto;
+    text-align: center;
 }
 
 .chat-meeting-notification .note-text {
-  color: #333;
-  display: block;
-  margin-bottom: 4px;
+    color: #333;
+    display: block;
+    margin-bottom: 4px;
 }
 
 .chat-meeting-notification .note-link {
-  color: var(--popup-chat-theme-color);
-  font-weight: 600;
-  text-decoration: none;
+    color: var(--popup-chat-theme-color);
+    font-weight: 600;
+    text-decoration: none;
 }
 
 .chat-meeting-notification .note-link:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 /* 1. CSS cho Thông báo tự biến mất (Toast) */
@@ -565,18 +627,30 @@ body {
     color: #fff;
     padding: 12px 24px;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 9999;
     font-size: 14px;
-    animation: slideIn 0.3s ease, fadeOut 0.5s ease 2s forwards; /* Tự biến mất sau 2s */
+    animation: slideIn 0.3s ease, fadeOut 0.5s ease 2s forwards;
+    /* Tự biến mất sau 2s */
 }
 
 @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
+
 @keyframes fadeOut {
-    to { opacity: 0; visibility: hidden; }
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
 }
 
 /* 2. CSS cho Thẻ Zoom Meeting đẹp (Bubble Chat) */
@@ -587,21 +661,23 @@ body {
     padding: 10px;
     max-width: 250px;
     text-align: left;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .bubble:has(.zoom-invite-card) {
-  padding: 0;
+    padding: 0;
 }
 
 .zoom-header {
     font-weight: bold;
-    color: #2D8CFF; /* Màu xanh Zoom */
+    color: #2D8CFF;
+    /* Màu xanh Zoom */
     margin-bottom: 5px;
     display: flex;
     align-items: center;
     gap: 5px;
 }
+
 .zoom-btn {
     display: block;
     background: #2D8CFF;
@@ -614,6 +690,7 @@ body {
     font-weight: 500;
     transition: background 0.2s;
 }
+
 .zoom-btn:hover {
     background: #1a73e8;
 }

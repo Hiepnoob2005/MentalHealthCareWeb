@@ -1783,6 +1783,12 @@ function initializeCounselorChat(expertUsername) {
             // c. Nếu đang chat người khác -> Hiện badge đỏ
             showNotification(studentId, data.text);
         }
+
+        expertSocket.on('connect', () => {
+          console.log("Expert socket connected");
+          // Đảm bảo luôn join lại room của chính mình khi kết nối lại
+          expertSocket.emit('counselor_join_room', { room: expertUsername });
+        });
     });
 
     // 4. Khi có User mới vào phòng (Backend emit 'show_chat_notification')

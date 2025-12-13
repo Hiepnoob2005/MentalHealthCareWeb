@@ -64,6 +64,11 @@ function initializeSocket() {
         } else if (data.sender_type === 'counselor') {
             addMessageToExpertChat(data.text, 'received'); // Tin chuyên gia
         }
+
+        if (currentExpertRoom) {
+            console.log("Đang khôi phục kết nối vào phòng:", currentExpertRoom);
+            expertSocket.emit('join_expert_chat', { room: currentExpertRoom });
+        }
     });
 
     // [CẬP NHẬT] Tải lịch sử chat từ Server và xử lý hiển thị HTML

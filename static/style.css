@@ -2537,3 +2537,372 @@ footer {
 .zoom-btn:hover {
     background: #1a73e8;
 }
+
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE (Max-width: 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+
+  /* 1. CẤU TRÚC CHUNG (GLOBAL) */
+  /* ---------------------------------------------------------- */
+  body {
+    overflow-x: hidden; /* Ngăn thanh cuộn ngang khó chịu */
+    font-size: 15px; /* Giảm nhẹ size chữ chuẩn */
+  }
+
+  .nav-container, 
+  .hero, 
+  .features, 
+  .quick-test, 
+  .experts, 
+  .resources, 
+  .dashboard, 
+  .profile-page-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  /* 2. NAVIGATION BAR & DROPDOWN */
+  /* ---------------------------------------------------------- */
+  .navbar-actions {
+    position: static; /* Để dropdown có thể căn theo màn hình thay vì nút */
+  }
+
+  .nav-links {
+    display: none; /* Ẩn menu chính, cần JS để toggle nút hamburger */
+  }
+
+  .mobile-menu-toggle {
+    display: block; /* Hiện nút hamburger */
+    font-size: 1.8rem;
+    margin-right: 1rem;
+  }
+
+  /* Dropdown Profile trên mobile: Tràn full chiều ngang để dễ bấm */
+  .profile-dropdown {
+    width: 94%; /* Gần full màn hình */
+    left: 3%;
+    right: 3%;
+    top: 70px; /* Cách header 1 đoạn */
+    transform-origin: top center;
+  }
+
+  .btn-cta {
+    padding: 0.6rem 1rem; /* Nút nhỏ lại chút */
+    font-size: 0.9rem;
+  }
+
+  /* 3. HERO SECTION */
+  /* ---------------------------------------------------------- */
+  .hero {
+    margin-top: 60px;
+    text-align: center;
+  }
+
+  .hero-container {
+    grid-template-columns: 1fr; /* 1 cột */
+    gap: 2rem;
+  }
+
+  .hero-content {
+    order: 1; /* Chữ lên trước */
+  }
+
+  .hero-image {
+    order: 2; /* Ảnh xuống sau */
+    margin-top: 1rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2.2rem;
+    line-height: 1.3;
+  }
+
+  .hero-buttons {
+    justify-content: center; /* Căn giữa nút */
+    flex-direction: column; /* Nút xếp dọc cho dễ bấm */
+    gap: 1rem;
+  }
+
+  .btn-primary, .btn-secondary {
+    width: 100%; /* Nút full chiều rộng */
+    justify-content: center;
+  }
+
+  .floating-card {
+    display: none; /* Ẩn các thẻ bay bay để đỡ rối mắt */
+  }
+
+  /* 4. GRIDS (Features, Experts, Resources, Stats) */
+  /* ---------------------------------------------------------- */
+  .features-grid, 
+  .experts-grid, 
+  .resources-grid, 
+  .stats-grid,
+  .footer-content {
+    grid-template-columns: 1fr; /* Chuyển hết về 1 cột */
+    gap: 1.5rem;
+  }
+
+  /* Resource Card: Ảnh nhỏ lại chút */
+  .resource-image {
+    height: 180px;
+  }
+
+  /* 5. QUICK TEST */
+  /* ---------------------------------------------------------- */
+  .test-container {
+    padding: 1.5rem;
+    width: 100%;
+  }
+
+  .test-header h2 {
+    font-size: 1.6rem;
+  }
+
+  .answer-option {
+    padding: 1rem; /* Dễ bấm hơn */
+  }
+
+  .test-navigation {
+    flex-direction: column-reverse; /* Nút Next lên trên, Prev xuống dưới */
+    gap: 0.8rem;
+  }
+
+  .test-navigation button {
+    width: 100%;
+  }
+
+  /* 6. DASHBOARD (User & Counselor) */
+  /* ---------------------------------------------------------- */
+  .dashboard-container {
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Biến Sidebar thành Menu trượt ngang phía trên */
+  .dashboard-sidebar {
+    display: block; /* Hiện lại nếu đang ẩn */
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    overflow-x: auto; /* Cho phép cuộn ngang */
+    white-space: nowrap; /* Không xuống dòng */
+    background: white;
+    border-bottom: 2px solid var(--light);
+  }
+
+  .dashboard-menu {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .dashboard-menu li {
+    margin: 0;
+  }
+
+  .dashboard-menu a {
+    padding: 0.6rem 1rem;
+    border: 1px solid #eee;
+    background: #f9f9f9;
+    font-size: 0.9rem;
+  }
+
+  .mood-chart {
+    height: 250px; /* Giảm chiều cao biểu đồ */
+  }
+
+  /* 7. PROFILE PAGE */
+  /* ---------------------------------------------------------- */
+  .profile-page-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .profile-card {
+    padding: 1.5rem;
+  }
+
+  .profile-card h2 {
+    font-size: 1.5rem;
+  }
+
+  /* 8. BOOKING & SLOTS (Quan trọng) */
+  /* ---------------------------------------------------------- */
+  #counselorSlotContainer, 
+  #bookingSlots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 cột nút giờ */
+    gap: 0.8rem;
+  }
+
+  .time-slot-item, 
+  .slot-btn {
+    padding: 10px 5px;
+    font-size: 0.9rem;
+  }
+
+  /* 9. MODALS (Login, Matching, Result) */
+  /* ---------------------------------------------------------- */
+  .modal-container {
+    width: 95%;
+    height: auto;
+    max-height: 90vh;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .modal-image {
+    display: none; /* Ẩn ảnh minh họa bên trái form login */
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+    width: 100%;
+  }
+
+  .matching-modal-content, 
+  .test-result-content {
+    width: 95%;
+    padding: 1.5rem;
+    max-height: 85vh;
+  }
+
+  .matching-results {
+    grid-template-columns: 1fr;
+  }
+
+  .score-circle {
+    width: 100px;
+    height: 100px;
+  }
+
+  .score-number {
+    font-size: 2rem;
+  }
+
+  /* 10. CHATBOT WINDOW (AI) */
+  /* ---------------------------------------------------------- */
+  .chatbot-window {
+    width: 100%;
+    height: 100%; /* Full màn hình khi mở */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 0;
+    z-index: 9999;
+  }
+
+  .chatbot-toggle {
+    bottom: 15px;
+    right: 15px;
+    width: 55px;
+    height: 55px;
+  }
+
+  /* 11. MESSENGER (Counselor Mode & User Expert Chat) */
+  /* ---------------------------------------------------------- */
+  
+  /* Layout Chat: Chuyển từ Ngang sang Dọc */
+  .messenger-container {
+    flex-direction: column;
+    height: 80vh; /* Chiều cao cố định */
+    border: none;
+  }
+
+  /* Danh sách người chat: Chiếm 30% chiều cao */
+  .sidebar {
+    width: 100%;
+    height: 30%;
+    overflow-y: auto;
+    border-right: none;
+    border-bottom: 2px solid #eee;
+    display: flex; /* Biến thành danh sách ngang nếu muốn, hoặc dọc */
+    flex-direction: column;
+  }
+  
+  .student-item {
+    padding: 10px;
+  }
+
+  /* Khung chat chính: Chiếm 70% chiều cao */
+  .chat-area {
+    width: 100%;
+    height: 70%;
+  }
+
+  .chat-input-area {
+    padding: 10px;
+  }
+
+  /* Cửa sổ chat Popup của User */
+  #expertChatWindow {
+    width: 100%;
+    height: 100%;
+    bottom: 0;
+    left: 0;
+    border-radius: 0;
+    z-index: 10000;
+  }
+
+  #expertChatWindow .chat-container {
+    height: 100%;
+    border-radius: 0;
+  }
+
+  /* 12. UTILS & OTHERS */
+  /* ---------------------------------------------------------- */
+  .counselor-verify-box {
+    display: none; /* Ẩn box xác thực ở góc trái để đỡ vướng */
+  }
+
+  .custom-toast {
+    width: 90%; /* Thông báo rộng hơn */
+    left: 5%;
+    right: 5%;
+    bottom: 80px; /* Hiện phía dưới, trên thanh input */
+    top: auto;
+    text-align: center;
+  }
+}
+
+/* ==========================================================================
+   EXTRA SMALL DEVICES (Max-width: 480px)
+   ========================================================================== */
+@media (max-width: 480px) {
+  
+  /* Giảm font size tiêu đề lần nữa */
+  .hero-content h1 {
+    font-size: 1.8rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.8rem;
+  }
+
+  /* Lưới chọn giờ: Giảm còn 2 cột nếu màn hình quá bé */
+  #counselorSlotContainer, 
+  #bookingSlots {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Thống kê Dashboard */
+  .stat-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .stat-icon {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Footer Links căn giữa */
+  .footer-bottom {
+    font-size: 0.8rem;
+  }
+}
