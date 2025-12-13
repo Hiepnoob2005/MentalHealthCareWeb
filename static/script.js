@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
  */
 async function checkLoginStatus() {
   try {
-    const response = await fetch("http://127.0.0.1:5000/api/status");
+    const response = await fetch("/api/status");
     
     // NẾU LỖI MẠNG HOẶC SERVER -> Coi như chưa đăng nhập
     if (!response.ok) {
@@ -152,7 +152,7 @@ async function handleLogout() {
     return;
   }
   try {
-    const response = await fetch("http://127.0.0.1:5000/api/logout", {
+    const response = await fetch("/api/logout", {
       method: "POST",
     });
     const data = await response.json();
@@ -191,7 +191,7 @@ async function handleLoginSubmit(event) {
   }
 
   try {
-    const response = await fetch("http://127.0.0.1:5000/api/login", {
+    const response = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
@@ -740,7 +740,7 @@ async function handleSendMessage(event) {
 
   try {
     // 3. Gửi tin nhắn đến API backend Flask (cổng 5000)
-    const response = await fetch("http://127.0.0.1:5000/api/chat", {
+    const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -842,7 +842,7 @@ async function findCounselorsFromTags(tags) {
   try {
     showLoadingModal("Đang tìm chuyên gia phù hợp...");
       
-    const response = await fetch("http://127.0.0.1:5000/api/match/find", {
+    const response = await fetch("/api/match/find", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1205,7 +1205,7 @@ function addFindExpertButton() {
       
       try {
           showLoadingModal("Đang phân tích hội thoại...");
-          const response = await fetch(`http://127.0.0.1:5000/api/match/from-chat/${conversationId}`);
+          const response = await fetch(`/api/match/from-chat/${conversationId}`);
           hideLoadingModal();
           const data = await response.json();
           
@@ -1626,7 +1626,7 @@ function launchExpertChatModal(counselorUsername, expertName) {
   if (expertSocket) {
     expertSocket.disconnect();
   }
-  expertSocket = io("http://127.0.0.1:5000");
+  expertSocket = io();
   currentExpertRoom = counselorUsername; 
 
   // ... (Gán sự kiện expertSocket.on('connect') VÀ 'receive_message' ở đây) ...
@@ -1748,7 +1748,7 @@ function initializeCounselorChat(expertUsername) {
     // 1. Sử dụng lại biến expertSocket toàn cục đã khai báo ở trên
     // Nếu chưa có kết nối, tạo mới
     if (!expertSocket) {
-        expertSocket = io("http://127.0.0.1:5000");
+        expertSocket = io();
     }
 
     let currentStudentId = null; 
