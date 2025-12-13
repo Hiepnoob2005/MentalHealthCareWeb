@@ -1526,7 +1526,6 @@ async function cancelBooking(apptId) {
     }
 }
 
-<<<<<<< Updated upstream
 // ==========================================
 // LOGIC CHAT VỚI CHUYÊN GIA 
 // ==========================================
@@ -2022,7 +2021,6 @@ function initializeCounselorChat(expertUsername) {
     }
 }
 
-=======
 const tabVerification = document.getElementById('tab-verification');
 const viewVerification = document.getElementById('view-verification');
 
@@ -2038,4 +2036,3 @@ if (tabVerification) {
         tabVerification.classList.add('active');
     });
 }
->>>>>>> Stashed changes
