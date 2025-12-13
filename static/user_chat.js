@@ -34,7 +34,7 @@ function initializeSocket() {
     if (expertSocket) expertSocket.disconnect();
     
     // Kết nối đến server
-    expertSocket = io("http://127.0.0.1:5000");
+    expertSocket = io();
 
     expertSocket.on('connect', () => {
         console.log("Đã kết nối Socket!");
