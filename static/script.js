@@ -1389,14 +1389,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // --- LOGIC RIÊNG CHO USER THƯỜNG (Booking & History) ---
 document.addEventListener('DOMContentLoaded', function() {
-    // Kiểm tra nếu là User thường (có tab overview nhưng ko có datepicker của counselor)
+// Kiểm tra nếu là User thường (có tab overview nhưng ko có datepicker của counselor)
     if (!document.getElementById('user-view-overview')) return;
 
     // 1. XỬ LÝ CHUYỂN TAB
+    // [SỬA] Thêm tab-verification vào danh sách
     const userTabs = {
         'tab-overview': 'user-view-overview',
         'tab-schedule': 'user-view-booking', // Tab Lịch hẹn
-        'tab-history': 'user-view-history'   // Tab Lịch sử
+        'tab-history': 'user-view-history',  // Tab Lịch sử
+        'tab-verification': 'view-verification' // <--- THÊM DÒNG NÀY
     };
 
     Object.keys(userTabs).forEach(tabId => {
@@ -1404,16 +1406,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tabEl) {
             tabEl.addEventListener('click', function(e) {
                 e.preventDefault();
+                
+                // Xóa active ở tất cả các tab
                 document.querySelectorAll('.dashboard-menu a').forEach(a => a.classList.remove('active'));
+                // Active tab hiện tại
                 this.classList.add('active');
 
+                // Ẩn tất cả các view
                 Object.values(userTabs).forEach(viewId => {
                     const el = document.getElementById(viewId);
                     if(el) el.style.display = 'none';
                 });
-                document.getElementById(userTabs[tabId]).style.display = 'block';
+                
+                // Hiện view tương ứng
+                const targetView = document.getElementById(userTabs[tabId]);
+                if(targetView) targetView.style.display = 'block';
 
-                // Load dữ liệu khi chuyển tab
+                // Load dữ liệu khi chuyển tab (nếu cần)
                 if (tabId === 'tab-schedule') loadAvailableCounselors();
                 if (tabId === 'tab-history') loadUserHistory();
             });
@@ -1517,6 +1526,7 @@ async function cancelBooking(apptId) {
     }
 }
 
+<<<<<<< Updated upstream
 // ==========================================
 // LOGIC CHAT VỚI CHUYÊN GIA 
 // ==========================================
@@ -2012,3 +2022,20 @@ function initializeCounselorChat(expertUsername) {
     }
 }
 
+=======
+const tabVerification = document.getElementById('tab-verification');
+const viewVerification = document.getElementById('view-verification');
+
+if (tabVerification) {
+    tabVerification.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Ẩn tất cả các view khác
+        document.querySelectorAll('.dashboard-content > div').forEach(div => div.style.display = 'none');
+        document.querySelectorAll('.dashboard-menu a').forEach(a => a.classList.remove('active'));
+        
+        // Hiện view verification
+        viewVerification.style.display = 'block';
+        tabVerification.classList.add('active');
+    });
+}
+>>>>>>> Stashed changes

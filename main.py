@@ -1350,8 +1350,21 @@ def get_chat_partners():
         logging.error(f"Error getting chat partners: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+<<<<<<< Updated upstream
 
 @app.route("/register_page.html")
+=======
+# --- Route phục vụ file HTML ---
+@app.route("/")
+def home():
+    verification_result = None
+    if current_user.is_authenticated:
+        verification_result = get_verification_info(current_user.username)
+        
+    return render_template("index.html", verification_result=verification_result)
+    
+@app.route('/register_page.html')
+>>>>>>> Stashed changes
 def register_page():
     return render_template("register_page.html")
 
@@ -1426,6 +1439,10 @@ def handle_verification_upload():  # <-- Bỏ 'async'
 
         logging.info(f"Đã lưu hồ sơ (CCCD, Bằng cấp) cho user: {current_user.username}")
 
+        # Ghi nhận trạng thái Chờ duyệt
+        update_verification_status(current_user.username, "PENDING") 
+        # ---------------------
+
         # TODO: Cập nhật trạng thái 'pending_review' cho user trong database
         # (Hiện tại, chúng ta chỉ lưu file để bạn duyệt thủ công)
 
@@ -1469,11 +1486,29 @@ def admin_dashboard():
 
     # Quét thư mục upload để lấy danh sách hồ sơ
     profiles = []
+<<<<<<< Updated upstream
     if os.path.exists(app.config["UPLOAD_FOLDER"]):
         files = os.listdir(app.config["UPLOAD_FOLDER"])
         # Gom nhóm file theo username (dựa vào tên file: username_id_card.jpg)
+=======
+    pending_users = []
+# 1. Lấy danh sách user đang PENDING từ file text
+    if os.path.exists(VERIFICATION_FILE):
+        with open(VERIFICATION_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                parts = line.strip().split(';')
+                if len(parts) >= 2 and parts[1] == "PENDING":
+                    pending_users.append(parts[0]) # Username
+
+    # 2. Map với file ảnh
+    # (Logic cũ của bạn quét thư mục, giờ ta chỉ hiển thị nếu user đó nằm trong list pending)
+    if os.path.exists(app.config['UPLOAD_FOLDER']):
+        files = os.listdir(app.config['UPLOAD_FOLDER'])
+>>>>>>> Stashed changes
         user_files = {}
+        
         for f in files:
+<<<<<<< Updated upstream
             if "_" in f:
                 username = f.split("_")[0]
                 if username not in user_files:
@@ -1496,6 +1531,59 @@ def admin_dashboard():
 
     return render_template("admin_dashboard.html", profiles=profiles)
 
+=======
+            if '_' in f:
+                username = f.split('_')[0]
+                # CHỈ XỬ LÝ NẾU USER ĐANG PENDING
+                if username in pending_users:
+                    if username not in user_files:
+                        user_files[username] = {'id_card': None, 'degree': None}
+                    
+                    if 'id_card' in f: user_files[username]['id_card'] = f
+                    elif 'degree' in f: user_files[username]['degree'] = f
+        
+        for username, doc in user_files.items():
+            if doc['id_card'] and doc['degree']: # Chỉ hiện khi đủ 2 ảnh
+                profiles.append({
+                    'username': username,
+                    'id_card': doc['id_card'],
+                    'degree': doc['degree']
+                })
+
+    return render_template("admin_dashboard.html", profiles=profiles)
+
+@app.route("/api/admin/approve", methods=["POST"])
+@login_required
+def approve_expert():
+    if not current_user.is_admin: return jsonify({"error": "Unauthorized"}), 403
+    
+    data = request.get_json()
+    username = data.get("username")
+    
+    # 1. Cập nhật trạng thái request
+    update_verification_status(username, "APPROVED")
+    
+    # 2. Cập nhật User thành Verified (Trong counselor_accounts.txt hoặc user_accounts.txt)
+    # Lưu ý: Bạn cần đảm bảo logic update file account ở đây. 
+    # Để đơn giản, mình giả lập việc update status, 
+    # trong thực tế bạn phải rewrite file user_accounts.txt để đổi verified=True
+    
+    # Ví dụ đơn giản: Ghi đè trạng thái
+    return jsonify({"success": True, "message": f"Đã duyệt {username}"})
+
+@app.route("/api/admin/reject", methods=["POST"])
+@login_required
+def reject_expert():
+    if not current_user.is_admin: return jsonify({"error": "Unauthorized"}), 403
+    
+    data = request.get_json()
+    username = data.get("username")
+    reason = data.get("reason", "Hồ sơ không đạt yêu cầu")
+    
+    update_verification_status(username, "REJECTED", reason)
+    
+    return jsonify({"success": True, "message": f"Đã từ chối {username}"})
+>>>>>>> Stashed changes
 
 # Route để xem ảnh (vì thư mục upload nằm ngoài static)
 @app.route("/uploads/<filename>")
@@ -1868,6 +1956,7 @@ def book_appointment():
         logging.error(f"Lỗi ghi file: {e}")
         return jsonify({"message": "Lỗi server"}), 500
 
+<<<<<<< Updated upstream
 
 # --- TRONG FILE app.py ---
 
@@ -2080,6 +2169,45 @@ def handle_counselor_join(data):
     emit("receive_message", {"text": "Bạn đã kết nối lại. Lịch sử chat đã được tải.", "sender_type": "system"}, to=request.sid)
 
 # --- CÁCH CHẠY SERVER ---
+=======
+# --- THÊM VÀO PHẦN CẤU HÌNH ĐẦU FILE (Sau các biến FILE khác) ---
+VERIFICATION_FILE = "verification_requests.txt"
+
+# --- THÊM HÀM HỖ TRỢ ĐỌC/GHI TRẠNG THÁI ---
+def update_verification_status(username, status, reason=""):
+    """Cập nhật hoặc thêm mới trạng thái hồ sơ"""
+    lines = []
+    if os.path.exists(VERIFICATION_FILE):
+        with open(VERIFICATION_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+    
+    # Xóa dòng cũ của user này (nếu có)
+    new_lines = [line for line in lines if not line.startswith(f"{username};")]
+    
+    # Thêm dòng mới: Username;Status;Date;Reason
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    new_lines.append(f"{username};{status};{now};{reason}\n")
+    
+    with open(VERIFICATION_FILE, "w", encoding="utf-8") as f:
+        f.writelines(new_lines)
+
+def get_verification_info(username):
+    """Lấy thông tin trạng thái của user"""
+    if not os.path.exists(VERIFICATION_FILE):
+        return None
+        
+    with open(VERIFICATION_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            parts = line.strip().split(';')
+            if parts[0] == username:
+                return {
+                    "status": parts[1],
+                    "date": parts[2],
+                    "reason": parts[3] if len(parts) > 3 else ""
+                }
+    return None
+
+>>>>>>> Stashed changes
 if __name__ == "__main__":
     socketio.run(app, debug=True, port=5000)
     print("🚀 Starting Flask Server with REAL Zoom API")
