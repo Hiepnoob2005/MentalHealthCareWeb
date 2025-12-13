@@ -1638,10 +1638,10 @@ def check_existing_booking():
                         "id": parts[0],
                         "counselor": parts[2],
                         "date": parts[3],
-                        "time": parts[4]
+                        "time": parts[4],
                     }
                     break
-        
+
         return jsonify({"existing": existing_appt}), 200
 
     except Exception as e:
@@ -1656,24 +1656,28 @@ def cancel_booking():
     appt_id = request.get_json().get("id")
     lines = []
     found = False
-    
+
     if os.path.exists(APPOINTMENTS_FILE):
-        with open(APPOINTMENTS_FILE, "r", encoding='utf-8') as f:
+        with open(APPOINTMENTS_FILE, "r", encoding="utf-8") as f:
             lines = f.readlines()
-            
+
     new_lines = []
     for line in lines:
-        parts = line.strip().split(';')
-        if len(parts) >= 6 and parts[0] == appt_id and parts[1] == current_user.username:
+        parts = line.strip().split(";")
+        if (
+            len(parts) >= 6
+            and parts[0] == appt_id
+            and parts[1] == current_user.username
+        ):
             # Đổi trạng thái thành cancelled
-            parts[5] = 'cancelled'
-            new_lines.append(';'.join(parts) + '\n')
+            parts[5] = "cancelled"
+            new_lines.append(";".join(parts) + "\n")
             found = True
         else:
             new_lines.append(line)
-            
+
     if found:
-        with open(APPOINTMENTS_FILE, "w", encoding='utf-8') as f:
+        with open(APPOINTMENTS_FILE, "w", encoding="utf-8") as f:
             f.writelines(new_lines)
         return jsonify({"message": "Đã hủy lịch hẹn."}), 200
     else:
@@ -1684,20 +1688,22 @@ def cancel_booking():
 def get_user_appointments():
     """Lấy lịch sử hẹn của User (cả confirmed và cancelled)"""
     history = []
-    
+
     if os.path.exists(APPOINTMENTS_FILE):
-        with open(APPOINTMENTS_FILE, "r", encoding='utf-8') as f:
+        with open(APPOINTMENTS_FILE, "r", encoding="utf-8") as f:
             for line in f:
-                parts = line.strip().split(';')
+                parts = line.strip().split(";")
                 if len(parts) >= 6 and parts[1] == current_user.username:
-                    history.append({
-                        "id": parts[0],
-                        "counselor": parts[2], # Username của counselor
-                        "date": parts[3],
-                        "time": parts[4],
-                        "status": parts[5]
-                    })
-    
+                    history.append(
+                        {
+                            "id": parts[0],
+                            "counselor": parts[2],  # Username của counselor
+                            "date": parts[3],
+                            "time": parts[4],
+                            "status": parts[5],
+                        }
+                    )
+
     # Sắp xếp mới nhất lên đầu
     history.sort(key=lambda x: f"{x['date']} {x['time']}", reverse=True)
     return jsonify({"appointments": history}), 200

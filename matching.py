@@ -54,6 +54,7 @@ class MatchingSystem:
         }
     
     def load_counselors(self) -> List[Counselor]:
+        """Load danh sách chuyên gia từ file"""
         counselors = []
             
         try:
@@ -84,7 +85,6 @@ class MatchingSystem:
             logging.error(f"Lỗi khi load counselors: {e}")
             
         return counselors                     
-
 
     def load_Chatted_Counselors(self, current_username: str) -> List[Counselor]:
         """

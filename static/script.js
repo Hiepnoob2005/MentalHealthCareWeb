@@ -30,31 +30,32 @@ document.addEventListener("DOMContentLoaded", function () {
 async function checkLoginStatus() {
   try {
     const response = await fetch("http://127.0.0.1:5000/api/status");
+    
+    // NẾU LỖI MẠNG HOẶC SERVER -> Coi như chưa đăng nhập
     if (!response.ok) {
-      // NẾU CHƯA ĐĂNG NHẬP (hoặc server lỗi):
-      // Gán sự kiện cho các nút CTA khác để MỞ MODAL
       initializeCTAListeners();
       return;
     }
 
     const data = await response.json();
     if (data.logged_in && data.username) {
-      // Nếu đã đăng nhập, cập nhật giao diện
+      // --- ĐÃ ĐĂNG NHẬP ---
+      
+      // 1. Cập nhật UI (nút Xin chào, Dropdown)
       updateUIAfterLogin(data.username);
-      // Kiểm tra nếu giao diện Messenger tồn tại (tức là đang ở view Counselor)
+      
+      // 2. Khởi tạo Chat (nếu cần)
       const messengerContainer = document.querySelector('.messenger-container');
       if (messengerContainer) {
-          // Gọi hàm khởi tạo chat cho chuyên gia với username thật lấy từ API
           initializeCounselorChat(data.username);
       }
+
     } else {
-      // NẾU CHƯA ĐĂNG NHẬP:
-      // Gán sự kiện cho các nút CTA khác để MỞ MODAL
-      initializeCTAListeners();
+      // --- CHƯA ĐĂNG NHẬP ---
+      initializeCTAListeners(); 
     }
   } catch (err) {
     console.error("Lỗi kiểm tra trạng thái:", err);
-    // Nếu không kết nối được server, vẫn gán listener cho modal
     initializeCTAListeners();
   }
 }
@@ -268,29 +269,36 @@ function initializeLoginModalListeners() {
  */
 function initializeCTAListeners() {
   const ctaSelectors = [
-    ".btn-cta",
-    ".btn-primary", // Hero section "Đánh giá ngay"
-    ".btn-connect:not([disabled])", // Connect buttons on expert cards
+    ".btn-cta", // Lưu ý: Class này có thể bao gồm cả nút Navbar
+    ".btn-primary", 
+    ".btn-connect:not([disabled])", 
   ];
 
   ctaSelectors.forEach((selector) => {
     document.querySelectorAll(selector).forEach((btn) => {
-      btn.addEventListener("click", function (e) {
+      
+      // [THÊM ĐOẠN NÀY] Kiểm tra: Nếu nút này là Navbar Button VÀ đã đổi thành "Xin chào..." 
+      // thì ĐỪNG gán sự kiện mở modal nữa.
+      if (btn.id === "navbarCtaButton" && btn.textContent.includes("Xin chào")) {
+          return; 
+      }
+
+      // Nếu không phải trường hợp trên, gán sự kiện mở modal bình thường
+      // Để tránh gán trùng lặp (nếu hàm này chạy nhiều lần), nên dùng onclick hoặc removeEventListener trước
+      btn.onclick = function (e) {
         e.preventDefault();
-        // Mở modal đăng nhập
         openLoginModal();
-      });
+      };
     });
   });
 
-  // Gán sự kiện cho nút CTA chính trên Navbar (nếu nó tồn tại)
+  // Đoạn code cũ gán riêng cho Navbar (nếu có) cũng cần kiểm tra tương tự
   const navbarCta = document.getElementById("navbarCtaButton");
-  if (navbarCta && navbarCta.getAttribute("href") !== "#") {
-    // Chỉ gán nếu chưa đăng nhập
-    navbarCta.addEventListener("click", (e) => {
+  if (navbarCta && !navbarCta.textContent.includes("Xin chào")) {
+     navbarCta.onclick = (e) => {
       e.preventDefault();
       openLoginModal();
-    });
+    };
   }
 }
 
