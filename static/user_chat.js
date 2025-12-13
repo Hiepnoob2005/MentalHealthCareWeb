@@ -38,6 +38,11 @@ function initializeSocket() {
 
     expertSocket.on('connect', () => {
         console.log("Đã kết nối Socket!");
+        // [QUAN TRỌNG] Nếu đang ở trong phòng chat (vd: refresh trang), join lại ngay
+        if (currentExpertRoom) {
+             console.log("Tự động join lại phòng:", currentExpertRoom);
+             expertSocket.emit('join_expert_chat', { room: currentExpertRoom });
+        }
     });
 
     // Lắng nghe tin nhắn (Logic cũ của bạn)
@@ -63,11 +68,6 @@ function initializeSocket() {
             addMessageToExpertChat(data.text, 'sent'); // Tin của mình
         } else if (data.sender_type === 'counselor') {
             addMessageToExpertChat(data.text, 'received'); // Tin chuyên gia
-        }
-
-        if (currentExpertRoom) {
-            console.log("Đang khôi phục kết nối vào phòng:", currentExpertRoom);
-            expertSocket.emit('join_expert_chat', { room: currentExpertRoom });
         }
     });
 
@@ -127,11 +127,7 @@ async function loadExpertListForSidebar() {
 
         // Nếu có targetExpert từ URL mà chưa có trong danh sách đã chat
         if (targetExpertId && !counselors.find(c => c.id === targetExpertId)) {
-            // Gọi API lấy thông tin chi tiết của người mới này để thêm vào list tạm
             try {
-                // Chúng ta dùng lại API lấy all nhưng lọc phía client, 
-                // hoặc tốt hơn là bạn viết API get-one-counselor. 
-                // Ở đây dùng cách nhanh: fetch all rồi tìm.
                 const allRes = await fetch('/api/counselors/all');
                 const allData = await allRes.json();
                 const newExpert = allData.counselors.find(c => c.id === targetExpertId);
@@ -151,6 +147,7 @@ async function loadExpertListForSidebar() {
                 const li = document.createElement('li');
                 li.className = 'expert-item';
                 li.id = `expert-item-${exp.id}`;
+                // Gọi hàm openChat khi click
                 li.onclick = () => openChat(exp.id, exp.name);
 
                 li.innerHTML = `
@@ -170,6 +167,7 @@ async function loadExpertListForSidebar() {
         document.getElementById('expertList').innerHTML = '<li class="loading-text" style="color:red;">Lỗi kết nối.</li>';
     }
 }
+
 /**
  * Hàm openChat (Đã điều chỉnh từ script.js cũ để không mở modal)
  */
@@ -199,6 +197,9 @@ async function openChat(counselorUsername, expertName) {
 
     // 5. Join Room (Logic cũ) -> Server sẽ tự động emit 'load_history' về sau khi join
     expertSocket.emit('join_expert_chat', { room: counselorUsername });
+
+    // [MỚI] 6. Kích hoạt giao diện chat Mobile (nếu đang ở màn hình nhỏ)
+    openChatMobile(); 
 }
 
 /**
@@ -219,11 +220,8 @@ function addMessageToExpertChat(text, type) {
     const bubbleDiv = document.createElement("div");
     bubbleDiv.className = "bubble";
     
-    // --- SỬA TẠI ĐÂY ---
-    // Cũ: bubbleDiv.textContent = text; 
-    // Mới: Dùng innerHTML để render thẻ <a>, <div>
+    // Dùng innerHTML để render thẻ <a>, <div>
     bubbleDiv.innerHTML = text; 
-    // -------------------
 
     messageDiv.appendChild(bubbleDiv);
     messagesContainer.appendChild(messageDiv);
@@ -254,4 +252,23 @@ if (chatForm) {
         e.preventDefault();
         sendExpertMessage();
     };
+}
+
+// --- LOGIC MOBILE CHAT TOGGLE (Mới thêm) ---
+
+// Hàm này gọi để bật khung chat, ẩn sidebar
+function openChatMobile() {
+    // Chỉ chạy nếu màn hình nhỏ (bạn có thể thêm check window.innerWidth nếu muốn)
+    const layout = document.querySelector('.chat-layout');
+    if (layout) {
+        layout.classList.add('mobile-chat-active');
+    }
+}
+
+// Hàm này gọi khi bấm nút mũi tên quay lại (đã gán onclick trong HTML)
+window.closeChatMobile = function() {
+    const layout = document.querySelector('.chat-layout');
+    if (layout) {
+        layout.classList.remove('mobile-chat-active');
+    }
 }

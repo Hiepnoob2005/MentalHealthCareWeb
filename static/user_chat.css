@@ -694,3 +694,109 @@ body {
 .zoom-btn:hover {
     background: #1a73e8;
 }
+
+/* ==========================================================================
+   MOBILE CHAT RESPONSIVE (Max-width: 768px)
+   Giả lập giao diện Messenger App
+   ========================================================================== */
+
+/* Nút Back (Quay lại) - Mặc định ẩn trên Desktop */
+.back-to-list-btn {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    /* 1. LAYOUT TỔNG */
+    /* ----------------------------------------------------- */
+    .chat-layout {
+        position: relative;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    /* 2. SIDEBAR (DANH SÁCH NGƯỜI DÙNG) */
+    /* ----------------------------------------------------- */
+    .chat-sidebar {
+        width: 100% !important; /* Chiếm toàn màn hình */
+        height: 100%;
+        border-right: none;
+        z-index: 1;
+        display: flex; /* Mặc định hiện danh sách */
+    }
+
+    /* Khi đang chat thì ẩn Sidebar đi */
+    .chat-layout.mobile-chat-active .chat-sidebar {
+        display: none;
+    }
+
+    /* 3. MAIN CHAT (KHUNG CHAT) */
+    /* ----------------------------------------------------- */
+    .chat-main {
+        width: 100% !important;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+        border-radius: 0 !important; /* Bỏ bo góc trên mobile */
+        display: none; /* Mặc định ẩn khung chat */
+        background: #fff;
+    }
+
+    /* Khi đang chat thì hiện Khung chat lên */
+    .chat-layout.mobile-chat-active .chat-main {
+        display: flex;
+        flex-direction: column;
+        animation: slideInRight 0.3s ease; /* Hiệu ứng trượt vào */
+    }
+
+    /* Hiệu ứng trượt giống Messenger */
+    @keyframes slideInRight {
+        from { transform: translateX(100%); }
+        to { transform: translateX(0); }
+    }
+
+    /* 4. HEADER CHAT & NÚT BACK */
+    /* ----------------------------------------------------- */
+    .chat-header {
+        padding: 0 10px; /* Giảm padding */
+        gap: 10px;
+        display: flex;
+        justify-content: space-between;
+        margin: 0;
+    }
+
+    /* Hiện nút Back trên Mobile */
+    .back-to-list-btn {
+        display: inline;
+        width: 35px;
+        height: 35px;
+        border: none;
+        background: transparent;
+        color: var(--primary);
+        font-size: 1.5rem;
+        cursor: pointer;
+        border-radius: 50%;
+        margin: 0;
+    }
+
+    .back-to-list-btn:hover {
+        background-color: #f0f2f5;
+    }
+
+    /* 5. TIN NHẮN & INPUT */
+    /* ----------------------------------------------------- */
+    .message {
+        max-width: 85%; /* Tin nhắn dài hơn trên màn hình nhỏ */
+    }
+
+    .bubble {
+        font-size: 15px; /* Chữ to dễ đọc */
+    }
+
+    /* Input ghim đáy an toàn với iPhone tai thỏ */
+    .input-area {
+        padding-bottom: max(16px, env(safe-area-inset-bottom)); 
+    }
+}

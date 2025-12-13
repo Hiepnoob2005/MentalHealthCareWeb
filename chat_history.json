@@ -206,5 +206,13 @@
         "text": "alo",
         "target_student_id": null,
         "timestamp": "2025-12-13 15:10:18"
+    },
+    {
+        "room": "nvan",
+        "sender_id": "24127020",
+        "sender_type": "user",
+        "text": "xin chào",
+        "target_student_id": null,
+        "timestamp": "2025-12-13 16:34:04"
     }
 ]

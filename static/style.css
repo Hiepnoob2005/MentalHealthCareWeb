@@ -15,7 +15,7 @@
   --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
-* {
+*{
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -57,12 +57,13 @@ body {
 /* === BẮT ĐẦU: CSS MỚI CHO PROFILE DROPDOWN === */
 /* (Dán vào cuối file style.css) */
 
-/* 1. Bọc ngoài cho nút CTA và Dropdown để định vị */
-.navbar-actions {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
+/* 1. Căn chỉnh Container chứa nút và icon menu */
+  .navbar-actions {
+    position: static;
+    display: flex;         /* Sử dụng Flexbox để dàn hàng ngang */
+    align-items: center;   /* Căn giữa theo chiều dọc */
+    gap: 15px;             /* Tạo khoảng cách giữa nút Đăng nhập và icon Menu */
+  }
 
 /* 2. "Box List" (Dropdown) */
 .profile-dropdown {
@@ -123,7 +124,7 @@ body {
 
 /* 5. Hiệu ứng khi di chuột (hover) */
 .dropdown-menu li a:hover {
-  background: var(--light);
+  background: #c0c0c0;
   color: var(--primary);
 }
 
@@ -133,14 +134,14 @@ body {
 
 /* 6. Đường kẻ ngang trước nút "Đăng xuất" */
 .dropdown-menu li:last-child {
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid #e0e0e0;
   /* var(--light) hơi mờ */
   margin-top: 0.25rem;
   padding-top: 0.25rem;
 }
 
 .dropdown-menu li:last-child a:hover {
-  background: #fbebee;
+  background: #d1d1d1;
   /* Màu đỏ nhạt khi hover Đăng xuất */
   color: var(--danger);
 }
@@ -202,11 +203,28 @@ body {
 .btn-cta {
   background: var(--gradient-1);
   color: white;
-  padding: 0.7rem 1.5rem;
+  
+  /* 1. Tăng padding 2 bên (trái/phải) để nút trông thoáng hơn */
+  padding: 0.7rem 1.2rem; 
+  
   border-radius: 50px;
   text-decoration: none;
   font-weight: 600;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  /* === CÁC THUỘC TÍNH MỚI ĐỂ FLEXIBLE === */
+  
+  /* Sử dụng Flexbox để căn giữa nội dung trong nút */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* QUAN TRỌNG: Ngăn chặn xuống dòng bất kể màn hình nhỏ thế nào */
+  white-space: nowrap;
+
+  /* Đảm bảo chiều rộng tự động theo nội dung */
+  width: auto;
+  min-width: fit-content;
 }
 
 .btn-cta:hover {
@@ -2906,3 +2924,460 @@ footer {
     font-size: 0.8rem;
   }
 }
+
+/* ==========================================================================
+   TOÀN BỘ CẤU HÌNH MOBILE RESPONSIVE (Max-width: 768px)
+   Dán đoạn này vào cuối file style.css
+   ========================================================================== */
+
+@media (max-width: 768px) {
+
+  /* 1. CẤU HÌNH CHUNG & BODY
+     ----------------------------------------------------- */
+  body {
+    font-size: 15px; /* Giảm size chữ cơ bản */
+    overflow-x: hidden; /* Chặn cuộn ngang tuyệt đối */
+  }
+
+  /* Giảm padding cho tất cả các section lớn */
+  .hero, .features, .quick-test, .experts, 
+  .resources, .dashboard, .profile-page-container {
+    padding: 3rem 1rem;
+  }
+
+  .nav-container {
+    padding: 0.8rem 1rem;
+  }
+
+  /* 2. NAVIGATION & DROPDOWN PROFILE
+     ----------------------------------------------------- */
+  .nav-links {
+    display: none; /* Ẩn menu desktop */
+  }
+
+  .mobile-menu-toggle {
+    display: block; /* Hiện nút hamburger */
+    font-size: 1.6rem;
+    margin-right: 1rem;
+  }
+
+  .navbar-actions {
+    position: static; /* Để dropdown căn theo màn hình */
+  }
+
+  .btn-cta {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  /* Dropdown profile tràn màn hình để dễ bấm */
+  .profile-dropdown {
+    width: 94%;
+    left: 3%;
+    right: 3%;
+    top: 70px;
+    transform-origin: top center;
+  }
+
+  /* 3. HERO SECTION
+     ----------------------------------------------------- */
+  .hero {
+    margin-top: 60px;
+    text-align: center;
+  }
+
+  .hero-container {
+    grid-template-columns: 1fr; /* 1 cột */
+    gap: 2rem;
+  }
+
+  .hero-content {
+    order: 1; /* Chữ lên trước */
+  }
+
+  .hero-image {
+    order: 2; /* Ảnh xuống sau */
+    margin-top: 1rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2rem;
+    line-height: 1.3;
+  }
+
+  .hero-content p {
+    font-size: 1rem;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+    flex-direction: column; /* Nút xếp dọc */
+  }
+
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .floating-card {
+    display: none; /* Ẩn các thẻ bay để đỡ rối */
+  }
+
+  /* 4. FEATURES, EXPERTS, RESOURCES (GRID SYSTEM)
+     ----------------------------------------------------- */
+  /* Chuyển tất cả Grid thành 1 cột */
+  .features-grid, 
+  .experts-grid, 
+  .resources-grid, 
+  .stats-grid,
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  /* 5. QUICK TEST
+     ----------------------------------------------------- */
+  .test-container {
+    padding: 1.5rem;
+    width: 100%;
+  }
+
+  .test-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .answer-option {
+    padding: 1rem;
+  }
+
+  /* Đảo ngược nút điều hướng: Tiếp theo lên trên */
+  .test-navigation {
+    flex-direction: column-reverse;
+    gap: 1rem;
+  }
+
+  .test-navigation button {
+    width: 100%;
+  }
+
+  /* 6. CHATBOT WINDOW (AI)
+     ----------------------------------------------------- */
+  /* Bung full màn hình để bàn phím ảo không che mất ô nhập */
+  .chatbot-window {
+    width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 0;
+    z-index: 9999;
+  }
+
+  .chatbot-toggle {
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+  }
+
+  /* 7. EXPERT CHAT WINDOW (POPUP CHAT VỚI NGƯỜI)
+     ----------------------------------------------------- */
+  #expertChatWindow {
+    width: 100%;
+    height: 100%;
+    bottom: 0;
+    left: 0;
+    border-radius: 0;
+    z-index: 10000;
+  }
+
+  #expertChatWindow .chat-container {
+    border-radius: 0;
+  }
+
+  /* 8. DASHBOARD (USER & COUNSELOR VIEW)
+     ----------------------------------------------------- */
+  .dashboard-container {
+    grid-template-columns: 1fr; /* Bỏ layout 2 cột */
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Biến Sidebar dọc thành Menu ngang trượt được */
+  .dashboard-sidebar {
+    display: block !important; /* Ghi đè nếu có chỗ nào ẩn */
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    background: white;
+    border-bottom: 2px solid var(--light);
+  }
+
+  .dashboard-menu {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .dashboard-menu li {
+    margin: 0;
+  }
+
+  .dashboard-menu a {
+    padding: 0.6rem 1rem;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    font-size: 0.9rem;
+  }
+
+  .mood-chart {
+    height: 250px;
+  }
+
+  /* 9. MESSENGER CONTAINER (GIAO DIỆN CHAT CỦA BÁC SĨ)
+     ----------------------------------------------------- */
+  /* Chuyển từ layout Trái-Phải sang Trên-Dưới */
+  .messenger-container {
+    flex-direction: column;
+    height: 85vh; /* Chiều cao cố định */
+    border: none;
+  }
+
+  /* Danh sách sinh viên: nằm trên, cao 30% */
+  .sidebar {
+    width: 100%;
+    height: 30%;
+    overflow-y: auto;
+    border-right: none;
+    border-bottom: 2px solid #eee;
+  }
+  
+  .student-item {
+    padding: 10px;
+  }
+
+  /* Khung chat: nằm dưới, cao 70% */
+  .chat-area {
+    width: 100%;
+    height: 70%;
+  }
+
+  /* 10. BOOKING SYSTEM & SLOTS
+     ----------------------------------------------------- */
+  /* Chia lưới giờ thành 3 cột cho dễ bấm */
+  #counselorSlotContainer, 
+  #bookingSlots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .time-slot-item, .slot-btn {
+    padding: 10px 2px;
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  /* 11. PROFILE PAGE
+     ----------------------------------------------------- */
+  .profile-page-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1rem;
+  }
+
+  .profile-card {
+    padding: 1.5rem;
+  }
+
+  .profile-card h2 {
+    font-size: 1.4rem;
+  }
+
+  /* 12. MODALS (LOGIN, REGISTER, MATCHING) - PHIÊN BẢN NHỎ GỌN
+     ----------------------------------------------------- */
+  .modal-container,
+  .matching-modal-content,
+  .test-result-content {
+    /* Kích thước thẻ: Nhỏ gọn như một tấm card */
+    width: 90% !important;       /* Chừa lề 2 bên (5% mỗi bên) */
+    max-width: 360px !important; /* Không bao giờ to quá 360px */
+    height: auto !important;     /* Chiều cao tự co giãn theo nội dung */
+    max-height: 85vh !important; /* Không được cao quá 85% màn hình */
+    
+    /* Căn chỉnh & Giao diện */
+    margin: auto;                /* Tự động căn giữa màn hình */
+    padding: 1.5rem !important;  /* Padding vừa đủ, không quá rộng */
+    border-radius: 20px !important; /* Bo tròn mềm mại */
+    
+    /* Layout */
+    flex-direction: column;
+    overflow-y: auto;            /* Nếu nội dung dài quá thì cuộn bên trong modal */
+  }
+
+  /* Ẩn hoàn toàn ảnh minh họa (cột trái của login) để tiết kiệm chỗ */
+  .modal-image {
+    display: none !important; 
+  }
+
+  /* Nội dung bên trong (Form) */
+  .modal-content {
+    padding: 0 !important; /* Bỏ padding thừa vì cha đã có padding rồi */
+    width: 100%;
+    text-align: center; /* Căn giữa nội dung cho đẹp */
+  }
+
+  /* Tiêu đề modal nhỏ lại cho cân đối */
+  .modal-content h2,
+  .matching-modal-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .modal-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Các thẻ kết quả Matching */
+  .matching-results {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .match-card {
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem; /* Chữ nhỏ lại chút */
+  }
+  
+  /* Nút tắt (X) to ra chút cho dễ bấm trên màn hình cảm ứng */
+  .close-modal, .modal-close {
+    top: 10px;
+    right: 15px;
+    font-size: 1.8rem;
+    padding: 5px; 
+  }
+
+  /* 13. UTILS & THÔNG BÁO
+     ----------------------------------------------------- */
+  .counselor-verify-box {
+    display: none; /* Ẩn box xác thực ở góc để đỡ vướng */
+  }
+
+  /* Toast hiển thị giữa màn hình phía dưới */
+  .custom-toast {
+    width: 90%;
+    left: 5%;
+    right: 5%;
+    top: auto;
+    bottom: 80px;
+    text-align: center;
+  }
+}
+
+/* ==========================================================================
+   MÀN HÌNH RẤT NHỎ (Mobile nhỏ < 480px)
+   ========================================================================== */
+@media (max-width: 480px) {
+  
+  .hero-content h1 {
+    font-size: 1.7rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.6rem;
+  }
+
+  /* Nút chọn giờ giảm còn 2 cột */
+  #counselorSlotContainer, 
+  #bookingSlots {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .btn-submit, 
+  .btn-connect, 
+  .btn-connect-counselor {
+    padding: 0.8rem;
+    font-size: 1rem;
+  }
+
+  .chat-header h3 {
+    font-size: 1rem;
+  }
+  
+  .modal-logo {
+    font-size: 1.2rem;
+  }
+}
+
+/* =========================================================
+     10. AI CHATBOT WINDOW (Giao diện "Thẻ nổi" nhỏ gọn)
+     Thay thế đoạn chatbot cũ trong @media (max-width: 768px)
+     ========================================================= */
+
+  .chatbot-container {
+    bottom: 20px;
+    right: 20px;
+    z-index: 9998;
+  }
+
+  /* Nút bật tắt */
+  .chatbot-toggle {
+    width: 60px;
+    height: 60px;
+    box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4); /* Thêm bóng đổ màu tím */
+  }
+
+  /* KHUNG CHAT: NHỎ GỌN & BO TRÒN */
+  .chatbot-window {
+    position: fixed;
+    
+    /* Kích thước gọn gàng */
+    width: 340px !important;    /* Chiều rộng cố định vừa phải */
+    max-width: 90%;             /* Không quá 90% màn hình nếu đt quá nhỏ */
+    height: 500px !important;   /* Chiều cao cố định */
+    max-height: 70vh;           /* Không cao quá 70% màn hình */
+    
+    /* Vị trí: Nằm trên nút toggle một chút */
+    bottom: 90px; 
+    right: 20px;
+    left: auto; /* Bỏ left: 0 của full screen */
+    top: auto;  /* Bỏ top: 0 của full screen */
+    
+    /* Trang trí: Bo góc & Đổ bóng đẹp */
+    border-radius: 25px !important; /* Bo tròn mạnh (đẹp hơn 10px) */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important; /* Bóng đổ sâu tạo chiều sâu */
+    
+    margin: 0;
+    z-index: 10000;
+    
+    /* Hiệu ứng xuất hiện: Phóng to từ góc dưới phải */
+    transform-origin: bottom right;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Hiệu ứng nảy nhẹ */
+  }
+
+  /* Đảm bảo header bo theo khung */
+  .chatbot-header {
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+    padding: 1rem;
+  }
+  
+  /* Đảm bảo input bo theo khung */
+  .chatbot-input {
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+    padding-bottom: 10px; /* Reset padding của iPhone X */
+  }
+  
+  /* Chỉnh lại font chữ input cho dễ nhìn */
+  .chatbot-input input {
+    font-size: 14px; 
+    padding: 10px 15px;
+    border-radius: 20px;
+  }
