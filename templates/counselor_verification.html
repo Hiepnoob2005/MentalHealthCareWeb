@@ -149,10 +149,15 @@
             const result = await response.json();
 
             if (response.ok && result.success) {
-                // Thành công
-                showMessage(result.message, 'success');
-                form.reset();
-                submitBtn.textContent = 'Đã nộp thành công!';
+            // Hiển thị thông báo đẹp hơn và ẩn form
+                document.querySelector('.verify-header').innerHTML = `
+                    <h2 style="color: var(--success); margin-bottom: 1rem;">
+                        <i class="fas fa-check-circle"></i> Nộp hồ sơ thành công!
+                    </h2>
+                    <p>Cảm ơn bạn đã quan tâm. Đội ngũ quản trị viên sẽ xem xét hồ sơ của bạn và liên hệ lại sớm nhất.</p>
+                    <p style="margin-top: 1rem;"><a href="/" style="color: var(--primary);">Về trang chủ</a></p>
+                `;
+                form.style.display = 'none'; // Ẩn form đi
             } else {
                 // Thất bại
                 throw new Error(result.message || 'Có lỗi xảy ra.');

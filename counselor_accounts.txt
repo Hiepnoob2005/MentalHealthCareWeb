@@ -1,6 +1,6 @@
-CounselorID;Name;Email;PasswordHash;Specialties;Rating;Status;Experience;verified
-C001;TS. Nguyễn Văn An;nguyenvanan@gmail.com;$2b$12$dummy_hash_1;stress,lo_au,hoc_tap;4.9;online;5 năm; yes
-C002;ThS. Trần Thị Bình;tranthib@gmail.com;$2b$12$dummy_hash_2;tram_cam,tam_ly_xa_hoi;4.8;online;3 năm; yes  
-C003;BS. Lê Văn Cường;levancuong@gmail.com;$2b$12$dummy_hash_3;roi_loan_giac_ngu,ap_luc_thi_cu;4.7;online;7 năm; no
-C004;ThS. Phạm Thị Dung;phamthidung@gmail.com;$2b$12$dummy_hash_4;stress,tinh_cam,gia_dinh;4.6;online;4 năm; no
-C005;TS. Hoàng Văn Em;hoangvanem@gmail.com;$2b$12$dummy_hash_5;lo_au,tram_cam,tu_hai;5.0;online;8 năm; yes
+CounselorID;Username;Name;Email;PasswordHash;Specialties;Rating;Status;Experience;verified
+C001;nvan;TS. Nguyễn Văn An;nguyenvanan@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.dxuMr/uO7jqp1O4PfiroLjmD97iqxIuwa.;stress,lo_au,hoc_tap;4.9;online;5 năm;yes
+C002;ttbinh;ThS. Trần Thị Bình;tranthib@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.dxuMr/uO7jqp1O4PfiroLjmD97iqxIuwa.;tram_cam,tam_ly_xa_hoi;4.8;online;3 năm;yes  
+C003;lvcuong;BS. Lê Văn Cường;levancuong@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.dxuMr/uO7jqp1O4PfiroLjmD97iqxIuwa.;roi_loan_giac_ngu,ap_luc_thi_cu;4.7;online;7 năm;no
+C004;ptdung;ThS. Phạm Thị Dung;phamthidung@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.dxuMr/uO7jqp1O4PfiroLjmD97iqxIuwa.;stress,tinh_cam,gia_dinh;4.6;online;4 năm;no
+C005;hvem;TS. Hoàng Văn Em;hoangvanem@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.dxuMr/uO7jqp1O4PfiroLjmD97iqxIuwa.;lo_au,tram_cam,tu_hai;5.0;online;8 năm;yes
