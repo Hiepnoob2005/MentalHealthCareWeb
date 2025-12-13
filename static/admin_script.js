@@ -16,77 +16,6 @@ window.handleLogout = function () {
   }
 }
 
-<<<<<<< Updated upstream
-window.approveExpert = function (username) {
-  if (!confirm(`Bạn có chắc chắn muốn DUYỆT hồ sơ của "${username}"?`)) return;
-
-  fetch('/api/admin/approve', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: username })
-  })
-    .then(res => res.json())
-    .then(data => {
-      alert(data.message);
-      if (data.success) window.location.reload();
-    })
-    .catch(err => alert("Lỗi: " + err));
-}
-
-window.rejectExpert = function (username) {
-  if (!confirm(`Bạn có chắc chắn muốn TỪ CHỐI hồ sơ của "${username}"?`)) return;
-
-  fetch('/api/admin/reject', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: username })
-  })
-    .then(res => res.json())
-    .then(data => {
-      alert(data.message);
-      if (data.success) window.location.reload();
-    })
-    .catch(err => alert("Lỗi: " + err));
-}
-
-// /* === 4. LOGIC NÚT ZOOM (Thay thế code cũ) === */
-// // (Dán vào cuối file admin_script.js)
-// function addMeetingLink(link) {
-//   const messagesContainer = document.getElementById("expertChatMessages");
-//   if (!messagesContainer) return;
-
-//   const note = document.createElement("div");
-//   note.className = "chat-meeting-notification";
-//   note.innerHTML = `
-//       <span class="note-text">A meeting link has been created:</span>
-//       <a href="${link}" target="_blank" class="note-link">Join Meeting</a>
-//   `;
-
-//   messagesContainer.appendChild(note);
-//   messagesContainer.scrollTop = messagesContainer.scrollHeight;
-// }
-
-// async function sendMeetingLink() {
-//   try {
-//     const res = await fetch("/create_meeting");
-//     const data = await res.json();
-
-//     if (data.join_url) {
-//       addMeetingLink(data.join_url);   // ✅ Correct
-//     } else {
-//       addMeetingLink("Failed to create meeting.");
-//       zoomBtn.textContent = "Create a Zoom Meeting";
-//     }
-
-//   } catch (err) {
-//     console.error("Zoom error:", err);
-//     addMeetingLink("Error connecting to server.");
-//     zoomBtn.textContent = "Create a Zoom Meeting";
-//   }
-// }
-
-
-=======
 async function approveExpert(username) {
     if(confirm(`Xác nhận DUYỆT hồ sơ cho chuyên gia: ${username}?`)) {
         try {
@@ -168,4 +97,3 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
->>>>>>> Stashed changes

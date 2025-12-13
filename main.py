@@ -228,10 +228,6 @@ def update_profile_data():
     
     return jsonify({"message": "Cập nhật thông tin thành công!"}), 200
 
-@app.route("/")
-def home():
-    return render_template("index.html")
-
 
 from datetime import datetime, timedelta # Nhớ import thêm
 
@@ -1350,10 +1346,6 @@ def get_chat_partners():
         logging.error(f"Error getting chat partners: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
-<<<<<<< Updated upstream
-
-@app.route("/register_page.html")
-=======
 # --- Route phục vụ file HTML ---
 @app.route("/")
 def home():
@@ -1364,7 +1356,6 @@ def home():
     return render_template("index.html", verification_result=verification_result)
     
 @app.route('/register_page.html')
->>>>>>> Stashed changes
 def register_page():
     return render_template("register_page.html")
 
@@ -1486,11 +1477,6 @@ def admin_dashboard():
 
     # Quét thư mục upload để lấy danh sách hồ sơ
     profiles = []
-<<<<<<< Updated upstream
-    if os.path.exists(app.config["UPLOAD_FOLDER"]):
-        files = os.listdir(app.config["UPLOAD_FOLDER"])
-        # Gom nhóm file theo username (dựa vào tên file: username_id_card.jpg)
-=======
     pending_users = []
 # 1. Lấy danh sách user đang PENDING từ file text
     if os.path.exists(VERIFICATION_FILE):
@@ -1504,34 +1490,9 @@ def admin_dashboard():
     # (Logic cũ của bạn quét thư mục, giờ ta chỉ hiển thị nếu user đó nằm trong list pending)
     if os.path.exists(app.config['UPLOAD_FOLDER']):
         files = os.listdir(app.config['UPLOAD_FOLDER'])
->>>>>>> Stashed changes
         user_files = {}
         
         for f in files:
-<<<<<<< Updated upstream
-            if "_" in f:
-                username = f.split("_")[0]
-                if username not in user_files:
-                    user_files[username] = {"id_card": None, "degree": None}
-
-                if "id_card" in f:
-                    user_files[username]["id_card"] = f
-                elif "degree" in f:
-                    user_files[username]["degree"] = f
-
-        # Chuyển thành list để render
-        for username, doc in user_files.items():
-            profiles.append(
-                {
-                    "username": username,
-                    "id_card": doc["id_card"],
-                    "degree": doc["degree"],
-                }
-            )
-
-    return render_template("admin_dashboard.html", profiles=profiles)
-
-=======
             if '_' in f:
                 username = f.split('_')[0]
                 # CHỈ XỬ LÝ NẾU USER ĐANG PENDING
@@ -1583,7 +1544,6 @@ def reject_expert():
     update_verification_status(username, "REJECTED", reason)
     
     return jsonify({"success": True, "message": f"Đã từ chối {username}"})
->>>>>>> Stashed changes
 
 # Route để xem ảnh (vì thư mục upload nằm ngoài static)
 @app.route("/uploads/<filename>")
@@ -1956,220 +1916,6 @@ def book_appointment():
         logging.error(f"Lỗi ghi file: {e}")
         return jsonify({"message": "Lỗi server"}), 500
 
-<<<<<<< Updated upstream
-
-# --- TRONG FILE app.py ---
-
-
-# API Route (Giữ nguyên)
-@app.route("/api/chat/check-expert-status")
-def check_expert_status():
-    username = request.args.get("username")
-    # TODO: Cần có logic để lấy tên thật (Full Name) từ username
-    # user = User.query.filter_by(username=username).first()
-    # expert_name = user.full_name if user else username
-    expert_name = f"TS. {username}"  # Tạm thời
-
-    # TODO: Logic kiểm tra online (ví dụ: CSDL hoặc 1 danh sách)
-    is_online = True
-    if is_online:
-        return jsonify({"status": "online", "expert_name": expert_name})
-    else:
-        return jsonify({"status": "offline"})
-
-
-# --- CÁC HÀM XỬ LÝ SOCKET ĐÃ KHÔI PHỤC LOGIC ROLE ---
-
-
-@socketio.on("connect")
-def handle_connect():
-    # Kiểm tra đăng nhập VÀ CÓ ROLE (rất quan trọng)
-    if "user_id" not in session or "role" not in session:
-        print(f"--- KẾT NỐI BỊ TỪ CHỐI: Client chưa đăng nhập hoặc thiếu role.")
-        return False
-
-    session["sid"] = request.sid  # Lưu lại SID để debug
-    print(
-        f"--- KẾT NỐI THÀNH CÔNG: Client {session.get('username')} (Role: {session.get('role')}) | SID: {request.sid}"
-    )
-
-
-@socketio.on("disconnect")
-def handle_disconnect():
-    username = session.get("username", "Unknown")
-    print(f"--- NGẮT KẾT NỐI: Client {username} (Role: {session.get('role')})")
-    # TODO: Thêm logic báo cho người trong phòng biết
-
-# Khi CHUYÊN GIA từ chối chat
-@socketio.on("reject_chat")
-def handle_reject_chat(data):
-    if "role" not in session or session["role"] != "counselor":
-        return False
-
-    room = data["room"]
-    print(f"--- HOST ĐÃ TỪ CHỐI PHÒNG: {room} ---")
-
-    emit(
-        "receive_message",
-        {
-            "text": "Chuyên gia hiện đang bận và không thể kết nối. Vui lòng đặt lịch hẹn.",
-            "sender_type": "system",
-        },
-        to=room,
-    )
-
-
-# Khi NGƯỜI DÙNG đóng cửa sổ chat
-@socketio.on("leave_room")
-def handle_leave_room(data):
-    if "user_id" not in session or "role" not in session:
-        return False
-
-    room = data["room"]
-    username = session.get("username", "User")
-
-    leave_room(room)
-    print(f"User {username} đã rời phòng: {room}")
-
-    emit(
-        "receive_message",
-        {"text": f"Người dùng {username} đã rời đi.", "sender_type": "system"},
-        to=room,
-        skip_sid=request.sid,
-    )
-
-@app.route("/user/chat")
-@login_required
-def user_chat_page():
-    """
-    Route để hiển thị trang chat riêng cho User (Giao diện Messenger)
-    """
-    # Nếu là counselor thì chặn lại (hoặc chuyển hướng sang dashboard của họ)
-    if current_user.is_counselor:
-        return "Trang này chỉ dành cho sinh viên. Vui lòng dùng Dashboard chuyên gia.", 403
-        
-    return render_template("user_chat.html")
-
-
-# --- Thêm vào phần import ---
-import json
-from datetime import datetime
-
-# --- CẤU HÌNH FILE LƯU CHAT ---
-CHAT_DB_FILE = 'chat_history.json'
-
-# 1. Hàm hỗ trợ: Đọc lịch sử từ file
-def load_chat_history():
-    if not os.path.exists(CHAT_DB_FILE):
-        return []
-    try:
-        with open(CHAT_DB_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception:
-        return []
-
-# 2. Hàm hỗ trợ: Lưu tin nhắn mới
-def save_chat_message(room, sender_id, sender_type, text, target_student_id=None):
-    history = load_chat_history()
-    
-    new_msg = {
-        "room": room, # Username của chuyên gia
-        "sender_id": sender_id,
-        "sender_type": sender_type,
-        "text": text,
-        "target_student_id": target_student_id,
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
-    
-    history.append(new_msg)
-    
-    with open(CHAT_DB_FILE, 'w', encoding='utf-8') as f:
-        json.dump(history, f, indent=4, ensure_ascii=False)
-        
-    return new_msg
-
-# 3. Hàm hỗ trợ: Lọc lịch sử cho User (Chỉ lấy tin của User này với Expert này)
-def get_history_for_user(expert_username, student_username):
-    all_history = load_chat_history()
-    filtered = []
-    
-    for msg in all_history:
-        # Chỉ xét tin nhắn trong phòng của Expert này
-        if msg.get('room') == expert_username:
-            # Case 1: User gửi
-            if msg.get('sender_type') == 'user' and msg.get('sender_id') == student_username:
-                filtered.append(msg)
-            # Case 2: Expert gửi CHO User này
-            elif msg.get('sender_type') == 'counselor' and msg.get('target_student_id') == student_username:
-                filtered.append(msg)
-                
-    return filtered
-
-# ---------------------------------------------------------
-# --- CẬP NHẬT CÁC SỰ KIỆN SOCKET (Thay thế code cũ) ---
-# ---------------------------------------------------------
-
-@socketio.on("join_expert_chat")
-def handle_join_room(data):
-    # (Giữ nguyên logic kiểm tra session cũ...)
-    if "role" not in session or session["role"] != "user":
-        return False
-
-    room = data["room"] # Expert username
-    user_username = session.get("username")
-
-    join_room(room)
-    
-    # [MỚI] Tải và gửi lại lịch sử chat riêng của User này
-    history = get_history_for_user(room, user_username)
-    emit('load_history', history, to=request.sid) # Chỉ gửi cho người mới vào
-    
-    # (Giữ nguyên các thông báo system...)
-    emit("receive_message", {"text": "Đã kết nối, vui lòng chờ chuyên gia chấp nhận.", "sender_type": "system"}, to=request.sid)
-    emit("show_chat_notification", {"user_id": session["user_id"], "username": user_username}, to=room, skip_sid=request.sid)
-
-
-@socketio.on("send_expert_message")
-def handle_send_message(data):
-    if "user_id" not in session:
-        return False
-
-    room = data["room"]
-    message = data["message"]
-    sender_type = session.get("role", "user")
-    sender_username = session.get("username")
-    target_student_id = data.get('target_student_id', None)
-
-    # [MỚI] Lưu vào file JSON
-    saved_msg = save_chat_message(room, sender_username, sender_type, message, target_student_id)
-
-    print(f"--- TIN NHẮN: {message} (Từ: {sender_username} -> Phòng: {room}) ---")
-
-    # Gửi cho mọi người trong phòng (Client sẽ tự lọc hiển thị)
-    emit("receive_message", saved_msg, to=room)
-
-# [MỚI] Sự kiện dành cho CHUYÊN GIA khi vào phòng (để load lại chat với từng SV)
-@socketio.on("counselor_join_room")
-def handle_counselor_join(data):
-    if "role" not in session or session["role"] != "counselor":
-        return False
-
-    username = session["username"]
-    room = data["room"]
-    
-    join_room(room)
-    
-    # Chuyên gia cần load TOÀN BỘ lịch sử của phòng mình
-    # Client JS của chuyên gia sẽ tự phân chia tin nhắn vào các tab user
-    all_history = load_chat_history()
-    my_room_history = [msg for msg in all_history if msg.get('room') == username]
-    
-    emit('load_history', my_room_history, to=request.sid)
-    
-    emit("receive_message", {"text": "Bạn đã kết nối lại. Lịch sử chat đã được tải.", "sender_type": "system"}, to=request.sid)
-
-# --- CÁCH CHẠY SERVER ---
-=======
 # --- THÊM VÀO PHẦN CẤU HÌNH ĐẦU FILE (Sau các biến FILE khác) ---
 VERIFICATION_FILE = "verification_requests.txt"
 
@@ -2207,7 +1953,6 @@ def get_verification_info(username):
                 }
     return None
 
->>>>>>> Stashed changes
 if __name__ == "__main__":
     socketio.run(app, debug=True, port=5000)
     print("🚀 Starting Flask Server with REAL Zoom API")
