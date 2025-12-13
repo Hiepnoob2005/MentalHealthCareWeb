@@ -17,6 +17,15 @@ from dotenv import load_dotenv
 import requests
 import google.generativeai as genai
 from werkzeug.utils import secure_filename
+from matching import MatchingSystem, TagExtractor #thêm dòng này cho cái tính năng matching
+# ... (các import hiện có) ...
+from matching import MatchingSystem, TagExtractor #thêm dòng này cho cái tính năng matching
+from werkzeug.utils import secure_filename # <-- THÊM DÒNG NÀY
+import uuid
+from datetime import datetime
+# Cấu hình cơ bản
+load_dotenv()
+logging.basicConfig(level=logging.INFO)
 
 from flask import (
     Flask, jsonify, request, render_template,
@@ -953,7 +962,6 @@ def register_secure():
     except Exception as e:
         return jsonify({"message": f"Lỗi khi lưu tài khoản: {e}"}), 500
 
-
 # --- CẬP NHẬT: API Đăng nhập ---
 @app.route("/api/login", methods=["POST"])
 def login_secure():
@@ -1512,7 +1520,6 @@ AVAILABILITY_FILE = "counselor_availability.txt"
 AVAILABILITY_LOGS_FILE = "availability_logs.txt"
 APPOINTMENTS_FILE = "appointments.txt"
 
-
 @app.route("/api/counselor/availability", methods=["POST"])
 @login_required
 def update_availability():
@@ -1607,13 +1614,11 @@ def get_availability_logs():
         logging.error(f"Lỗi đọc log: {e}")
         return jsonify({"error": "Lỗi server khi đọc log"}), 500
 
-
 @app.route("/api/booking/check-existing", methods=["GET"])
 @login_required
 def check_existing_booking():
     """Kiểm tra xem User này đã có lịch hẹn nào confirmed chưa"""
     existing_appt = None
-
     # 1. Kiểm tra file tồn tại chưa. Nếu chưa -> Trả về None luôn (Không lỗi)
     if not os.path.exists(APPOINTMENTS_FILE):
         return jsonify({"existing": None}), 200
@@ -1633,17 +1638,16 @@ def check_existing_booking():
                         "id": parts[0],
                         "counselor": parts[2],
                         "date": parts[3],
-                        "time": parts[4],
+                        "time": parts[4]
                     }
                     break
-
+        
         return jsonify({"existing": existing_appt}), 200
 
     except Exception as e:
         logging.error(f"Lỗi đọc file appointment: {e}")
         # Trả về None thay vì lỗi 500 để App không bị crash
         return jsonify({"existing": None}), 200
-
 
 @app.route("/api/booking/cancel", methods=["POST"])
 @login_required
@@ -1652,59 +1656,51 @@ def cancel_booking():
     appt_id = request.get_json().get("id")
     lines = []
     found = False
-
+    
     if os.path.exists(APPOINTMENTS_FILE):
-        with open(APPOINTMENTS_FILE, "r", encoding="utf-8") as f:
+        with open(APPOINTMENTS_FILE, "r", encoding='utf-8') as f:
             lines = f.readlines()
-
+            
     new_lines = []
     for line in lines:
-        parts = line.strip().split(";")
-        if (
-            len(parts) >= 6
-            and parts[0] == appt_id
-            and parts[1] == current_user.username
-        ):
+        parts = line.strip().split(';')
+        if len(parts) >= 6 and parts[0] == appt_id and parts[1] == current_user.username:
             # Đổi trạng thái thành cancelled
-            parts[5] = "cancelled"
-            new_lines.append(";".join(parts) + "\n")
+            parts[5] = 'cancelled'
+            new_lines.append(';'.join(parts) + '\n')
             found = True
         else:
             new_lines.append(line)
-
+            
     if found:
-        with open(APPOINTMENTS_FILE, "w", encoding="utf-8") as f:
+        with open(APPOINTMENTS_FILE, "w", encoding='utf-8') as f:
             f.writelines(new_lines)
         return jsonify({"message": "Đã hủy lịch hẹn."}), 200
     else:
         return jsonify({"error": "Không tìm thấy lịch hẹn."}), 404
-
 
 @app.route("/api/user/appointments", methods=["GET"])
 @login_required
 def get_user_appointments():
     """Lấy lịch sử hẹn của User (cả confirmed và cancelled)"""
     history = []
-
+    
     if os.path.exists(APPOINTMENTS_FILE):
-        with open(APPOINTMENTS_FILE, "r", encoding="utf-8") as f:
+        with open(APPOINTMENTS_FILE, "r", encoding='utf-8') as f:
             for line in f:
-                parts = line.strip().split(";")
+                parts = line.strip().split(';')
                 if len(parts) >= 6 and parts[1] == current_user.username:
-                    history.append(
-                        {
-                            "id": parts[0],
-                            "counselor": parts[2],  # Username của counselor
-                            "date": parts[3],
-                            "time": parts[4],
-                            "status": parts[5],
-                        }
-                    )
-
+                    history.append({
+                        "id": parts[0],
+                        "counselor": parts[2], # Username của counselor
+                        "date": parts[3],
+                        "time": parts[4],
+                        "status": parts[5]
+                    })
+    
     # Sắp xếp mới nhất lên đầu
     history.sort(key=lambda x: f"{x['date']} {x['time']}", reverse=True)
     return jsonify({"appointments": history}), 200
-
 
 @app.route("/api/counselors/available", methods=["GET"])
 def get_available_counselors():
@@ -1772,14 +1768,12 @@ def get_counselor_dates():
                     # Chỉ lấy ngày tương lai hoặc hôm nay
                     if parts[1] >= today:
                         available_dates.add(parts[1])
-
         # Sắp xếp ngày tăng dần để hiển thị đẹp
         sorted_dates = sorted(list(available_dates))
         return jsonify({"dates": sorted_dates}), 200
     except Exception as e:
         logging.error(f"Lỗi lấy ngày: {e}")
         return jsonify({"dates": []}), 500
-
 
 @app.route("/api/counselor/get-slots", methods=["GET"])
 def get_counselor_slots():
@@ -1788,7 +1782,6 @@ def get_counselor_slots():
     """
     counselor_username = request.args.get("username")
     date = request.args.get("date")
-
     if not counselor_username or not date:
         return jsonify({"slots": []}), 400
 
@@ -1845,7 +1838,6 @@ def book_appointment():
     counselor_username = data.get("counselor_username")
     date = data.get("date")
     time = data.get("time")
-
     if not counselor_username or not date or not time:
         return jsonify({"message": "Thiếu thông tin"}), 400
 

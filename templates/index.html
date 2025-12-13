@@ -449,7 +449,72 @@
               style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
               <p class="loading-text">Đang tải danh sách chuyên gia...</p>
             </div>
+
+            <div id="view-history" style="display: none;">
+                <div class="mood-tracker" style="padding: 30px;">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;"><i class="fas fa-history"></i> Lịch sử Cập nhật</h3>
+                    <p style="margin-bottom: 15px; font-size: 0.9rem; color: #666;"><i>Click vào dòng lịch sử để sửa lại lịch cho ngày đó.</i></p>
+                    
+                    <div class="history-table-container" style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;" id="historyTable">
+                            <thead>
+                                <tr style="background: #f3f4f6; text-align: left;">
+                                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Thời gian cập nhật</th>
+                                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Ngày áp dụng</th>
+                                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Các khung giờ</th>
+                                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+{% else %} <div id="user-view-overview">
+                <div class="stats-grid">
+                  <div class="stat-card">
+                    <div class="stat-icon primary"><i class="fas fa-smile"></i></div>
+                    <div class="stat-info"><h4>75</h4><p>Điểm tâm trạng</p></div>
+                  </div>
+                  </div>
+
+                <div class="mood-tracker">
+                  <h3>Biểu đồ Tâm trạng 30 ngày</h3>
+                  </div>
+            </div>
+
+            <div id="user-view-booking" style="display: none;">
+                <div class="mood-tracker" style="padding: 30px;">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;"><i class="fas fa-calendar-check"></i> Đặt lịch hẹn mới</h3>
+                    <div id="available-counselors-list" class="experts-grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
+                        <p class="loading-text">Đang tải danh sách chuyên gia...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="user-view-history" style="display: none;">
+                <div class="mood-tracker" style="padding: 30px;">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;"><i class="fas fa-history"></i> Lịch sử đặt hẹn</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f3f4f6;">
+                                <th style="padding: 12px;">Ngày giờ</th>
+                                <th style="padding: 12px;">Chuyên gia</th>
+                                <th style="padding: 12px;">Trạng thái</th>
+                                <th style="padding: 12px;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-history-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+          {% endif %}
           </div>
+         </div>
         </div>
 
         <div id="user-view-history" style="display: none;">
@@ -676,10 +741,122 @@
         </div>
       </div>
 
-      <script src="{{ url_for('static', filename='admin_script.js') }}"></script>
-      <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
-      <script src="{{ url_for('static', filename='user_chat.js') }}"></script>
-</body>
+{% if current_user.is_authenticated and not current_user.is_counselor %}
+    <div class="counselor-verify-box">
+      <a href="{{ url_for('verify_counselor_page') }}">
+        <i class="fas fa-user-tie"></i> <span>Bạn là chuyên gia?
+          <small>Đăng ký xác thực ngay</small>
+        </span>
+      </a>
+    </div>
+    {% endif %}
+    <footer>
+      <div class="footer-content">
+      
 
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>StudentMind Connect</h3>
+          <p>Nền tảng hỗ trợ sức khỏe tâm lý hàng đầu cho sinh viên Việt Nam</p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h3>Truy cập nhanh</h3>
+          <ul>
+            <li>
+              <a href="#test">Đánh giá tâm lý</a>
+            </li>
+            <li>
+              <a href="#experts">Tìm chuyên gia</a>
+            </li>
+            <li>
+              <a href="#resources">Tài nguyên</a>
+            </li>
+            <li>
+              <a href="#dashboard">Dashboard</a>
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Hỗ trợ</h3>
+          <ul>
+            <li>
+              <a href="#">Hướng dẫn sử dụng</a>
+            </li>
+            <li>
+              <a href="#">Câu hỏi thường gặp</a>
+            </li>
+            <li>
+              <a href="#">Chính sách bảo mật</a>
+            </li>
+            <li>
+              <a href="#">Điều khoản sử dụng</a>
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Liên hệ khẩn cấp</h3>
+          <ul>
+            <li>
+              <i class="fas fa-phone"></i> Hotline: 1900 xxxx
+            </li>
+            <li>
+              <i class="fas fa-envelope"></i> support@studentmind.vn
+            </li>
+            <li>
+              <i class="fas fa-clock"></i> Hỗ trợ 24/7
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 StudentMind Connect. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    
+    <div class="modal-overlay" id="bookingModal">
+      <div class="modal-container" style="max-width: 500px;">
+        <button class="modal-close" onclick="closeBookingModal()"><i class="fas fa-times"></i></button>
+        <div class="modal-content" style="padding: 2rem;">
+          <div class="modal-logo" style="margin-bottom: 1rem; justify-content: center;">
+            <i class="fas fa-calendar-check"></i>
+            <span>Đặt lịch hẹn</span>
+          </div>
+          
+          <h3 id="bookingCounselorName" style="text-align: center; margin-bottom: 1.5rem; color: var(--dark);">
+            </h3>
+
+          <form id="bookingForm">
+            <div class="form-group">
+              <label for="bookingDate" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">1. Chọn ngày rảnh:</label>
+              <select id="bookingDate" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: white;">
+                  <option value="">-- Vui lòng chọn ngày --</option>
+                  </select>
+            </div>
+
+            <div class="form-group">
+              <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">2. Chọn khung giờ:</label>
+              <div id="bookingSlots" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                <p style="grid-column: span 3; text-align: center; color: #666; font-size: 0.9rem;">Vui lòng chọn ngày trước.</p>
+              </div>
+              <input type="hidden" id="selectedTime" required>
+            </div>
+
+            <div id="bookingMessage" style="display: none; margin-top: 1rem; text-align: center; font-size: 0.9rem;"></div>
+
+            <button type="submit" class="btn-submit" style="margin-top: 1.5rem;">Xác nhận Đặt lịch</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </body>
 </html>

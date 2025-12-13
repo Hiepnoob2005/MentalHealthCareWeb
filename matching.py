@@ -54,12 +54,7 @@ class MatchingSystem:
         }
     
     def load_counselors(self) -> List[Counselor]:
-        """Load danh sách chuyên gia từ file"""
         counselors = []
-        
-        if not os.path.exists(self.counselor_file):
-            logging.warning(f"File {self.counselor_file} không tồn tại")
-            return counselors
             
         try:
             with open(self.counselor_file, 'r', encoding='utf-8') as f:
@@ -89,6 +84,7 @@ class MatchingSystem:
             logging.error(f"Lỗi khi load counselors: {e}")
             
         return counselors                     
+
 
     def load_Chatted_Counselors(self, current_username: str) -> List[Counselor]:
         """
