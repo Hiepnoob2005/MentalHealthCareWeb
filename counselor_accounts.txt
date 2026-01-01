@@ -3,4 +3,5 @@ C001;nvan;TS. Nguyễn Văn An;nguyenvanan@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.d
 C002;ttbinh;ThS. Trần Thị Bình;tranthib@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.dxuMr/uO7jqp1O4PfiroLjmD97iqxIuwa.;tram_cam,tam_ly_xa_hoi;4.8;online;3 năm;yes  
 C003;lvcuong;BS. Lê Văn Cường;levancuong@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.dxuMr/uO7jqp1O4PfiroLjmD97iqxIuwa.;roi_loan_giac_ngu,ap_luc_thi_cu;4.7;online;7 năm;no
 C004;ptdung;ThS. Phạm Thị Dung;phamthidung@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.dxuMr/uO7jqp1O4PfiroLjmD97iqxIuwa.;stress,tinh_cam,gia_dinh;4.6;online;4 năm;no
-C005;hvem;TS. Hoàng Văn Em;hoangvanem@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.dxuMr/uO7jqp1O4PfiroLjmD97iqxIuwa.;lo_au,tram_cam,tu_hai;5.0;online;8 năm;yes
+C005;hvem;TS. Hoàng Văn Em;hoangvanem@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.dxuMr/uO7jqp1O4PfiroLjmD97iqxIuwa.;lo_au,tram_cam,tu_hai;5.0;online;8 năm;yesC_1767250663;24127508;;abc@hcmus.edu.vn;$2b$12$yOLTSXS2e6vQZi/3ckx/aufkaKnyogZN0BKpL4mCHHMfYmonqwtA.;;5.0;offline;;yes
+C1767250981;24127508;;hcmus@gmail.edu.com;$2b$12$qf9suUo2.eZYiaDTpkltiOyPuj.GOVEigi.8L3HS924prfHdirbJK;;5.0;offline;;yes

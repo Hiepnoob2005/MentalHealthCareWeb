@@ -1516,22 +1516,72 @@ def admin_dashboard():
 @app.route("/api/admin/approve", methods=["POST"])
 @login_required
 def approve_expert():
-    if not current_user.is_admin: return jsonify({"error": "Unauthorized"}), 403
+    # 1. Kiểm tra quyền Admin
+    if not current_user.is_admin: 
+        return jsonify({"error": "Unauthorized"}), 403
     
     data = request.get_json()
     username = data.get("username")
     
-    # 1. Cập nhật trạng thái request
+    user_info = None
+    original_lines = []
+
+    # --- BƯỚC 1: Đọc dữ liệu User và kiểm tra sự tồn tại ---
+    # Chúng ta chưa xóa vội, chỉ đọc để lấy thông tin
+    if os.path.exists(USER_FILE):
+        with open(USER_FILE, "r", encoding="utf-8") as f:
+            original_lines = f.readlines()
+            
+        for line in original_lines:
+            parts = line.strip().split(";")
+            # Giả định User file có: Username;Email;PasswordHash
+            if len(parts) >= 3 and parts[0] == username:
+                user_info = parts
+                break # Đã tìm thấy
+    
+    if not user_info:
+        return jsonify({"error": f"Không tìm thấy user {username}"}), 404
+
+    # --- BƯỚC 2: Ghi vào file Counselor TRƯỚC (An toàn dữ liệu) ---
+    try:
+        # Cấu trúc file Counselor trong ảnh của bạn: 
+        # CounselorID;Username;Name;Email;PasswordHash;Specialties;Rating;Status;Experience;verified
+        
+        # Tạo ID ngẫu nhiên (hoặc logic tăng dần tùy bạn)
+        import time
+        new_c_id = f"C{int(time.time())}" 
+        
+        email = user_info[1]
+        password_hash = user_info[2].strip() # Xóa ký tự xuống dòng thừa nếu có
+        
+        # Tạo dòng mới. Lưu ý các dấu chấm phẩy ;; là để trống cho Name, Specialties, Experience
+        # Rating mặc định 5.0, Status offline, verified là yes
+        new_counselor_line = f"\n{new_c_id};{username};;{email};{password_hash};;5.0;offline;;yes"
+        
+        # Mở file counselor để ghi nối tiếp (append)
+        with open(COUNSELOR_FILE, "a", encoding="utf-8") as f:
+            f.write(new_counselor_line)
+            
+    except Exception as e:
+        # Nếu ghi thất bại, return lỗi ngay lập tức -> User vẫn còn nguyên
+        return jsonify({"error": f"Lỗi khi ghi file counselor: {str(e)}"}), 500
+
+    # --- BƯỚC 3: Sau khi ghi thành công, mới xóa User cũ ---
+    try:
+        new_user_lines = [line for line in original_lines if not line.startswith(f"{username};")]
+        
+        with open(USER_FILE, "w", encoding="utf-8") as f:
+            f.writelines(new_user_lines)
+            
+    except Exception as e:
+        # Trường hợp hiếm: Đã thêm Counselor nhưng xóa User thất bại -> Tạm chấp nhận user tồn tại 2 nơi (tốt hơn là mất)
+        return jsonify({"warning": f"Đã thêm chuyên gia nhưng lỗi xóa user cũ: {str(e)}"}), 500
+
+    # --- BƯỚC 4: Cập nhật trạng thái yêu cầu ---
     update_verification_status(username, "APPROVED")
     
-    # 2. Cập nhật User thành Verified (Trong counselor_accounts.txt hoặc user_accounts.txt)
-    # Lưu ý: Bạn cần đảm bảo logic update file account ở đây. 
-    # Để đơn giản, mình giả lập việc update status, 
-    # trong thực tế bạn phải rewrite file user_accounts.txt để đổi verified=True
-    
-    # Ví dụ đơn giản: Ghi đè trạng thái
-    return jsonify({"success": True, "message": f"Đã duyệt {username}"})
-
+    return jsonify({"success": True, "message": f"Đã chuyển {username} thành công!"})
+        
 @app.route("/api/admin/reject", methods=["POST"])
 @login_required
 def reject_expert():

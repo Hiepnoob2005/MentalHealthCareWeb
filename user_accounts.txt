@@ -2,4 +2,3 @@ Username;Email;PasswordHash
 24127020;oizooi12345@gmail.com;$2b$12$1gYc9QKmQmupidkkVCYozuZD771.PpU2HpKS7zrE/v/WWbPjL41h6
 24127168;lehieulqd62@gmail.com;$2b$12$hY1s2AfcjZAlGkjXO8YEEe8CaTZm.VmDlR93egeOdxrcWpkMjWadW
 123;bruhbrubruh000@gmail.com;$2b$12$jBI4v2qPkv/6bbXJ9tSGXucnQ4pjNUz0qe8omwB7EDjsx3eaE/gt6
-24127508;abc@hcmus.edu.vn;$2b$12$yOLTSXS2e6vQZi/3ckx/aufkaKnyogZN0BKpL4mCHHMfYmonqwtA.
