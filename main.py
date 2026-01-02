@@ -226,21 +226,49 @@ def user_profile_page():
 @app.route('/api/profile', methods=['GET'])
 @login_required
 def get_profile_data():
-    """API để JS lấy dữ liệu của user"""
-    user_id = str(current_user.id) # current_user.id lấy từ Flask-Login
+    """API để JS lấy dữ liệu của user (Support cả Student & Counselor)"""
+    user_id = str(current_user.id) # user.id của counselor là username
     
-    # 1. Lấy email/phone từ file JSON
+    # 1. Lấy thông tin liên lạc (Email/Phone) từ file JSON (dữ liệu động)
     details = read_user_details().get(user_id, {})
     
-    # 2. Lấy tags từ file test_results.txt
-    tags = get_latest_tags(user_id)
-    
-    return jsonify({
+    response_data = {
         "username": current_user.username,
-        "email": details.get("email", ""),
+        "email": details.get("email", current_user.email), # Ưu tiên lấy từ file JSON, nếu không có lấy từ object User
         "phone": details.get("phone", ""),
-        "latest_tags": tags
-    }), 200
+        "is_counselor": current_user.is_counselor
+    }
+
+    # 2. Nếu là Counselor: Lấy thêm thông tin chuyên môn
+    if current_user.is_counselor:
+        counselor_info = {}
+        try:
+            if os.path.exists(COUNSELOR_FILE):
+                with open(COUNSELOR_FILE, "r", encoding="utf-8") as f:
+                    lines = f.readlines()[1:]
+                    for line in lines:
+                        parts = line.strip().split(";")
+                        # Format: ID;Username;Name;Email;Pass;Specialties;Rating;Status;Experience;Verified
+                        if len(parts) >= 10 and parts[1] == current_user.username:
+                            counselor_info = {
+                                "name": parts[2],
+                                "specialties": parts[5],
+                                "rating": parts[6],
+                                "experience": parts[8],
+                                "verified": parts[9]
+                            }
+                            break
+        except Exception as e:
+            logging.error(f"Lỗi đọc counselor info: {e}")
+        
+        response_data["counselor_info"] = counselor_info
+
+    # 3. Nếu là Student: Lấy tags từ bài test
+    else:
+        tags = get_latest_tags(user_id)
+        response_data["latest_tags"] = tags
+
+    return jsonify(response_data), 200
 
 @app.route('/api/profile/update', methods=['POST'])
 @login_required
