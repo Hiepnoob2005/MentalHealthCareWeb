@@ -167,10 +167,10 @@
                     </div>
 
                     <div class="btn-group">
-                        <button class="btn btn-approve" onclick="approveExpert('{{ profile.username }}')">
+                        <button class="btn btn-approve" onclick="approveExpert(this,'{{ profile.username }}')">
                             <i class="fas fa-check"></i> Duyệt
                         </button>
-                        <button class="btn btn-reject" onclick="rejectExpert('{{ profile.username }}')">
+                        <button class="btn btn-reject" onclick="rejectExpert(this, '{{ profile.username }}')">
                             <i class="fas fa-times"></i> Từ chối
                         </button>
                     </div>
@@ -222,5 +222,6 @@
   </div>
 
     <script src="{{ url_for('static', filename='admin_script.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </body>
 </html>

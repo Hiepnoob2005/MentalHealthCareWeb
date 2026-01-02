@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeChatbotListeners();
   initializeResourceFilters();
   addFindExpertButton(); // Thêm nút "Tìm chuyên gia" vào chatbot
+  loadOldChatHistory(); // Tải lịch sử chat cũ nếu có
 });
 
 // --- Authentication (Đăng nhập/Đăng xuất) ---
@@ -776,6 +777,38 @@ function handleChatInputKey(event) {
     handleSendMessage();
   }
 }
+
+// Thêm vào script.js
+
+async function loadOldChatHistory() {
+    const conversationId = getConversationId();
+    try {
+        // Gọi API mới tạo
+        const response = await fetch(`/api/chat/history?conversationId=${conversationId}`);
+        const data = await response.json();
+
+        if (data.messages && data.messages.length > 0) {
+            const messagesContainer = document.getElementById("chatMessages");
+            // Xóa tin nhắn chào mặc định (nếu có)
+            messagesContainer.innerHTML = ''; 
+            
+            data.messages.forEach(msg => {
+                // msg.role là 'user' hoặc 'model' (của Gemini)
+                // convert 'model' -> 'bot' để hàm UI hiểu
+                const sender = msg.role === 'user' ? 'user' : 'bot';
+                addMessageToChat(msg.text, sender);
+            });
+        }
+    } catch (error) {
+        console.error("Không thể tải lịch sử chat cũ:", error);
+    }
+}
+
+// Gọi hàm này khi trang vừa load xong
+document.addEventListener("DOMContentLoaded", function () {
+    // ... các hàm init khác ...
+    loadOldChatHistory(); // <--- THÊM DÒNG NÀY
+});
 
 function initializeChatbotListeners() {
   const chatInput = document.getElementById("chatInput");

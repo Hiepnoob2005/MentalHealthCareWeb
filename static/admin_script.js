@@ -15,22 +15,117 @@ async function handleLogout() {
     }
 }
 
-function approveExpert(username) {
-    // Đây là nơi bạn sẽ gọi API để cập nhật database sau này
-    // Hiện tại mình sẽ alert để demo luồng hoạt động
-    if(confirm(`Xác nhận DUYỆT hồ sơ cho chuyên gia: ${username}?`)) {
-        alert(`Đã duyệt thành công hồ sơ của ${username}!\n(Tính năng cập nhật DB sẽ được thêm ở phase sau)`);
+
+
+// Thêm tham số btnElement vào đầu hàm
+async function approveExpert(btnElement, username) {
+    if(confirm(`Xác nhận DUYỆT hồ sơ và nâng cấp tài khoản cho: ${username}?`)) {
         
-        // Ẩn card đi để giả lập là đã xử lý xong
-        // (Trong thực tế bạn sẽ reload trang hoặc xóa phần tử DOM)
+        // Hiệu ứng UX: Disable nút và đổi text để người dùng biết đang xử lý
+        const originalText = btnElement.innerText;
+        btnElement.innerText = "Đang xử lý...";
+        btnElement.disabled = true;
+
+        try {
+            // Gọi API Backend
+            const response = await fetch('/api/admin/approve-expert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: username })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message);
+                
+                // --- PHẦN XÓA UI ---
+                // Tìm thẻ cha bao quanh cái nút này (ví dụ: thẻ <tr> nếu là bảng, hoặc <div> class="card" nếu là thẻ)
+                // Bạn có thể thay '.card' hoặc 'tr' tùy theo cấu trúc HTML của bạn
+                const cardToRemove = btnElement.closest('.btn-group') || btnElement.closest('tr') || btnElement.closest('.profile-item');
+                
+                if (cardToRemove) {
+                    // Hiệu ứng mờ dần trước khi xóa (Optional)
+                    cardToRemove.style.transition = "opacity 0.5s";
+                    cardToRemove.style.opacity = "0";
+                    
+                    setTimeout(() => {
+                        cardToRemove.remove(); // Xóa hoàn toàn khỏi DOM
+                        
+                        // (Tùy chọn) Kiểm tra nếu hết danh sách thì hiện thông báo trống
+                        const container = document.querySelector('.dashboard-content'); // Class bao quanh danh sách
+                        if (container && container.children.length === 0) {
+                            container.innerHTML = '<p>Hiện không có hồ sơ nào cần duyệt.</p>';
+                        }
+                    }, 500);
+                } else {
+                    // Fallback nếu không tìm thấy thẻ cha để xóa
+                    window.location.reload();
+                }
+                
+            } else {
+                alert("Lỗi: " + data.message);
+                // Nếu lỗi, trả lại trạng thái nút cũ
+                btnElement.innerText = originalText;
+                btnElement.disabled = false;
+            }
+        } catch (error) {
+            console.error("Lỗi approval:", error);
+            alert("Đã xảy ra lỗi kết nối đến server.");
+            btnElement.innerText = originalText;
+            btnElement.disabled = false;
+        }
     }
 }
 
-function rejectExpert(username) {
-    const reason = prompt("Nhập lý do từ chối (để gửi mail thông báo):");
-    if (reason) {
-        alert(`Đã từ chối hồ sơ của ${username}.\nLý do: ${reason}`);
-        // Gọi API từ chối tại đây
+async function rejectExpert(btnElement, username) {
+    const reason = prompt("Nhập lý do từ chối (để gửi thông báo):");
+    
+    // Nếu người dùng bấm Cancel hoặc không nhập gì thì thôi
+    if (reason === null) return; 
+
+    // UX: Disable nút
+    const originalText = btnElement.innerText;
+    btnElement.innerText = "Đang xóa...";
+    btnElement.disabled = true;
+
+    try {
+        const response = await fetch('/api/admin/reject-expert', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                username: username,
+                reason: reason 
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(data.message);
+            
+            // Xóa UI
+            const cardToRemove = btnElement.closest('.btn-group') || btnElement.closest('tr') || btnElement.closest('.profile-item');
+            if (cardToRemove) {
+                cardToRemove.remove();
+            } else {
+                window.location.reload();
+            }
+        } else {
+            alert("Lỗi: " + data.message);
+            btnElement.innerText = originalText;
+            btnElement.disabled = false;
+        }
+
+    } catch (error) {
+        console.error("Lỗi reject:", error);
+        alert("Lỗi kết nối server.");
+        btnElement.innerText = originalText;
+        btnElement.disabled = false;
     }
 }
 
@@ -43,5 +138,19 @@ document.addEventListener('DOMContentLoaded', function() {
             navLinks.forEach(n => n.classList.remove('active'));
             this.classList.add('active');
         });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Kết nối Socket.IO
+    const socket = io();
+
+    // 2. Lắng nghe tín hiệu reload từ server
+    socket.on('admin_refresh_signal', (data) => {
+        console.log(`Phát hiện thay đổi dữ liệu (${data.type}). Đang tải lại trang...`);
+
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
     });
 });

@@ -23,6 +23,9 @@ from matching import MatchingSystem, TagExtractor #thêm dòng này cho cái tí
 from werkzeug.utils import secure_filename # <-- THÊM DÒNG NÀY
 import uuid
 from datetime import datetime
+from google import generativeai as genai
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 # Cấu hình cơ bản
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -97,6 +100,31 @@ def get_zoom_token():
         logging.error(f"❌ Token Exception: {e}")
         return None
 
+# -------------------------------------------------
+# Class xử lý sự kiện file
+class UploadFolderHandler(FileSystemEventHandler):
+    def on_any_event(self, event):
+        # Chỉ quan tâm đến tạo mới (created) hoặc xóa (deleted)
+        if event.event_type in ['created', 'deleted']:
+            if not event.is_directory:
+                logging.info(f"File change detected: {event.event_type} - {event.src_path}")
+                # Bắn tín hiệu xuống Client để reload
+                # namespace='/' là mặc định
+                socketio.emit('admin_refresh_signal', {'type': event.event_type})
+
+def start_file_watcher():
+    """Khởi chạy tiến trình theo dõi file"""
+    path = app.config["UPLOAD_FOLDER"]
+    
+    # Đảm bảo folder tồn tại trước khi theo dõi
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    event_handler = UploadFolderHandler()
+    observer = Observer()
+    observer.schedule(event_handler, path, recursive=False)
+    observer.start()
+    logging.info(f"👀 Started watching folder: {path}")
 
 # -------------------------------------------------
 # Routes
@@ -408,7 +436,7 @@ TEST_RESULTS_FILE = "test_results.txt"
 # Khởi tạo model Chatbot một lần
 try:
     chatbot_model = genai.GenerativeModel(
-        model_name="gemini-1.0-pro",
+        model_name="gemini-2.5-flash",
         generation_config=GENERATION_CONFIG,
         system_instruction=SYSTEM_INSTRUCTION,
         safety_settings=SAFETY_SETTINGS,
@@ -524,7 +552,7 @@ def save_chat_history_and_summarize(conversation_id, history):
     (Hàm này nên được chạy trong một thread riêng)
     """
     try:
-        now = datetime.datetime.now()
+        now = datetime.now()
         file_path = os.path.join(CHAT_HISTORY_DIR, f"{conversation_id}.json")
 
         # 1. Chuyển đổi history sang list dictionary
@@ -855,6 +883,11 @@ def chat():
     user_message = data.get("message", "").strip()
     conversation_id = data.get("conversationId")
 
+    if current_user.is_authenticated:
+        # Thêm tiền tố "user_" để tránh trùng với các ID khác
+        conversation_id = f"user_{current_user.username}" 
+        logging.info(f"User đã đăng nhập. Sử dụng ID cố định: {conversation_id}")
+
     if not user_message or not conversation_id:
         return jsonify({"error": "Message and conversationId are required"}), 400
 
@@ -934,6 +967,35 @@ def chat():
             500,
         )
 
+@app.route("/api/chat/history", methods=["GET"])
+def get_ai_chat_history():
+    """
+    API trả về lịch sử chat của User (nếu đã đăng nhập) 
+    hoặc theo conversationId (nếu là khách)
+    """
+    # 1. Xác định ID cần lấy
+    conversation_id = request.args.get("conversationId")
+    
+    if current_user.is_authenticated:
+        conversation_id = f"user_{current_user.username}"
+    
+    if not conversation_id:
+        return jsonify({"messages": []})
+
+    # 2. Tìm file lịch sử
+    file_path = os.path.join(CHAT_HISTORY_DIR, f"{conversation_id}.json")
+    
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                # Trả về danh sách tin nhắn
+                return jsonify({"messages": data.get("messages", [])})
+        except Exception as e:
+            logging.error(f"Lỗi đọc history: {e}")
+            return jsonify({"messages": []})
+    
+    return jsonify({"messages": []})
 
 # --- API cho Đăng ký ---
 @app.route("/api/register", methods=["POST"])
@@ -2068,8 +2130,6 @@ def handle_counselor_join(data):
     
     join_room(room)
     
-    # Chuyên gia cần load TOÀN BỘ lịch sử của phòng mình
-    # Client JS của chuyên gia sẽ tự phân chia tin nhắn vào các tab user
     all_history = load_chat_history()
     my_room_history = [msg for msg in all_history if msg.get('room') == username]
     
@@ -2077,12 +2137,148 @@ def handle_counselor_join(data):
     
     emit("receive_message", {"text": "Bạn đã kết nối lại. Lịch sử chat đã được tải.", "sender_type": "system"}, to=request.sid)
 
-# --- CÁCH CHẠY SERVER ---
+
+# --- Thêm vào main.py (khu vực Admin Routes) ---
+
+def delete_user_files(username):
+    """
+    Xóa tất cả file (CCCD, Bằng cấp) liên quan đến username trong thư mục upload.
+    File format: username_id_card.jpg, username_degree.png, ...
+    """
+    try:
+        if not os.path.exists(UPLOAD_FOLDER):
+            return
+
+        files = os.listdir(UPLOAD_FOLDER)
+        for f in files:
+            # Kiểm tra file bắt đầu bằng username_ (để tránh xóa nhầm user khác có tên gần giống)
+            if f.startswith(f"{username}_"):
+                file_path = os.path.join(UPLOAD_FOLDER, f)
+                os.remove(file_path)
+                logging.info(f"Deleted file: {file_path}")
+    except Exception as e:
+        logging.error(f"Error deleting files for {username}: {e}")
+
+
+# --- Thêm mới Route Reject (Từ chối) ---
+@app.route("/api/admin/reject-expert", methods=["POST"])
+@login_required
+def reject_expert():
+    if not current_user.is_admin:
+        return jsonify({"message": "Access Denied"}), 403
+
+    data = request.get_json()
+    username = data.get("username")
+    reason = data.get("reason", "Không đạt yêu cầu")
+
+    if not username:
+        return jsonify({"message": "Missing username"}), 400
+
+    try:
+        # 1. Xóa ảnh bằng chứng
+        delete_user_files(username)
+
+        # 2. (Tùy chọn) Có thể gửi email thông báo lý do ở đây
+        logging.info(f"Rejected expert {username}. Reason: {reason}")
+
+        # 3. Lưu ý: User vẫn giữ nguyên trong user_accounts.txt
+        # Họ có thể nộp lại hồ sơ sau (upload file mới)
+
+        return jsonify({"message": f"Đã từ chối {username} và xóa hồ sơ ảnh."}), 200
+
+    except Exception as e:
+        logging.error(f"Error rejecting expert: {e}")
+        return jsonify({"message": "Lỗi server"}), 500
+
+@app.route("/api/admin/approve-expert", methods=["POST"])
+@login_required
+def approve_expert():
+    # 1. Kiểm tra quyền Admin
+    if not current_user.is_admin:
+        return jsonify({"message": "Bạn không có quyền thực hiện thao tác này"}), 403
+
+    data = request.get_json()
+    username_to_approve = data.get("username")
+
+    if not username_to_approve:
+        return jsonify({"message": "Thiếu username"}), 400
+
+    target_user_data = None
+    remaining_users = []
+
+    # 2. Đọc file User để tìm và lấy thông tin
+    try:
+        if os.path.exists(USER_FILE):
+            with open(USER_FILE, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+                
+            for line in lines:
+                parts = line.strip().split(";")
+                # Giả định format user: Username;Email;PasswordHash
+                if len(parts) >= 3 and parts[0] == username_to_approve:
+                    target_user_data = {
+                        "username": parts[0],
+                        "email": parts[1],
+                        "password_hash": parts[2]
+                    }
+                else:
+                    remaining_users.append(line)
+                    
+        if not target_user_data:
+            return jsonify({"message": "Không tìm thấy người dùng này trong danh sách User"}), 404
+
+        # 3. Tạo dữ liệu cho Counselor theo format
+        # Format: CounselorID;Username;Name;Email;PasswordHash;Specialties;Rating;Status;Experience;verified
+        
+        # Tạo ID ngẫu nhiên ví dụ: C + 4 số cuối của UUID
+        new_counselor_id = f"C{str(uuid.uuid4())[:4].upper()}"
+        
+        # Các giá trị mặc định/placeholder
+        name_placeholder = f"Chuyên gia {target_user_data['username']}" # Tạm lấy username làm tên
+        specialties_placeholder = "Tu_van_chung"
+        rating_default = "0"
+        status_default = "offline"
+        experience_placeholder = "Chưa cập nhật"
+        verified_status = "yes" # Quan trọng: đã duyệt
+
+        new_counselor_line = (
+            f"{new_counselor_id};"
+            f"{target_user_data['username']};"
+            f"{name_placeholder};"
+            f"{target_user_data['email']};"
+            f"{target_user_data['password_hash']};"
+            f"{specialties_placeholder};"
+            f"{rating_default};"
+            f"{status_default};"
+            f"{experience_placeholder};"
+            f"{verified_status}\n"
+        )
+
+        delete_user_files(username_to_approve)
+        # 4. Ghi vào file Counselor (Append)
+        # Đảm bảo file tồn tại và có header nếu chưa
+        if not os.path.exists(COUNSELOR_FILE):
+            with open(COUNSELOR_FILE, "w", encoding="utf-8") as f:
+                f.write("CounselorID;Username;Name;Email;PasswordHash;Specialties;Rating;Status;Experience;verified\n")
+
+        with open(COUNSELOR_FILE, "a", encoding="utf-8") as f:
+            f.write(new_counselor_line)
+
+        # 5. Ghi đè lại file User (Xóa user cũ)
+        with open(USER_FILE, "w", encoding="utf-8") as f:
+            f.writelines(remaining_users)
+
+        return jsonify({"message": f"Đã duyệt {username_to_approve} thành chuyên gia!"}), 200
+
+    except Exception as e:
+        logging.error(f"Lỗi khi duyệt chuyên gia: {e}")
+        return jsonify({"message": "Lỗi server khi xử lý file"}), 500
+
 if __name__ == "__main__":
+    start_file_watcher()
     socketio.run(app, debug=True, port=5000)
     print("🚀 Starting Flask Server with REAL Zoom API")
     print("🔍 Checking credentials...")
-
     if not all([ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET]):
         print("❌ MISSING Zoom credentials in .env file!")
         print("   Please make sure you have:")
