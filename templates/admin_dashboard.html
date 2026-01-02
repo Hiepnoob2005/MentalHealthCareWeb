@@ -6,7 +6,230 @@
     <title>Admin Dashboard | StudentMind Connect</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='admin_style.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+    <style>
+        :root {
+            --primary-bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --primary-color: #4f46e5;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            font-family: 'Inter', sans-serif; /* Nên dùng font hiện đại */
+        }
+
+        /* --- Request Card Grid --- */
+        .request-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            padding-bottom: 40px;
+        }
+
+        /* --- Card Style --- */
+        .request-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .request-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- Header --- */
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .avatar-circle {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .user-info h4 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .user-id {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: #f3f4f6;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        /* --- Metadata Section (Mới) --- */
+        .meta-info {
+            background-color: #f9fafb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .meta-row {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .meta-row i {
+            width: 24px;
+            color: var(--primary-color);
+            opacity: 0.8;
+        }
+
+        .meta-time {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-align: left;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* --- Tags Styles --- */
+        .meta-specialties {
+            display: flexbox;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 0;
+        }
+
+        .tag-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
+            background-color: #eff6ff; /* Xanh dương nhạt */
+            color: #2563eb;
+            border: 1px solid #dbeafe;
+            transition: all 0.2s;
+        }
+
+        .tag-badge:hover {
+            background-color: #dbeafe;
+        }
+
+        /* --- Image Gallery --- */
+        .img-gallery {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .img-box {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            aspect-ratio: 4/3; /* Giữ khung hình chuẩn */
+        }
+
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .img-box:hover img {
+            transform: scale(1.05);
+        }
+
+        .img-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 0.7rem;
+            padding: 4px;
+            text-align: center;
+            backdrop-filter: blur(2px);
+        }
+
+        /* --- Buttons --- */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .btn {
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-approve {
+            background-color: #10b981; /* Xanh lá */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-approve:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-reject {
+            background-color: white;
+            color: #ef4444; /* Đỏ */
+            border: 1px solid #fee2e2;
+        }
+
+        .btn-reject:hover {
+            background-color: #fef2f2;
+            border-color: #ef4444;
+        }
+    </style>
 </head>
 <body data-counselor-username="{{ current_user.username }}">
 
@@ -36,7 +259,6 @@
             <li class="nav-item">
                 <a href="#" class="nav-link">
                     <i class="fas fa-chart-pie"></i> Thống kê
-                    <span style="margin-left: auto; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">New</span>
                 </a>
             </li>
 
@@ -49,11 +271,6 @@
             <li class="nav-item">
                 <a href="#" class="nav-link">
                     <i class="fas fa-user-md"></i> Chuyên gia
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fas fa-file-alt"></i> Tài nguyên
                 </a>
             </li>
 
@@ -71,10 +288,9 @@
         <header class="top-bar">
             <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" placeholder="Tìm kiếm (Ctrl + K)">
+                <input type="text" placeholder="Tìm kiếm hồ sơ...">
             </div>
             <div class="top-actions" style="display: flex; gap: 15px; align-items: center;">
-                <i class="fas fa-sun" style="cursor: pointer; color: var(--secondary);"></i>
                 <i class="fas fa-bell" style="cursor: pointer; color: var(--secondary);"></i>
                 <i class="fas fa-cog" style="cursor: pointer; color: var(--secondary);"></i>
             </div>
@@ -82,20 +298,18 @@
 
         <section class="hero-banner">
             <div class="hero-text">
-                <h1>Khám phá Dashboard Mới</h1>
-                <p>Quản lý hồ sơ xác thực chuyên gia, theo dõi thống kê người dùng và vận hành hệ thống StudentMind Connect một cách hiệu quả.</p>
-                <a href="#requests-area" class="btn-hero">Xử lý hồ sơ ngay</a>
+                <h1>Trung tâm Kiểm duyệt</h1>
+                <p>Quản lý và xác thực hồ sơ chuyên gia tâm lý. Đảm bảo chất lượng đội ngũ tư vấn viên.</p>
             </div>
             <div class="hero-decoration">
-                <i class="fas fa-rocket"></i>
+                <i class="fas fa-shield-alt"></i>
             </div>
         </section>
 
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon bg-blue-light"><i class="fas fa-wallet"></i></div>
-                    <i class="fas fa-ellipsis-v" style="color: #ccc; cursor: pointer;"></i>
+                    <div class="stat-icon bg-blue-light"><i class="fas fa-clipboard-list"></i></div>
                 </div>
                 <div class="stat-value">{{ profiles|length }}</div>
                 <div class="stat-label">Hồ sơ chờ duyệt</div>
@@ -103,71 +317,84 @@
             
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon bg-orange-light"><i class="fas fa-file-alt"></i></div>
+                    <div class="stat-icon bg-green-light"><i class="fas fa-user-check"></i></div>
                 </div>
-                <div class="stat-value">15</div>
-                <div class="stat-label">Bài test hôm nay</div>
+                <div class="stat-value">--</div>
+                <div class="stat-label">Đã duyệt tháng này</div>
             </div>
 
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon bg-green-light"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-icon bg-orange-light"><i class="fas fa-clock"></i></div>
                 </div>
-                <div class="stat-value">8</div>
-                <div class="stat-label">Chuyên gia online</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon bg-red-light"><i class="fas fa-download"></i></div>
-                </div>
-                <div class="stat-value">245</div>
-                <div class="stat-label">Lượt truy cập</div>
+                <div class="stat-value">24h</div>
+                <div class="stat-label">Thời gian xử lý TB</div>
             </div>
         </div>
 
         <div class="content-section" id="requests-area">
             <div class="section-header">
-                <h3>Hồ sơ Chuyên gia Chờ duyệt</h3>
-                <button class="btn-hero" style="background: var(--primary); color: white; border: none;">
-                    <i class="fas fa-filter"></i> Lọc
-                </button>
+                <h3>Danh sách Hồ sơ Chờ duyệt</h3>
+                <div style="font-size: 0.9rem; color: #666;">
+                    Tự động cập nhật khi có hồ sơ mới <i class="fas fa-wifi" style="color: var(--success)"></i>
+                </div>
             </div>
 
             {% if profiles %}
             <div class="request-card-grid">
                 {% for profile in profiles %}
-                <div class="request-card">
+                
+                <div class="request-card profile-item" data-username="{{ profile.username }}">
+    
                     <div class="request-header">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 40px; height: 40px; background: #e0e7ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: bold;">
+                        <div style="display: flex; gap: 12px;">
+                            <div class="avatar-circle">
                                 {{ profile.username[0] | upper }}
                             </div>
-                            <div>
-                                <h4 style="margin: 0;">{{ profile.username }}</h4>
-                                <span style="font-size: 0.8rem; color: #aaa;">ID: #{{ loop.index }}</span>
+                            <div class="user-info">
+                                <h4>{{ profile.username }}</h4>
+                                <span class="user-id">#{{ loop.index }}</span>
                             </div>
                         </div>
-                        <span class="user-tag">Mới</span>
+                        <span style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold;">
+                            Mới
+                        </span>
+                    </div>
+
+                    <div class="meta-info">
+                        <div class="meta-time"><i class="far fa-clock"></i> Đang tải thời gian...</div>
+                        
+                        <div class="meta-row meta-experience">
+                            <i class="fas fa-briefcase"></i> <span>Đang tải kinh nghiệm...</span>
+                        </div>
+                        
+                        <div style="margin-top: 12px;">
+                            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">
+                                <i class="fas fa-tags" style="color: var(--primary-color);"></i> Lĩnh vực chuyên môn:
+                            </div>
+                            <div class="meta-specialties">
+                                <span class="tag-badge" style="background:#f3f4f6; color:#9ca3af; border-color:#e5e7eb;">Checking...</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="img-gallery">
                         <div class="img-box">
                             <a href="{{ url_for('uploaded_file', filename=profile.id_card) }}" target="_blank">
-                                <img src="{{ url_for('uploaded_file', filename=profile.id_card) }}" alt="CCCD">
+                                <img src="{{ url_for('uploaded_file', filename=profile.id_card) }}" alt="CCCD" loading="lazy">
                             </a>
-                            <div class="img-label">CCCD</div>
+                            <div class="img-label">CCCD / CMND</div>
                         </div>
                         <div class="img-box">
                             <a href="{{ url_for('uploaded_file', filename=profile.degree) }}" target="_blank">
-                                <img src="{{ url_for('uploaded_file', filename=profile.degree) }}" alt="Bằng cấp">
+                                <img src="{{ url_for('uploaded_file', filename=profile.degree) }}" alt="Bằng cấp" loading="lazy">
                             </a>
                             <div class="img-label">Bằng cấp</div>
                         </div>
                     </div>
 
                     <div class="btn-group">
-                        <button class="btn btn-approve" onclick="approveExpert(this,'{{ profile.username }}')">
+                        <button class="btn btn-approve" onclick="approveExpert(this, '{{ profile.username }}')">
                             <i class="fas fa-check"></i> Duyệt
                         </button>
                         <button class="btn btn-reject" onclick="rejectExpert(this, '{{ profile.username }}')">
@@ -178,9 +405,12 @@
                 {% endfor %}
             </div>
             {% else %}
-            <div style="text-align: center; padding: 50px; color: var(--secondary);">
-                <i class="fas fa-folder-open" style="font-size: 3rem; opacity: 0.5; margin-bottom: 15px;"></i>
-                <p>Hiện tại không có hồ sơ nào cần duyệt.</p>
+            <div style="text-align: center; padding: 60px 20px; color: var(--secondary);">
+                <div style="background: #f3f4f6; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <i class="fas fa-check-double" style="font-size: 2.5rem; color: #9ca3af;"></i>
+                </div>
+                <h4 style="margin-bottom: 5px; color: var(--dark);">Tuyệt vời!</h4>
+                <p>Hiện tại không có hồ sơ nào đang chờ xử lý.</p>
             </div>
             {% endif %}
         </div>
@@ -188,38 +418,7 @@
     </main>
 
     <div class="chat-notification-toast" id="chatNotificationToast">
-        <i class="fas fa-comment-dots"></i>
-        <div class="toast-content">
-            <strong>Yêu cầu chat mới!</strong>
-            <span id="chatRequestUser">Một người dùng</span> muốn kết nối với bạn.
         </div>
-        <button class="btn-approve" onclick="acceptChat()">Chấp nhận</button>
-        <button class="btn-reject" onclick="rejectChat()" style="background: #ccc;">Từ chối</button>
-    </div>
-
-    <div class="chatbot-window" id="expertChatWindow">
-    <div class="chat-container">
-      
-      <div class="chat-header">
-        <h3 id="expertChatName">Đang kết nối...</h3>
-        <button class="chat-close" onclick="closeExpertChatModal()">&times;</button>
-      </div>
-      
-      <div class="chat-messages" id="expertChatMessages">
-        <div class="message system">
-          <span>Đang chờ chuyên gia chấp nhận...</span>
-        </div>
-      </div>
-      
-      <form class="chat-input-form" id="expertChatForm">
-        <textarea id="expertChatInput" placeholder="Nhập tin nhắn..." rows="1"></textarea>
-        <button type="submit" id="expertChatSendBtn">
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </form>
-      
-    </div>
-  </div>
 
     <script src="{{ url_for('static', filename='admin_script.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xác thực Cố vấn - StudentMind Connect</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         body {
@@ -43,13 +44,42 @@
             font-weight: 500;
             color: var(--dark);
         }
-        .form-group input[type="file"] {
+        .form-group input[type="file"], 
+        .form-group input[type="number"] {
             width: 100%;
             padding: 0.8rem;
             border: 1px solid #e5e7eb;
             border-radius: 10px;
             font-family: inherit;
         }
+        
+        /* Style cho Checkbox Tags */
+        .tags-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .tag-option {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tag-option:hover {
+            background: #eef2ff;
+            border-color: var(--primary);
+        }
+        .tag-option input {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+        }
+
         .btn-submit-verify {
             width: 100%;
             padding: 1rem;
@@ -72,33 +102,58 @@
             text-align: center;
             font-size: 0.95rem;
         }
-        .message-success {
-            color: var(--success);
-        }
-        .message-error {
-            color: var(--danger);
-        }
+        .message-success { color: var(--success); }
+        .message-error { color: var(--danger); }
     </style>
 </head>
 <body>
 
     <div class="verify-container">
         <div class="verify-header">
-            <a href="/" class="logo" style="justify-content: center; margin-bottom: 1rem;">
-                <i class="fas fa-brain"></i> StudentMind Connect
+            <a href="/" class="logo" style="display: flex; justify-content: center; align-items: center; text-decoration: none; color: var(--primary); font-weight: bold; font-size: 1.2rem; margin-bottom: 1rem;">
+                <i class="fas fa-brain" style="margin-right: 8px;"></i> StudentMind Connect
             </a>
             <h2>Xác thực Cố vấn</h2>
-            <p>Vui lòng tải lên tài liệu của bạn để chúng tôi thẩm định.</p>
+            <p>Vui lòng cung cấp thông tin chuyên môn để chúng tôi thẩm định.</p>
         </div>
 
         <form id="verificationForm">
             <div class="form-group">
-                <label for="id_card">1. Ảnh chụp Căn cước Công dân (CCCD)</label>
+                <label for="experience">Số năm kinh nghiệm (năm)</label>
+                <input type="number" id="experience" name="experience" min="0" max="50" placeholder="Ví dụ: 3" required>
+            </div>
+
+            <div class="form-group">
+                <label>Lĩnh vực chuyên môn (Chọn ít nhất 1)</label>
+                <div class="tags-container">
+                    <label class="tag-option">
+                        <input type="checkbox" name="specialties" value="stress"> Stress & Căng thẳng
+                    </label>
+                    <label class="tag-option">
+                        <input type="checkbox" name="specialties" value="lo_au"> Rối loạn lo âu
+                    </label>
+                    <label class="tag-option">
+                        <input type="checkbox" name="specialties" value="tram_cam"> Trầm cảm
+                    </label>
+                    <label class="tag-option">
+                        <input type="checkbox" name="specialties" value="hoc_tap"> Áp lực học tập
+                    </label>
+                    <label class="tag-option">
+                        <input type="checkbox" name="specialties" value="roi_loan_giac_ngu"> Giấc ngủ & Sức khỏe
+                    </label>
+                    <label class="tag-option">
+                        <input type="checkbox" name="specialties" value="tam_ly_xa_hoi"> Quan hệ xã hội
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="id_card">Ảnh chụp Căn cước Công dân (CCCD)</label>
                 <input type="file" id="id_card" name="id_card" accept="image/png, image/jpeg, image/jpg" required>
             </div>
             
             <div class="form-group">
-                <label for="degree">2. Ảnh chụp Bằng cấp Chuyên môn</label>
+                <label for="degree">Ảnh chụp Bằng cấp Chuyên môn</label>
                 <input type="file" id="degree" name="degree" accept="image/png, image/jpeg, image/jpg" required>
             </div>
 
@@ -114,7 +169,6 @@
     </div>
 
 <script>
-    // JS để xử lý form submission (Phiên bản đơn giản)
     const form = document.getElementById('verificationForm');
     const submitBtn = document.getElementById('submitBtn');
     const messageDiv = document.getElementById('message');
@@ -122,25 +176,48 @@
     form.addEventListener('submit', async function(event) {
         event.preventDefault();
 
+        // 1. Lấy dữ liệu file
         const idCardFile = document.getElementById('id_card').files[0];
         const degreeFile = document.getElementById('degree').files[0];
+        
+        // 2. Lấy dữ liệu kinh nghiệm
+        const experience = document.getElementById('experience').value;
 
+        // 3. Lấy dữ liệu Tags
+        const checkboxes = document.querySelectorAll('input[name="specialties"]:checked');
+        let selectedTags = [];
+        checkboxes.forEach((checkbox) => {
+            selectedTags.push(checkbox.value);
+        });
+
+        // Validation
         if (!idCardFile || !degreeFile) {
-            showMessage('Vui lòng chọn cả hai tệp.', 'error');
+            showMessage('Vui lòng chọn đầy đủ ảnh hồ sơ.', 'error');
+            return;
+        }
+        if (!experience) {
+            showMessage('Vui lòng nhập số năm kinh nghiệm.', 'error');
+            return;
+        }
+        if (selectedTags.length === 0) {
+            showMessage('Vui lòng chọn ít nhất một lĩnh vực chuyên môn.', 'error');
             return;
         }
 
-        // Vô hiệu hóa nút, hiển thị loading
+        // Vô hiệu hóa nút
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Đang tải lên...'; // <-- Thay đổi
+        submitBtn.textContent = 'Đang tải lên...';
         messageDiv.textContent = '';
 
+        // Tạo FormData
         const formData = new FormData();
         formData.append('id_card', idCardFile);
         formData.append('degree', degreeFile);
+        formData.append('experience', experience);
+        // Gửi tags dưới dạng chuỗi nối bằng dấu phẩy (vd: "stress,lo_au")
+        formData.append('specialties', selectedTags.join(','));
 
         try {
-            // Gọi API trong main.py
             const response = await fetch('/verify_counselor', {
                 method: 'POST',
                 body: formData
@@ -149,17 +226,16 @@
             const result = await response.json();
 
             if (response.ok && result.success) {
-            // Hiển thị thông báo đẹp hơn và ẩn form
                 document.querySelector('.verify-header').innerHTML = `
                     <h2 style="color: var(--success); margin-bottom: 1rem;">
                         <i class="fas fa-check-circle"></i> Nộp hồ sơ thành công!
                     </h2>
-                    <p>Cảm ơn bạn đã quan tâm. Đội ngũ quản trị viên sẽ xem xét hồ sơ của bạn và liên hệ lại sớm nhất.</p>
+                    <p>Hồ sơ của bạn (Kinh nghiệm: ${experience} năm, ${selectedTags.length} chuyên môn) đã được gửi.</p>
+                    <p>Đội ngũ quản trị viên sẽ xem xét và phản hồi sớm.</p>
                     <p style="margin-top: 1rem;"><a href="/" style="color: var(--primary);">Về trang chủ</a></p>
                 `;
-                form.style.display = 'none'; // Ẩn form đi
+                form.style.display = 'none';
             } else {
-                // Thất bại
                 throw new Error(result.message || 'Có lỗi xảy ra.');
             }
 
@@ -174,6 +250,6 @@
         messageDiv.textContent = message;
         messageDiv.className = type === 'success' ? 'message-success' : 'message-error';
     }
-</script>  
+</script>   
 </body>
 </html>

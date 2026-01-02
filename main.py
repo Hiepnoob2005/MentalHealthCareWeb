@@ -1440,86 +1440,65 @@ def verify_counselor_page():
     """Hiển thị trang HTML cho form upload"""
     return render_template("counselor_verification.html")
 
-
 @app.route("/verify_counselor", methods=["POST"])
-@login_required  # Yêu cầu đăng nhập để nộp form
-def handle_verification_upload():  # <-- Bỏ 'async'
-    """
-    Xử lý upload, KHÔNG DÙNG AI, chỉ lưu file.
-    """
-
+@login_required 
+def handle_verification_upload():
     # 1. Kiểm tra file
     if "id_card" not in request.files or "degree" not in request.files:
-        return (
-            jsonify(
-                {"success": False, "message": "Lỗi: Thiếu tệp CCCD hoặc Bằng cấp."}
-            ),
-            400,
-        )
+        return jsonify({"success": False, "message": "Thiếu tệp tin."}), 400
 
     id_card_file = request.files["id_card"]
     degree_file = request.files["degree"]
+    
+    # 2. Lấy dữ liệu text (Kinh nghiệm và Tags)
+    experience = request.form.get("experience", "0")
+    specialties = request.form.get("specialties", "tu_van_chung")
 
     if id_card_file.filename == "" or degree_file.filename == "":
-        return (
-            jsonify({"success": False, "message": "Lỗi: Vui lòng chọn cả hai tệp."}),
-            400,
-        )
+        return jsonify({"success": False, "message": "Vui lòng chọn cả hai tệp."}), 400
 
     if not (allowed_file(id_card_file.filename) and allowed_file(degree_file.filename)):
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "message": f"Lỗi: Chỉ chấp nhận tệp {ALLOWED_EXTENSIONS}",
-                }
-            ),
-            400,
-        )
+        return jsonify({"success": False, "message": "Định dạng file không hỗ trợ."}), 400
 
     try:
-        # 2. Lấy tên file an toàn
-        # Lấy đuôi file gốc
+        # 3. Lưu file ảnh
         ext1 = os.path.splitext(id_card_file.filename)[1]
         ext2 = os.path.splitext(degree_file.filename)[1]
 
-        # Tạo tên file an toàn, gắn với username
         id_filename = secure_filename(f"{current_user.username}_id_card{ext1}")
         degree_filename = secure_filename(f"{current_user.username}_degree{ext2}")
 
         id_path = os.path.join(app.config["UPLOAD_FOLDER"], id_filename)
         degree_path = os.path.join(app.config["UPLOAD_FOLDER"], degree_filename)
 
-        # 3. Lưu file
         id_card_file.save(id_path)
         degree_file.save(degree_path)
 
-        logging.info(f"Đã lưu hồ sơ (CCCD, Bằng cấp) cho user: {current_user.username}")
+        # 4. [MỚI] Lưu Metadata (Tags & Kinh nghiệm) vào file JSON
+        # File này sẽ có tên: username_meta.json trong cùng thư mục upload
+        meta_filename = f"{current_user.username}_meta.json"
+        meta_path = os.path.join(app.config["UPLOAD_FOLDER"], meta_filename)
+        
+        meta_data = {
+            "username": current_user.username,
+            "experience": f"{experience} năm",
+            "specialties": specialties, # Chuỗi tags phân cách bởi dấu phẩy
+            "submission_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        with open(meta_path, "w", encoding="utf-8") as f:
+            json.dump(meta_data, f, ensure_ascii=False, indent=4)
 
-        # TODO: Cập nhật trạng thái 'pending_review' cho user trong database
-        # (Hiện tại, chúng ta chỉ lưu file để bạn duyệt thủ công)
+        logging.info(f"Đã lưu hồ sơ + metadata cho user: {current_user.username}")
 
-        return (
-            jsonify(
-                {
-                    "success": True,
-                    "message": "Hồ sơ đã được nộp thành công! Chúng tôi sẽ xem xét và liên hệ với bạn sớm.",
-                }
-            ),
-            200,
-        )
+        return jsonify({
+            "success": True, 
+            "message": "Nộp hồ sơ thành công!"
+        }), 200
 
     except Exception as e:
-        logging.error(f"Lỗi nghiêm trọng khi xử lý upload: {e}")
-        import traceback
-
-        traceback.print_exc()
-        return (
-            jsonify(
-                {"success": False, "message": "Lỗi hệ thống, vui lòng thử lại sau."}
-            ),
-            500,
-        )
+        logging.error(f"Lỗi xử lý upload: {e}")
+        return jsonify({"success": False, "message": "Lỗi hệ thống."}), 500
 
 
 @app.route("/health", methods=["GET"])
@@ -2141,17 +2120,13 @@ def handle_counselor_join(data):
 # --- Thêm vào main.py (khu vực Admin Routes) ---
 
 def delete_user_files(username):
-    """
-    Xóa tất cả file (CCCD, Bằng cấp) liên quan đến username trong thư mục upload.
-    File format: username_id_card.jpg, username_degree.png, ...
-    """
     try:
         if not os.path.exists(UPLOAD_FOLDER):
             return
 
         files = os.listdir(UPLOAD_FOLDER)
         for f in files:
-            # Kiểm tra file bắt đầu bằng username_ (để tránh xóa nhầm user khác có tên gần giống)
+            # Xóa tất cả file bắt đầu bằng username_ (bao gồm ảnh và json)
             if f.startswith(f"{username}_"):
                 file_path = os.path.join(UPLOAD_FOLDER, f)
                 os.remove(file_path)
@@ -2193,7 +2168,6 @@ def reject_expert():
 @app.route("/api/admin/approve-expert", methods=["POST"])
 @login_required
 def approve_expert():
-    # 1. Kiểm tra quyền Admin
     if not current_user.is_admin:
         return jsonify({"message": "Bạn không có quyền thực hiện thao tác này"}), 403
 
@@ -2206,7 +2180,6 @@ def approve_expert():
     target_user_data = None
     remaining_users = []
 
-    # 2. Đọc file User để tìm và lấy thông tin
     try:
         if os.path.exists(USER_FILE):
             with open(USER_FILE, "r", encoding="utf-8") as f:
@@ -2214,7 +2187,6 @@ def approve_expert():
                 
             for line in lines:
                 parts = line.strip().split(";")
-                # Giả định format user: Username;Email;PasswordHash
                 if len(parts) >= 3 and parts[0] == username_to_approve:
                     target_user_data = {
                         "username": parts[0],
@@ -2227,36 +2199,42 @@ def approve_expert():
         if not target_user_data:
             return jsonify({"message": "Không tìm thấy người dùng này trong danh sách User"}), 404
 
-        # 3. Tạo dữ liệu cho Counselor theo format
-        # Format: CounselorID;Username;Name;Email;PasswordHash;Specialties;Rating;Status;Experience;verified
-        
-        # Tạo ID ngẫu nhiên ví dụ: C + 4 số cuối của UUID
         new_counselor_id = f"C{str(uuid.uuid4())[:4].upper()}"
+    
+        experience_val = "Chưa cập nhật"
+        specialties_val = "Tu_van_chung"
         
-        # Các giá trị mặc định/placeholder
-        name_placeholder = f"Chuyên gia {target_user_data['username']}" # Tạm lấy username làm tên
-        specialties_placeholder = "Tu_van_chung"
-        rating_default = "0"
-        status_default = "offline"
-        experience_placeholder = "Chưa cập nhật"
-        verified_status = "yes" # Quan trọng: đã duyệt
+        meta_filename = f"{username_to_approve}_meta.json"
+        meta_path = os.path.join(app.config["UPLOAD_FOLDER"], meta_filename)
+        
+        if os.path.exists(meta_path):
+            try:
+                with open(meta_path, "r", encoding="utf-8") as f:
+                    meta = json.load(f)
+                    experience_val = meta.get("experience", "Chưa cập nhật")
+                    specialties_val = meta.get("specialties", "Tu_van_chung")
+            except Exception:
+                pass # Nếu lỗi đọc file meta thì dùng mặc định
 
-        new_counselor_line = (
-            f"{new_counselor_id};"
-            f"{target_user_data['username']};"
-            f"{name_placeholder};"
-            f"{target_user_data['email']};"
-            f"{target_user_data['password_hash']};"
-            f"{specialties_placeholder};"
-            f"{rating_default};"
-            f"{status_default};"
-            f"{experience_placeholder};"
-            f"{verified_status}\n"
-        )
+            name_placeholder = f"Chuyên gia {target_user_data['username']}"
+            rating_default = "0"
+            status_default = "offline"
+            verified_status = "yes"
+
+            new_counselor_line = (
+                f"{new_counselor_id};"
+                f"{target_user_data['username']};"
+                f"{name_placeholder};"
+                f"{target_user_data['email']};"
+                f"{target_user_data['password_hash']};"
+                f"{specialties_val};" 
+                f"{rating_default};"
+                f"{status_default};"
+                f"{experience_val};"
+                f"{verified_status}\n"
+            )
 
         delete_user_files(username_to_approve)
-        # 4. Ghi vào file Counselor (Append)
-        # Đảm bảo file tồn tại và có header nếu chưa
         if not os.path.exists(COUNSELOR_FILE):
             with open(COUNSELOR_FILE, "w", encoding="utf-8") as f:
                 f.write("CounselorID;Username;Name;Email;PasswordHash;Specialties;Rating;Status;Experience;verified\n")
@@ -2264,7 +2242,6 @@ def approve_expert():
         with open(COUNSELOR_FILE, "a", encoding="utf-8") as f:
             f.write(new_counselor_line)
 
-        # 5. Ghi đè lại file User (Xóa user cũ)
         with open(USER_FILE, "w", encoding="utf-8") as f:
             f.writelines(remaining_users)
 
