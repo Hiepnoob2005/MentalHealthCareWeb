@@ -23,6 +23,11 @@ document.addEventListener("DOMContentLoaded", function () {
   loadOldChatHistory(); // Tải lịch sử chat cũ nếu có
   loadAvailableCounselors(); // Tải danh sách chuyên gia có lịch trống
   refreshExpertStatusOnLoadAll();
+
+  if (typeof loadAllCounselorsPage === 'function') {
+        console.log("Đang gọi hàm loadAllCounselorsPage...");
+        loadAllCounselorsPage();
+  }
 });
 
 // --- Authentication (Đăng nhập/Đăng xuất) ---
@@ -937,7 +942,9 @@ function displayMatchingResults(data) {
         const statusText = counselor.status === 'online' ? 'Online' : 'Offline';
         const btnText = counselor.status === 'online' ? 'Kết nối ngay' : 'Đặt lịch hẹn';
         // Nút bấm: Nếu online -> openChat, nếu offline -> checkAndOpenBooking
-        const btnAction = counselor.status === 'online' ? `openChat('${counselor.id}')` : `checkAndOpenBooking('${counselor.id}')`;
+        const btnAction = counselor.status === 'online' 
+              ? `window.location.href='/user/chat?expert=${counselor.username}'` 
+              : `checkAndOpenBooking('${counselor.username}')`;
 
         card.innerHTML = `
             <div class="match-info">
@@ -1199,7 +1206,13 @@ function formatTag(tag) {
       'tram_cam': 'Trầm cảm',
       'hoc_tap': 'Học tập',
       'roi_loan_giac_ngu': 'Rối loạn giấc ngủ',
-      'tam_ly_xa_hoi': 'Tâm lý xã hội'
+      'tam_ly_xa_hoi': 'Tâm lý xã hội',
+      'ap_luc_cong_viec': 'Áp lực công việc',
+      'quan_he_gia_dinh': 'Quan hệ gia đình',
+      'quan_he_tinh_cam': 'Quan hệ tình cảm',
+      'ap_luc_xa_hoi': 'Áp lực xã hội',
+      'ap_luc_thi_cu': 'Áp lực thi cử',
+      'Tu_van_chung': 'Tư vấn chung'
   };
   return tagNames[tag] || tag;
 }
@@ -1771,35 +1784,78 @@ function initializeCounselorChat(expertUsername) {
 
     // 3. Xử lý tin nhắn đến
     expertSocket.on('receive_message', (data) => {
-        // Nếu là tin hệ thống -> Bỏ qua hoặc log
         if (data.sender_type === 'system') return;
 
-        // Nếu tin nhắn do chính mình (Counselor) gửi -> Hiển thị bên phải
-        if (data.sender_type === 'counselor' || data.sender_id === expertUsername) {
-            // Lưu vào data của student đang chat (nếu có target)
-             if (data.target_student_id) {
-                saveMessageToLocal(data.target_student_id, data);
-                if (currentStudentId === data.target_student_id) {
-                    renderMessages(currentStudentId);
+        // Xác định ID của sinh viên liên quan đến tin nhắn này
+        let relatedStudentId = null;
+        if (data.sender_type === 'user') {
+            relatedStudentId = data.sender_id;
+        } else if (data.sender_type === 'counselor' && data.target_student_id) {
+            relatedStudentId = data.target_student_id;
+        }
+
+        if (relatedStudentId) {
+            // Lưu tin nhắn
+            saveMessageToLocal(relatedStudentId, data);
+
+            // --- CẬP NHẬT LAST MESSAGE ---
+            const previewText = data.sender_type === 'counselor' ? `Bạn: ${data.text}` : data.text;
+            updateStudentPreview(relatedStudentId, previewText);
+
+            // Nếu đang mở chat với sinh viên này -> Vẽ tin nhắn
+            if (currentStudentId === relatedStudentId) {
+                // Logic sent/received
+                const type = (data.sender_type === 'counselor' || data.sender_id === expertUsername) ? 'sent' : 'received';
+                addMessageToUI(data.text, type);
+                scrollToBottom();
+            } else {
+                // Nếu không -> Hiện thông báo badge
+                const badge = document.getElementById(`badge-${relatedStudentId}`);
+                if (badge) {
+                    let count = parseInt(badge.textContent) || 0;
+                    badge.textContent = count + 1;
+                    badge.classList.add('show');
                 }
-             }
-             return;
+            }
         }
+    });
 
-        // --- Logic xử lý tin nhắn từ USER ---
-        const studentId = data.sender_id; // Đây là username của sinh viên
+    // 2. Xử lý Load History (Khi F5 trang)
+    expertSocket.on('load_history', (history) => {
+        // history là danh sách tất cả tin nhắn lộn xộn
+        // Ta cần nhóm lại để biết tin nhắn cuối cùng của từng sinh viên
         
-        // a. Lưu tin nhắn
-        saveMessageToLocal(studentId, data);
+        // Reset data
+        chatsData = {}; 
+        const list = document.getElementById('studentList');
+        if(list) list.innerHTML = ''; // Xóa danh sách cũ để render lại từ đầu
 
-        // b. Nếu đang mở chat với sinh viên này -> Vẽ tin nhắn
-        if (currentStudentId === studentId) {
-            addMessageToUI(data.text, 'received');
-            scrollToBottom();
-        } else {
-            // c. Nếu đang chat người khác -> Hiện badge đỏ
-            showNotification(studentId, data.text);
-        }
+        // Duyệt qua lịch sử để xây dựng data
+        history.forEach(msg => {
+            let studentId = null;
+            if (msg.sender_type === 'user') studentId = msg.sender_id;
+            else if (msg.sender_type === 'counselor') studentId = msg.target_student_id;
+
+            if (studentId) {
+                saveMessageToLocal(studentId, msg);
+            }
+        });
+
+        // Sau khi đã lưu hết vào chatsData, duyệt qua từng student để vẽ Sidebar
+        Object.keys(chatsData).forEach(studentId => {
+            const msgs = chatsData[studentId];
+            const lastMsgObj = msgs[msgs.length - 1]; // Lấy tin cuối cùng
+            
+            let lastMsgText = "Chưa có tin nhắn";
+            if (lastMsgObj) {
+                lastMsgText = (lastMsgObj.sender_type === 'counselor') 
+                    ? `Bạn: ${lastMsgObj.text}` 
+                    : lastMsgObj.text;
+            }
+
+            // Thêm vào sidebar với lastMessage chuẩn
+            addStudentToSidebar(studentId, lastMsgText);
+        });
 
         expertSocket.on('connect', () => {
           console.log("Expert socket connected");
@@ -1814,7 +1870,7 @@ function initializeCounselorChat(expertUsername) {
         // Tự động thêm vào sidebar nhưng chưa có tin nhắn
         if (!chatsData[studentId]) {
             chatsData[studentId] = [];
-            addStudentToSidebar(studentId);
+            addStudentToSidebar(studentId, "Đang chờ tin nhắn...");
             showNotification(studentId, "Đã tham gia phòng chat");
         }
     });
@@ -1918,30 +1974,94 @@ function initializeCounselorChat(expertUsername) {
     function saveMessageToLocal(studentId, msgData) {
         if (!chatsData[studentId]) {
             chatsData[studentId] = [];
-            addStudentToSidebar(studentId);
+            addStudentToSidebar(studentId, "Tin nhắn mới ...");
         }
         chatsData[studentId].push(msgData);
     }
-
-    function addStudentToSidebar(studentId) {
-        const list = document.getElementById('studentList');
-        if (!list || document.getElementById(`item-${studentId}`)) return;
-
-        const li = document.createElement('li');
-        li.className = 'student-item';
-        li.id = `item-${studentId}`;
-        li.onclick = () => selectStudent(studentId);
-        
-        li.innerHTML = `
-            <div class="avatar">${studentId.charAt(0).toUpperCase()}</div>
-            <div class="info">
-                <span class="name">${studentId}</span>
-                <span class="preview" id="preview-${studentId}">Tin nhắn mới...</span>
-            </div>
-            <span class="badge" id="badge-${studentId}">0</span>
-        `;
-        list.appendChild(li);
+        // --- Helper: Tạo màu ngẫu nhiên cho Avatar dựa trên tên ---
+    function stringToColor(string) {
+        let hash = 0;
+        for (let i = 0; i < string.length; i++) {
+            hash = string.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+        return '#' + '00000'.substring(0, 6 - c.length) + c;
     }
+
+    // --- Helper: Tạo HTML Avatar ---
+    function getAvatarHTML(username, size = 'normal') {
+        const firstLetter = username.charAt(0).toUpperCase();
+        const bgColor = stringToColor(username);
+        // Nếu size nhỏ dùng cho tin nhắn, size lớn cho danh sách
+        return `<div class="avatar-circle" style="background-color: ${bgColor};">${firstLetter}</div>`;
+    }
+
+    // --- Hàm hiển thị tin nhắn (Cập nhật logic cũ của bạn) ---
+    function renderMessage(sender, text, isExpert = false) {
+        const messageBox = document.getElementById('expertMessagesBox');
+        
+        const div = document.createElement('div');
+        // Nếu là expert (mình) -> class 'sent', người dùng -> 'received'
+        const typeClass = isExpert ? 'sent' : 'received';
+        
+        div.className = `message-row ${typeClass}`;
+        
+        // Tạo HTML: Avatar + Bubble
+        // Lưu ý: với 'sent' avatar bị CSS ẩn đi, nhưng 'received' sẽ hiện
+        const avatarHTML = getAvatarHTML(sender); 
+        
+        div.innerHTML = `
+            ${!isExpert ? avatarHTML : ''} <div class="message-bubble">
+                ${text}
+            </div>
+        `;
+
+        messageBox.appendChild(div);
+        messageBox.scrollTop = messageBox.scrollHeight; // Tự động cuộn xuống
+    }
+
+
+    // --- Ví dụ cách dùng trong logic Socket.IO của bạn ---
+    // Giả sử bạn có sự kiện nhận tin nhắn từ server
+    /*
+    socket.on('receive_message', function(data) {
+        // data.sender: tên người gửi
+        // data.message: nội dung
+        // currentExpertName: tên của chuyên gia đang đăng nhập
+
+        const isMe = data.sender === currentExpertUsername; 
+        renderMessage(data.sender, data.message, isMe);
+    });
+    */
+
+    // --- Cập nhật danh sách sinh viên (Sidebar) ---
+    function addStudentToSidebar(studentId, lastMessage = "Bắt đầu cuộc trò chuyện") {
+      const list = document.getElementById('studentList');
+      
+      // Kiểm tra nếu đã tồn tại thì không thêm mới
+      if (document.getElementById(`item-${studentId}`)) return;
+
+      const li = document.createElement('li');
+      li.className = 'student-item';
+      li.id = `item-${studentId}`;
+      
+      // Gán sự kiện click
+      li.onclick = () => selectStudent(studentId);
+
+      // Xử lý hiển thị tin nhắn cuối cùng (cắt ngắn nếu quá dài)
+      // const displayMsg = lastMessage.length > 30 ? lastMessage.substring(0, 30) + '...' : lastMessage;
+
+      li.innerHTML = `
+          ${getAvatarHTML(studentId)}
+          <div style="flex: 1; min-width: 0;"> <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-weight: bold; font-size: 0.95rem;">${studentId}</span>
+                  <span class="badge" id="badge-${studentId}">0</span>
+              </div>
+              <span class="student-preview" id="preview-${studentId}">${lastMessage}</span>
+          </div>
+      `;
+      list.appendChild(li);
+  }
 
     function showNotification(studentId, lastText) {
         const preview = document.getElementById(`preview-${studentId}`);
@@ -1955,29 +2075,53 @@ function initializeCounselorChat(expertUsername) {
         }
     }
 
-    function selectStudent(studentId) {
-        currentStudentId = studentId;
-        
-        // Active UI
-        document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
-        const activeItem = document.getElementById(`item-${studentId}`);
-        if(activeItem) activeItem.classList.add('active');
-
-        // Reset Badge
-        const badge = document.getElementById(`badge-${studentId}`);
-        if (badge) {
-            badge.textContent = '0';
-            badge.classList.remove('show');
+    function updateStudentPreview(studentId, text) {
+    const previewEl = document.getElementById(`preview-${studentId}`);
+    if (previewEl) {
+        // Nếu là tin nhắn ảnh hoặc HTML đặc biệt, bạn có thể thay đổi text hiển thị
+        if (text.includes('<div class="zoom-invite-card"')) {
+            previewEl.textContent = "📞 Cuộc gọi video...";
+        } else {
+            previewEl.textContent = text;
         }
-
-        // Show Chat Area
-        const header = document.getElementById('currentChatHeader');
-        const form = document.getElementById('expertReplyForm');
-        if(header) header.textContent = `Đang chat với: ${studentId}`;
-        if(form) form.style.display = 'flex';
-
-        renderMessages(studentId);
+    } else {
+        // Nếu chưa có trong sidebar thì thêm mới
+        addStudentToSidebar(studentId, text);
     }
+}
+
+    function selectStudent(studentId) {
+      currentStudentId = studentId;
+      
+      // 1. Active UI (Đổi màu nền item được chọn)
+      document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
+      const activeItem = document.getElementById(`item-${studentId}`);
+      if(activeItem) activeItem.classList.add('active');
+
+      // 2. Reset Badge (Số tin nhắn chưa đọc) về 0
+      const badge = document.getElementById(`badge-${studentId}`);
+      if (badge) {
+          badge.textContent = '0';
+          badge.classList.remove('show');
+      }
+
+      // 3. Cập nhật Header Chat
+      const header = document.getElementById('currentChatHeader');
+      if(header) {
+          header.innerHTML = `${getAvatarHTML(studentId)} <span style="margin-left:10px;">Chat với: <strong>${studentId}</strong></span>`;
+      }
+
+      // 4. HIỂN THỊ KHUNG NHẬP LIỆU (Load inputChat)
+      const form = document.getElementById('expertReplyForm');
+      if(form) {
+          form.style.display = 'flex'; // Hiển thị form
+          const input = document.getElementById('expertInput');
+          if(input) input.focus(); // Tự động focus vào ô nhập
+      }
+
+      // 5. Render tin nhắn cũ
+      renderMessages(studentId);
+  }
 
     function renderMessages(studentId) {
         const container = document.getElementById('expertMessagesBox');
@@ -2056,7 +2200,7 @@ function updateExpertStatusUI(username, status) {
                 chatBtn.style.display = 'inline-block'; // Hiện nút chat
                 chatBtn.textContent = 'Chat ngay';
                 chatBtn.disabled = false;
-                chatBtn.onclick = () => openChat(username);
+                chatBtn.onclick = () => window.location.href = `/user/chat?expert=${username}`;
             }
         } else {
             // --- Chuyển sang OFFLINE ---
@@ -2122,7 +2266,9 @@ async function loadAvailableCounselors() {
                 const btnText = isOnline ? 'Chat ngay' : 'Đặt lịch hẹn';
                 
                 // Nút bấm: Online -> Chat, Offline -> Đặt lịch
-                const btnAction = isOnline ? `openChat('${c.username}')` : `checkAndOpenBooking('${c.username}')`;
+                const btnAction = isOnline 
+                      ? `window.location.href='/user/chat?expert=${c.username}'` 
+                      : `checkAndOpenBooking('${c.username}')`;
                 const btnClass = isOnline ? 'btn-connect btn-chat' : 'btn-connect';
 
                 card.innerHTML = `
@@ -2155,5 +2301,88 @@ async function loadAvailableCounselors() {
     } catch (e) {
         console.error(e);
         container.innerHTML = '<p style="color: red; text-align: center;">Lỗi tải dữ liệu.</p>';
+    }
+}
+
+async function loadAllCounselorsPage() {
+    const container = document.getElementById('all-experts-container');
+
+    container.innerHTML = '<div class="spinner" style="grid-column: span 3; margin: 50px auto;"></div>';
+
+    try {
+        // Gọi API lấy toàn bộ chuyên gia (đã kèm status realtime từ main.py)
+        const response = await fetch('/api/counselors/all');
+        const data = await response.json();
+
+        container.innerHTML = ''; // Xóa spinner
+
+        if (data.counselors && data.counselors.length > 0) {
+            data.counselors.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'expert-card';
+                
+                // [QUAN TRỌNG] Gắn ID để Socket cập nhật trạng thái Online/Offline sau này
+                card.setAttribute('data-expert-id', c.id); 
+
+                // Xử lý logic hiển thị
+                const isOnline = c.status === 'online';
+                const statusClass = isOnline ? 'online' : 'offline';
+                const statusText = isOnline ? 'Online' : 'Offline';
+                const btnText = isOnline ? 'Chat ngay' : 'Chat (Offline)';
+                const btnDisabled = isOnline ? '' : 'disabled';
+                
+                // Hành động của nút chat
+                const chatAction = isOnline 
+                      ? `onclick="window.location.href='/user/chat?expert=${c.id}'"` 
+                      : `onclick="alert('Chuyên gia đang offline. Vui lòng đặt lịch hẹn.')"`
+
+                // Xử lý Rating (sao)
+                const rating = parseFloat(c.rating) || 0;
+                const starsHtml = '<i class="fas fa-star" style="color: #fbbf24;"></i>'.repeat(Math.round(rating));
+
+                // Xử lý Tags chuyên môn (tách chuỗi thành mảng)
+                // Giả sử server trả về string "Stress, Lo âu" hoặc array
+                let specs = c.specialties;
+                if (typeof specs === 'string') {
+                    specs = specs.split(',');
+                } else if (!Array.isArray(specs)) {
+                    specs = ['Tư vấn chung'];
+                }
+
+                const tagsHtml = specs.map(tag => `<span class="specialty-tag">${formatTag(tag.trim())}</span>`).join('');
+
+                card.innerHTML = `
+                    <div class="expert-avatar">
+                        <i class="fas fa-user-circle"></i>
+                        <span class="expert-status ${statusClass} status-label">
+                            <span class="status-dot"></span> ${statusText}
+                        </span>
+                    </div>
+                    <div class="expert-info">
+                        <h3>${c.name}</h3>
+                        <div class="expert-specialties">
+                            ${tagsHtml}
+                        </div>
+                        <div class="expert-rating">
+                            <div class="stars">${starsHtml}</div>
+                            <span>${rating} (${c.experience})</span>
+                        </div>
+
+                        <button class="btn-connect" onclick="checkAndOpenBooking('${c.id}')">Đặt lịch hẹn</button>
+
+                        <button class="btn-connect btn-chat ${btnDisabled}" ${chatAction} ${btnDisabled}>
+                            ${btnText}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        } else {
+            container.innerHTML = '<p style="text-align:center; width:100%; grid-column: span 3;">Chưa có chuyên gia nào trong hệ thống.</p>';
+        }
+
+    } catch (error) {
+        console.error("Lỗi tải danh sách chuyên gia:", error);
+        container.innerHTML = '<p style="text-align:center; color:red; grid-column: span 3;">Lỗi kết nối server. Vui lòng thử lại sau.</p>';
     }
 }

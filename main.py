@@ -2300,6 +2300,11 @@ def approve_expert():
     except Exception as e:
         logging.error(f"Lỗi khi duyệt chuyên gia: {e}")
         return jsonify({"message": "Lỗi server khi xử lý file"}), 500
+    
+
+@app.route('/experts')
+def all_experts():
+    return render_template('all_experts.html')
 
 if __name__ == "__main__":
     start_file_watcher()

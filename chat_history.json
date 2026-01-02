@@ -238,5 +238,77 @@
         "text": "xin chào",
         "target_student_id": null,
         "timestamp": "2026-01-02 15:55:11"
+    },
+    {
+        "room": "nvan",
+        "sender_id": "dat",
+        "sender_type": "user",
+        "text": "hello",
+        "target_student_id": null,
+        "timestamp": "2026-01-02 17:50:26"
+    },
+    {
+        "room": "nvan",
+        "sender_id": "nvan",
+        "sender_type": "counselor",
+        "text": "chào em",
+        "target_student_id": "dat",
+        "timestamp": "2026-01-02 17:50:31"
+    },
+    {
+        "room": "nvan",
+        "sender_id": "nvan",
+        "sender_type": "counselor",
+        "text": "\n                        <div class=\"zoom-invite-card\">\n                            <div class=\"zoom-header\">\n                                <i class=\"fas fa-video\"></i> Video Call\n                            </div>\n                            <div style=\"font-size: 0.9em; color: #555;\">\n                                Bác sĩ mời bạn tham gia cuộc họp trực tuyến.\n                            </div>\n                            <a href=\"https://us04web.zoom.us/j/72643043462?pwd=GlJKMPpkgRcn0qiblHl6sdKbcqm1ee.1\" target=\"_blank\" class=\"zoom-btn\">\n                                Tham gia ngay\n                            </a>\n                        </div>\n                    ",
+        "target_student_id": "dat",
+        "timestamp": "2026-01-02 17:51:01"
+    },
+    {
+        "room": "nvan",
+        "sender_id": "dat",
+        "sender_type": "user",
+        "text": "vâng ạ",
+        "target_student_id": null,
+        "timestamp": "2026-01-02 17:51:18"
+    },
+    {
+        "room": "nvan",
+        "sender_id": "nvan",
+        "sender_type": "counselor",
+        "text": "\n                        <div class=\"zoom-invite-card\">\n                            <div class=\"zoom-header\">\n                                <i class=\"fas fa-video\"></i> Video Call\n                            </div>\n                            <div style=\"font-size: 0.9em; color: #555;\">\n                                Bác sĩ mời bạn tham gia cuộc họp trực tuyến.\n                            </div>\n                            <a href=\"https://us04web.zoom.us/j/74504258356?pwd=CEbEFlIpOBWK8HBwlPmlyXg7s5sY0e.1\" target=\"_blank\" class=\"zoom-btn\">\n                                Tham gia ngay\n                            </a>\n                        </div>\n                    ",
+        "target_student_id": "24127020",
+        "timestamp": "2026-01-02 18:05:59"
+    },
+    {
+        "room": "nvan",
+        "sender_id": "nvan",
+        "sender_type": "counselor",
+        "text": "ổn chưa em",
+        "target_student_id": "dat",
+        "timestamp": "2026-01-02 18:11:22"
+    },
+    {
+        "room": "nvan",
+        "sender_id": "nvan",
+        "sender_type": "counselor",
+        "text": "hi",
+        "target_student_id": "24127508",
+        "timestamp": "2026-01-02 18:11:27"
+    },
+    {
+        "room": "nvan",
+        "sender_id": "nvan",
+        "sender_type": "counselor",
+        "text": "chào em",
+        "target_student_id": "24127020",
+        "timestamp": "2026-01-02 18:11:31"
+    },
+    {
+        "room": "nvan",
+        "sender_id": "dat",
+        "sender_type": "user",
+        "text": "ổn rồi ạ",
+        "target_student_id": null,
+        "timestamp": "2026-01-02 18:11:39"
     }
 ]

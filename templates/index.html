@@ -206,7 +206,7 @@
                     <span>5.0 (124 đánh giá)</span>
                 </div>
                 <button class="btn-connect" onclick="checkAndOpenBooking('nvan')">Đặt lịch hẹn</button>
-                <button class="btn-connect btn-chat" onclick="openChat('nvan')">
+                <button class="btn-connect btn-chat" onclick="window.location.href='/user/chat?expert=nvan'">
                     Chat với chuyên gia
                 </button>
             </div>
@@ -232,7 +232,7 @@
                     <span>4.8 (98 đánh giá)</span>
                 </div>
                 <button class="btn-connect" onclick="checkAndOpenBooking('ttbinh')">Đặt lịch hẹn</button>
-                <button class="btn-connect btn-chat" onclick="openChat('ttbinh')">
+                <button class="btn-connect btn-chat" onclick="window.location.href='/user/chat?expert=ttbinh'">
                     Chat với chuyên gia
                 </button>
             </div>
@@ -258,12 +258,18 @@
                     <span>4.9 (156 đánh giá)</span>
                 </div>
                 <button class="btn-connect" onclick="checkAndOpenBooking('lvcuong')">Đặt lịch hẹn</button>
-                <button class="btn-connect btn-chat" onclick="openChat('lvcuong')">
+                <button class="btn-connect btn-chat" onclick="window.location.href='/user/chat?expert=lvcuong'">
                     Chat với chuyên gia
                 </button>
             </div>
         </div>
 
+    </div>
+
+    <div class="view-more-container" style="width: 100%; display: flex; justify-content: center; margin-top: 40px;">
+        <a href="/experts" class="btn-secondary" style="padding: 12px 30px; border-color: var(--primary); color: var(--primary); background: transparent;">
+          Xem tất cả chuyên gia <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+        </a>
     </div>
 </section>
   <section class="resources" id="resources">
@@ -329,16 +335,17 @@
   <section class="dashboard" id="dashboard">
     <div class="section-header">
       <h2>Dashboard Cá nhân</h2>
-      <p>Theo dõi và quản lý sức khỏe tâm lý của bạn</p>
     </div>
     <div class="dashboard-container">
       <div class="dashboard-sidebar">
         <ul class="dashboard-menu">
+          {% if current_user.is_authenticated and current_user.is_counselor %}
           <li>
             <a href="#" id="tab-overview" class="active"><i class="fas fa-chart-line"></i> Chat</a>
+          </li>
+          {% endif %}
           <li>
             <a href="#" id="tab-schedule"><i class="fas fa-calendar-alt"></i> Lịch hẹn</a>
-          </li>
           </li>
           <li>
             <a href="#" id="tab-history"><i class="fas fa-history"></i> Lịch sử</a>
@@ -428,23 +435,11 @@
           </div>
         </div>
 
-        {% else %} <div id="user-view-overview">
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-icon primary"><i class="fas fa-smile"></i></div>
-              <div class="stat-info">
-                <h4>75</h4>
-                <p>Điểm tâm trạng</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="mood-tracker">
-            <h3>Biểu đồ Tâm trạng 30 ngày</h3>
-          </div>
+        {% else %} 
+        <div id="user-view-overview" style="display:none">
         </div>
 
-        <div id="user-view-booking" style="display: none;">
+        <div id="user-view-booking" style="display: flex;">
           <div class="mood-tracker" style="padding: 30px;">
             <h3 style="color: var(--primary); margin-bottom: 20px;"><i class="fas fa-calendar-check"></i> Đặt lịch hẹn
               mới</h3>
@@ -558,6 +553,44 @@
       </div>
     </div>
   </div>
+
+  <div class="modal-overlay" id="bookingModal">
+  <div class="modal-container">
+    <button class="modal-close" type="button" onclick="closeBookingModal()">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="modal-content">
+      <div class="modal-logo">
+        <i class="fas fa-calendar-check"></i>
+        <span id="bookingCounselorName">Đặt lịch hẹn</span>
+      </div>
+      <h2>Chọn thời gian tư vấn</h2>
+      <p class="modal-subtitle">Vui lòng chọn ngày và giờ phù hợp với bạn.</p>
+
+      <form id="bookingForm">
+        <input type="hidden" id="selectedTime" name="time">
+        
+        <div class="form-group">
+          <label for="bookingDate" style="display:block; margin-bottom:8px; font-weight:bold;">Ngày:</label>
+          <select id="bookingDate" class="form-input" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+            <option value="">-- Chọn ngày --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label style="display:block; margin-bottom:8px; font-weight:bold;">Giờ rảnh:</label>
+          <div id="bookingSlots" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <p style="grid-column: span 3; text-align: center; color: #666;">Vui lòng chọn ngày trước.</p>
+          </div>
+        </div>
+
+        <div id="bookingMessage" style="display: none; margin-bottom: 1rem; text-align: center;"></div>
+
+        <button type="submit" class="btn-submit">Xác nhận đặt lịch</button>
+      </form>
+    </div>
+  </div>
+</div>
 
   {% if current_user.is_authenticated and not current_user.is_counselor %}
   <div class="counselor-verify-box">

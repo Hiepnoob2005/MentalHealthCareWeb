@@ -3403,3 +3403,217 @@ footer {
 /* Chấm tròn trạng thái */
 .status-dot.online { background-color: #10b981; }
 .status-dot.offline { background-color: #9ca3af; }
+
+
+/* --- Messenger Container Layout --- */
+.messenger-container {
+    display: flex;
+    height: 600px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+/* Sidebar danh sách sinh viên */
+.messenger-container .sidebar {
+    width: 300px;
+    border-right: 1px solid #f0f0f0;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+}
+
+.messenger-container .sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #fff;
+}
+
+.messenger-container .student-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.student-item {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.student-item:hover {
+    background: #e9ecef;
+}
+
+.student-item.active {
+    background: #e3f2fd; /* Màu xanh nhạt khi đang chọn */
+    border-left: 4px solid var(--primary);
+}
+
+/* --- Avatar Styles --- */
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ddd;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-right: 12px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+/* --- Chat Area --- */
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+.chat-header {
+    padding: 15px 25px;
+    border-bottom: 1px solid #f0f0f0;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    z-index: 10;
+}
+
+/* --- Messages Box --- */
+.messages-box {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #fdfdfd;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Khoảng cách giữa các tin nhắn */
+}
+
+/* Tin nhắn chung */
+.message-row {
+    display: flex;
+    align-items: flex-end;
+    max-width: 80%;
+}
+
+.message-bubble {
+    padding: 10px 15px;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    position: relative;
+    word-wrap: break-word;
+}
+
+/* Tin nhắn TỪ NGƯỜI DÙNG (Sinh viên) - Bên trái */
+.message-row.received {
+    align-self: flex-start;
+}
+
+.message-row.received .avatar-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+    margin-right: 8px;
+    margin-bottom: 5px; /* Căn chỉnh với đáy tin nhắn */
+}
+
+.message-row.received .message-bubble {
+    background: #e4e6eb;
+    color: #050505;
+    border-bottom-left-radius: 4px; /* Tạo góc nhọn */
+}
+
+/* Tin nhắn TỪ CHUYÊN GIA (Mình gửi) - Bên phải */
+.message-row.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse; /* Đảo chiều để avatar (nếu muốn) nằm bên phải */
+}
+
+.message-row.sent .message-bubble {
+    background: var(--primary); /* Dùng màu chủ đạo của web */
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+/* Ẩn avatar cho tin nhắn mình gửi (thường chat app không hiện avatar mình) */
+.message-row.sent .avatar-circle {
+    display: none; 
+}
+
+/* --- Input Area --- */
+.chat-input-area {
+    padding: 15px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    background: #fff;
+}
+
+.chat-input-area input {
+    flex: 1;
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    outline: none;
+    transition: border 0.3s;
+    background: #f8f9fa;
+}
+
+.chat-input-area input:focus {
+    border-color: var(--primary);
+    background: #fff;
+}
+
+.chat-input-area button {
+    margin-left: 10px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-input-area button:hover {
+    transform: scale(1.1);
+}
+
+#connectBtn {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+/* Thêm vào style.css */
+.student-preview {
+    font-size: 0.85rem;
+    color: #666;
+    white-space: nowrap;      /* Không xuống dòng */
+    overflow: hidden;         /* Ẩn phần thừa */
+    text-overflow: ellipsis;  /* Thêm dấu ... */
+    max-width: 200px;         /* Giới hạn chiều rộng */
+    display: block;
+}

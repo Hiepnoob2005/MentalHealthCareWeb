@@ -1,0 +1,2 @@
+ApptID;UserID;CounselorID;Date;Time;Status
+5b4f1ad0;dat;nvan;2026-01-10;16:00;cancelled
