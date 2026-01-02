@@ -3381,3 +3381,25 @@ footer {
     padding: 10px 15px;
     border-radius: 20px;
   }
+
+  .status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-badge.online {
+    background-color: #d1fae5;
+    color: #047857; /* Xanh lá */
+}
+
+.status-badge.offline {
+    background-color: #f3f4f6;
+    color: #6b7280; /* Xám */
+}
+
+/* Chấm tròn trạng thái */
+.status-dot.online { background-color: #10b981; }
+.status-dot.offline { background-color: #9ca3af; }

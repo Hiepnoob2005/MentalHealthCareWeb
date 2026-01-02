@@ -21,6 +21,8 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeResourceFilters();
   addFindExpertButton(); // Thêm nút "Tìm chuyên gia" vào chatbot
   loadOldChatHistory(); // Tải lịch sử chat cũ nếu có
+  loadAvailableCounselors(); // Tải danh sách chuyên gia có lịch trống
+  refreshExpertStatusOnLoadAll();
 });
 
 // --- Authentication (Đăng nhập/Đăng xuất) ---
@@ -905,51 +907,64 @@ async function findCounselorsFromTags(tags) {
  * Hiển thị modal kết quả matching
  */
 function displayMatchingResults(data) {
-  // Đảm bảo không có modal cũ
-  closeMatchingModal();
+    closeMatchingModal();
 
-  // Tạo modal hiển thị kết quả matching
-  const modalHTML = `
-      <div class="matching-modal" id="matchingModal">
-          <div class="matching-modal-content">
-              <span class="close-modal" onclick="closeMatchingModal()">&times;</span>
-              <h2>Chuyên gia phù hợp cho bạn</h2>
-              <p class="detected-tags">Vấn đề được phát hiện: ${data.search_tags.map(tag => formatTag(tag)).join(', ')}</p>
-              <div class="matching-results">
-                  ${data.matches.map(counselor => `
-                      <div class="match-card">
-                          <div class="match-info">
-                              <h3>${counselor.name}</h3>
-                              <p class="match-score">Độ phù hợp: ${counselor.match_score}%</p>
-                              <p>Kinh nghiệm: ${counselor.experience}</p>
-                              <div class="specialties">
-                                  ${counselor.specialties.map(s => `<span class="tag">${s}</span>`).join('')}
-                              </div>
-                              <div class="rating">
-                                  <span class="stars">${'⭐'.repeat(Math.round(counselor.rating))}</span>
-                                  ${counselor.rating}
-                              </div>
-                              <button class="btn-connect-counselor" data-counselor-id="${counselor.id}">
-                                  ${counselor.status === 'online' ? 'Kết nối ngay' : 'Đặt lịch hẹn'}
-                              </button>
-                          </div>
-                      </div>
-                  `).join('')}
-              </div>
-          </div>
-      </div>
-  `;
+    const modalHTML = `
+        <div class="matching-modal" id="matchingModal">
+            <div class="matching-modal-content">
+                <span class="close-modal" onclick="closeMatchingModal()">&times;</span>
+                <h2>Chuyên gia phù hợp cho bạn</h2>
+                <p class="detected-tags">Vấn đề được phát hiện: ${data.search_tags.map(tag => formatTag(tag)).join(', ')}</p>
+                <div class="matching-results" id="matchingResultsList">
+                    </div>
+            </div>
+        </div>
+    `;
 
-  // Thêm modal vào body
-  document.body.insertAdjacentHTML('beforeend', modalHTML);
-  
-  // Thêm event listeners cho buttons
-  document.querySelectorAll('.btn-connect-counselor').forEach(btn => {
-      btn.addEventListener('click', function() {
-          const counselorId = this.dataset.counselorId;
-          connectToCounselor(counselorId);
-      });
-  });
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    const container = document.getElementById('matchingResultsList');
+    
+    // --- [MỚI] Render thẻ HTML bằng vòng lặp để dễ thêm thuộc tính data-expert-id ---
+    data.matches.forEach(counselor => {
+        const card = document.createElement('div');
+        card.className = 'match-card';
+        
+        // QUAN TRỌNG: Thêm ID để Socket tìm thấy
+        card.setAttribute('data-expert-id', counselor.id);
+
+        const statusClass = counselor.status === 'online' ? 'online' : 'offline';
+        const statusText = counselor.status === 'online' ? 'Online' : 'Offline';
+        const btnText = counselor.status === 'online' ? 'Kết nối ngay' : 'Đặt lịch hẹn';
+        // Nút bấm: Nếu online -> openChat, nếu offline -> checkAndOpenBooking
+        const btnAction = counselor.status === 'online' ? `openChat('${counselor.id}')` : `checkAndOpenBooking('${counselor.id}')`;
+
+        card.innerHTML = `
+            <div class="match-info">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>${counselor.name}</h3>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+                
+                <p class="match-score">Độ phù hợp: ${counselor.match_score}%</p>
+                <p>Kinh nghiệm: ${counselor.experience}</p>
+                
+                <div class="specialties">
+                    ${counselor.specialties.map(s => `<span class="tag">${s}</span>`).join('')}
+                </div>
+                
+                <div class="rating">
+                    <span class="stars">${'⭐'.repeat(Math.round(counselor.rating))}</span>
+                    ${counselor.rating}
+                </div>
+                
+                <button class="btn-connect-counselor btn-connect" onclick="${btnAction}">
+                    ${btnText}
+                </button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
 }
 
 function closeMatchingModal() {
@@ -1461,42 +1476,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 2. LOAD DANH SÁCH COUNSELOR RẢNH
-    async function loadAvailableCounselors() {
-        const container = document.getElementById('available-counselors-list');
-        container.innerHTML = '<div class="spinner"></div>';
-
-        try {
-            const res = await fetch('/api/counselors/available');
-            const data = await res.json();
-            container.innerHTML = '';
-
-            if (data.counselors && data.counselors.length > 0) {
-                data.counselors.forEach(c => {
-                    const card = document.createElement('div');
-                    card.className = 'expert-card';
-                    card.innerHTML = `
-                        <div class="expert-info" style="padding: 1.5rem; text-align: center;">
-                            <div style="width: 60px; height: 60px; background: #e0e7ff; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto 10px;">
-                                ${c.name.charAt(0)}
-                            </div>
-                            <h4>${c.name}</h4>
-                            <p style="font-size: 0.9rem; color: #666;">${c.specialties}</p>
-                            <button class="btn-connect" onclick="checkAndOpenBooking('${c.username}')" style="margin-top: 10px; width: 100%;">
-                                Đặt lịch ngay
-                            </button>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            } else {
-                container.innerHTML = '<p style="grid-column: span 3; text-align: center;">Hiện chưa có chuyên gia nào cập nhật lịch rảnh.</p>';
-            }
-        } catch (e) {
-            container.innerHTML = '<p style="color: red;">Lỗi tải dữ liệu.</p>';
-        }
-    }
-
     // 3. LOAD LỊCH SỬ
     async function loadUserHistory() {
         const tbody = document.getElementById('user-history-body');
@@ -1661,9 +1640,6 @@ function launchExpertChatModal(counselorUsername, expertName) {
   }
   expertSocket = io();
   currentExpertRoom = counselorUsername; 
-
-  // ... (Gán sự kiện expertSocket.on('connect') VÀ 'receive_message' ở đây) ...
-  // ...
   
   // Gán sự kiện cho form
   const chatForm = document.getElementById('expertChatForm');
@@ -2053,3 +2029,131 @@ function initializeCounselorChat(expertUsername) {
     }
 }
 
+socket.on('expert_status_change', (data) => {
+    console.log(`Realtime update: ${data.username} -> ${data.status}`);
+    updateExpertStatusUI(data.username, data.status);
+});
+
+// 2. Hàm cập nhật UI (Sử dụng querySelectorAll để update mọi nơi)
+function updateExpertStatusUI(username, status) {
+    // Tìm TẤT CẢ các thẻ card có data-expert-id tương ứng
+    const cards = document.querySelectorAll(`.expert-card[data-expert-id="${username}"], .match-card[data-expert-id="${username}"]`);
+    
+    cards.forEach(card => {
+        // Tìm badge trạng thái bên trong card
+        const statusLabel = card.querySelector('.status-label') || card.querySelector('.expert-status') || card.querySelector('.status-badge');
+        const chatBtn = card.querySelector('.btn-chat') || card.querySelector('.btn-connect-counselor');
+
+        if (status === 'online') {
+            // --- Chuyển sang ONLINE ---
+            if (statusLabel) {
+                statusLabel.classList.remove('offline');
+                statusLabel.classList.add('online');
+                statusLabel.innerHTML = '<span class="status-dot"></span> Đang online';
+            }
+            
+            if (chatBtn) {
+                chatBtn.style.display = 'inline-block'; // Hiện nút chat
+                chatBtn.textContent = 'Chat ngay';
+                chatBtn.disabled = false;
+                chatBtn.onclick = () => openChat(username);
+            }
+        } else {
+            // --- Chuyển sang OFFLINE ---
+            if (statusLabel) {
+                statusLabel.classList.remove('online');
+                statusLabel.classList.add('offline');
+                statusLabel.innerHTML = '<span class="status-dot"></span> Offline';
+            }
+
+            if (chatBtn) {
+                // Tùy chọn: Ẩn nút chat hoặc làm mờ
+                chatBtn.textContent = 'Chat (Offline)';
+                chatBtn.disabled = true; 
+                // Hoặc ẩn luôn: chatBtn.style.display = 'none';
+            }
+        }
+    });
+}
+
+// 3. Hàm tải trạng thái ban đầu (Chạy khi load trang)
+async function refreshExpertStatusOnLoadAll() {
+    try {
+        // Gọi API lấy danh sách tất cả chuyên gia kèm trạng thái hiện tại
+        const response = await fetch('/api/counselors/all');
+        const data = await response.json();
+        
+        if (data.counselors) {
+            data.counselors.forEach(c => {
+                // Cập nhật UI ngay lập tức theo dữ liệu từ server
+                updateExpertStatusUI(c.id, c.status);
+            });
+        }
+    } catch (e) {
+        console.error("Lỗi đồng bộ trạng thái:", e);
+    }
+}
+
+async function loadAvailableCounselors() {
+    const container = document.getElementById('available-counselors-list');
+    if (!container) return; // Kiểm tra nếu không có container thì thoát
+
+    container.innerHTML = '<div class="spinner"></div>';
+
+    try {
+        // Gọi API này để lấy danh sách (API này đã được sửa ở backend để trả về status realtime)
+        const res = await fetch('/api/counselors/availability');
+        const data = await res.json();
+        container.innerHTML = '';
+
+        if (data.counselors && data.counselors.length > 0) {
+            data.counselors.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'expert-card';
+                
+                // [QUAN TRỌNG NHẤT]: Gắn ID để Socket tìm thấy
+                // Backend trả về 'username', hãy chắc chắn dùng đúng trường này
+                card.setAttribute('data-expert-id', c.username); 
+
+                // Logic hiển thị ban đầu
+                const isOnline = c.status === 'online';
+                const statusClass = isOnline ? 'online' : 'offline';
+                const statusText = isOnline ? 'Online' : 'Offline';
+                const btnText = isOnline ? 'Chat ngay' : 'Đặt lịch hẹn';
+                
+                // Nút bấm: Online -> Chat, Offline -> Đặt lịch
+                const btnAction = isOnline ? `openChat('${c.username}')` : `checkAndOpenBooking('${c.username}')`;
+                const btnClass = isOnline ? 'btn-connect btn-chat' : 'btn-connect';
+
+                card.innerHTML = `
+                    <div class="expert-info" style="padding: 1.5rem; text-align: center;">
+                        <div style="position:relative; width: 60px; height: 60px; margin: 0 auto 10px;">
+                            <div style="width: 100%; height: 100%; background: #e0e7ff; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
+                                ${c.name.charAt(0)}
+                            </div>
+                            <span class="status-dot ${statusClass}" style="position:absolute; bottom:0; right:0; width:12px; height:12px; border-radius:50%; border:2px solid white;"></span>
+                        </div>
+                        
+                        <h4>${c.name}</h4>
+                        
+                        <div style="margin: 5px 0;">
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px; height: 40px; overflow: hidden;">${c.specialties}</p>
+                        
+                        <button class="${btnClass} btn-dynamic" onclick="${btnAction}" style="width: 100%;">
+                            ${btnText}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        } else {
+            container.innerHTML = '<p style="grid-column: span 3; text-align: center; color: #666;">Hiện chưa có chuyên gia nào cập nhật lịch rảnh.</p>';
+        }
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = '<p style="color: red; text-align: center;">Lỗi tải dữ liệu.</p>';
+    }
+}

@@ -297,8 +297,10 @@ def update_profile_data():
 def home():
     return render_template("index.html")
 
-
-from datetime import datetime, timedelta # Nhớ import thêm
+# Lưu danh sách username đang online: {'username': 'socket_id'}
+online_counselors = set() 
+# Map socket_id ngược lại username để xử lý khi disconnect: {'socket_id': 'username'}
+socket_id_to_user = {} 
 
 @app.route("/create_meeting")
 def create_meeting():
@@ -1392,27 +1394,25 @@ def match_from_chat(conversation_id):
 
 @app.route("/api/counselors/all", methods=["GET"])
 def get_all_counselors():
-    """API lấy tất cả chuyên gia"""
     try:
         counselors = []
+        # (Giả sử bạn đang load từ matching_system hoặc file text)
         for c in matching_system.counselors:
-            counselors.append(
-                {
-                    "id": c.user_name,
-                    "real_id": c.id,
-                    "name": c.name,
-                    "specialties": c.specialties,
-                    "rating": c.rating,
-                    "status": c.status,
-                    "experience": c.experience,
-                }
-            )
-
+            
+            # [MỚI] Kiểm tra trạng thái thực tế từ RAM
+            real_status = "online" if c.user_name in online_counselors else "offline"
+            
+            counselors.append({
+                "id": c.user_name,
+                "name": c.name,
+                "specialties": c.specialties,
+                "rating": c.rating,
+                "status": real_status, # Ghi đè status từ file bằng status thực
+                "experience": c.experience,
+            })
         return jsonify({"counselors": counselors}), 200
-
     except Exception as e:
-        logging.error(f"Error getting counselors: {e}")
-        return jsonify({"error": "Internal server error"}), 500  # Hết API matching
+        return jsonify({"error": str(e)}), 500
     
 @app.route("/api/user/chat-partners", methods=["GET"])
 @login_required
@@ -1589,50 +1589,48 @@ AVAILABILITY_FILE = "counselor_availability.txt"
 AVAILABILITY_LOGS_FILE = "availability_logs.txt"
 APPOINTMENTS_FILE = "appointments.txt"
 
-@app.route("/api/counselor/availability", methods=["POST"])
-@login_required
+# --- Tìm và thay thế hàm này trong main.py ---
+
+@app.route("/api/counselors/availability", methods=["GET"])
 def update_availability():
-    """Counselor cập nhật giờ rảnh"""
-    if not current_user.is_counselor:
-        return jsonify({"error": "Unauthorized"}), 403
+    """Lấy danh sách Counselor ĐANG CÓ LỊCH TRỐNG (kèm trạng thái Online/Offline)"""
+    
+    # 1. Lấy tất cả counselor có lịch trong tương lai
+    active_counselors_with_schedule = set()
+    today = datetime.now().strftime("%Y-%m-%d")
 
-    data = request.get_json()
-    date = data.get("date")
-    slots = data.get("slots")
-
-    # 1. LƯU VÀO FILE CHÍNH (Để hiển thị cho User đặt lịch)
-    lines = []
     if os.path.exists(AVAILABILITY_FILE):
         with open(AVAILABILITY_FILE, "r", encoding="utf-8") as f:
-            lines = f.readlines()
+            for line in f:
+                parts = line.strip().split(";")
+                # Check ngày >= hôm nay
+                if len(parts) >= 3 and parts[1] >= today:
+                    active_counselors_with_schedule.add(parts[0])  # Username
 
-    new_lines = [
-        line
-        for line in lines
-        if not (line.startswith(f"{current_user.username};{date}"))
-    ]
-    new_lines.append(f"{current_user.username};{date};{','.join(slots)}\n")
+    # 2. Lấy thông tin chi tiết và CHECK ONLINE
+    results = []
+    if os.path.exists(COUNSELOR_FILE):
+        with open(COUNSELOR_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()[1:]
+            for line in lines:
+                parts = line.strip().split(";")
+                
+                # Username ở cột 1. Kiểm tra xem có lịch rảnh không
+                if len(parts) >= 10 and parts[1] in active_counselors_with_schedule and parts[9].strip().lower() == "yes":
+                    
+                    # [MỚI] Kiểm tra trạng thái thực tế từ RAM (online_counselors)
+                    # Biến online_counselors đã được khai báo toàn cục ở phần SocketIO
+                    real_status = "online" if parts[1] in online_counselors else "offline"
 
-    with open(AVAILABILITY_FILE, "w", encoding="utf-8") as f:
-        f.writelines(new_lines)
+                    results.append({
+                        "username": parts[1], 
+                        "name": parts[2],
+                        "specialties": parts[5],
+                        "rating": parts[6],
+                        "status": real_status, # Trả về status thực tế
+                    })
 
-    # 2. GHI LOG LỊCH SỬ (Để hiển thị trong tab Lịch sử)
-    try:
-        log_id = str(uuid.uuid4())[:8]
-        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        slots_str = ",".join(slots)
-
-        if not os.path.exists(AVAILABILITY_LOGS_FILE):
-            with open(AVAILABILITY_LOGS_FILE, "w", encoding="utf-8") as f:
-                f.write("LogID;Username;ActionTime;TargetDate;Slots\n")
-
-        with open(AVAILABILITY_LOGS_FILE, "a", encoding="utf-8") as f:
-            f.write(f"{log_id};{current_user.username};{now_str};{date};{slots_str}\n")
-
-    except Exception as e:
-        logging.error(f"Lỗi ghi log: {e}")
-
-    return jsonify({"message": "Cập nhật lịch thành công"}), 200
+    return jsonify({"counselors": results}), 200
 
 
 @app.route("/api/counselor/history-logs", methods=["GET"])
@@ -1971,12 +1969,55 @@ def handle_connect():
         f"--- KẾT NỐI THÀNH CÔNG: Client {session.get('username')} (Role: {session.get('role')}) | SID: {request.sid}"
     )
 
+@socketio.on("counselor_join_room")
+def handle_counselor_join(data):
+    if "role" not in session or session["role"] != "counselor":
+        return False
+
+    username = session["username"]
+    room = data["room"]
+    
+    join_room(room)
+    
+    # --- [MỚI] Đánh dấu Online ---
+    online_counselors.add(username)
+    socket_id_to_user[request.sid] = username
+    
+    # Bắn sự kiện cho TOÀN BỘ client biết ông này vừa Online
+    emit("expert_status_change", {"username": username, "status": "online"}, broadcast=True)
+    logging.info(f"Counselor {username} is ONLINE")
+    # -----------------------------
+
+    # (Giữ nguyên logic load lịch sử cũ của bạn)
+    try:
+        if os.path.exists(CHAT_DB_FILE):
+            with open(CHAT_DB_FILE, 'r', encoding='utf-8') as f:
+                all_history = json.load(f)
+                my_room_history = [msg for msg in all_history if msg.get('room') == username]
+                emit('load_history', my_room_history, to=request.sid)
+    except Exception:
+        pass
+    
+    emit("receive_message", {"text": "Hệ thống đã kết nối.", "sender_type": "system"}, to=request.sid)
 
 @socketio.on("disconnect")
 def handle_disconnect():
-    username = session.get("username", "Unknown")
-    print(f"--- NGẮT KẾT NỐI: Client {username} (Role: {session.get('role')})")
-    # TODO: Thêm logic báo cho người trong phòng biết
+    # --- [MỚI] Xử lý khi mất kết nối ---
+    if request.sid in socket_id_to_user:
+        disconnected_user = socket_id_to_user[request.sid]
+        
+        # Xóa khỏi danh sách online
+        if disconnected_user in online_counselors:
+            online_counselors.remove(disconnected_user)
+            
+        # Xóa khỏi map
+        del socket_id_to_user[request.sid]
+        
+        # Bắn sự kiện Offline cho mọi người
+        emit("expert_status_change", {"username": disconnected_user, "status": "offline"}, broadcast=True)
+        logging.info(f"Counselor {disconnected_user} disconnected (OFFLINE)")
+    # -----------------------------------
+
 
 # Khi CHUYÊN GIA từ chối chat
 @socketio.on("reject_chat")
@@ -2126,27 +2167,8 @@ def handle_send_message(data):
     # Gửi cho mọi người trong phòng (Client sẽ tự lọc hiển thị)
     emit("receive_message", saved_msg, to=room)
 
-# [MỚI] Sự kiện dành cho CHUYÊN GIA khi vào phòng (để load lại chat với từng SV)
-@socketio.on("counselor_join_room")
-def handle_counselor_join(data):
-    if "role" not in session or session["role"] != "counselor":
-        return False
-
-    username = session["username"]
-    room = data["room"]
-    
-    join_room(room)
-    
-    all_history = load_chat_history()
-    my_room_history = [msg for msg in all_history if msg.get('room') == username]
-    
-    emit('load_history', my_room_history, to=request.sid)
-    
-    emit("receive_message", {"text": "Bạn đã kết nối lại. Lịch sử chat đã được tải.", "sender_type": "system"}, to=request.sid)
-
 
 # --- Thêm vào main.py (khu vực Admin Routes) ---
-
 def delete_user_files(username):
     try:
         if not os.path.exists(UPLOAD_FOLDER):

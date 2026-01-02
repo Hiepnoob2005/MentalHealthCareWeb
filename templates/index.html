@@ -181,88 +181,91 @@
   </section>
   <section class="experts" id="experts">
     <div class="section-header">
-      <h2>Đội ngũ Chuyên gia</h2>
-      <p>Kết nối với các chuyên gia tâm lý phù hợp với nhu cầu của bạn</p>
+        <h2>Đội ngũ Chuyên gia</h2>
+        <p>Kết nối với các chuyên gia tâm lý phù hợp với nhu cầu của bạn</p>
     </div>
     <div class="experts-grid">
 
-      <div class="expert-card">
-        <div class="expert-avatar">
-          <i class="fas fa-user-circle"></i>
-          <span class="expert-status online"><span class="status-dot"></span> Đang online</span>
-        </div>
-        <div class="expert-info">
-          <h3>TS. Nguyễn Văn An</h3>
-          <div class="expert-specialties">
-            <span class="specialty-tag">Stress học tập</span>
-            <span class="specialty-tag">Lo âu</span>
-          </div>
-          <div class="expert-rating">
-            <div class="stars">
-              <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
-                class="fas fa-star"></i><i class="fas fa-star"></i>
+        <div class="expert-card" data-expert-id="nvan">
+            <div class="expert-avatar">
+                <i class="fas fa-user-circle"></i>
+                <span class="expert-status offline status-label">
+                    <span class="status-dot"></span> Offline
+                </span>
             </div>
-            <span>5.0 (124 đánh giá)</span>
-          </div>
-          <button class="btn-connect" onclick="checkAndOpenBooking('nvan')">Đặt lịch hẹn</button>
-          <button class="btn-connect btn-chat" onclick="window.location.href='/user/chat?expert=nvan'">
-            Chat với chuyên gia
-          </button>
+            <div class="expert-info">
+                <h3>TS. Nguyễn Văn An</h3>
+                <div class="expert-specialties">
+                    <span class="specialty-tag">Stress học tập</span>
+                    <span class="specialty-tag">Lo âu</span>
+                </div>
+                <div class="expert-rating">
+                    <div class="stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <span>5.0 (124 đánh giá)</span>
+                </div>
+                <button class="btn-connect" onclick="checkAndOpenBooking('nvan')">Đặt lịch hẹn</button>
+                <button class="btn-connect btn-chat" onclick="openChat('nvan')">
+                    Chat với chuyên gia
+                </button>
+            </div>
         </div>
-      </div>
 
-      <div class="expert-card">
-        <div class="expert-avatar">
-          <i class="fas fa-user-circle"></i>
-          <span class="expert-status online"><span class="status-dot"></span> Đang online</span>
-        </div>
-        <div class="expert-info">
-          <h3>ThS. Trần Thị Bình</h3>
-          <div class="expert-specialties">
-            <span class="specialty-tag">Trầm cảm</span>
-            <span class="specialty-tag">Tâm lý xã hội</span>
-          </div>
-          <div class="expert-rating">
-            <div class="stars">
-              <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
-                class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+        <div class="expert-card" data-expert-id="ttbinh">
+            <div class="expert-avatar">
+                <i class="fas fa-user-circle"></i>
+                <span class="expert-status offline status-label">
+                    <span class="status-dot"></span> Offline
+                </span>
             </div>
-            <span>4.8 (98 đánh giá)</span>
-          </div>
-          <button class="btn-connect" onclick="checkAndOpenBooking('ttbinh')">Đặt lịch hẹn</button>
-          <button class="btn-connect btn-chat" onclick="window.location.href='/user/chat?expert=ttbinh'">
-            Chat với chuyên gia
-          </button>
+            <div class="expert-info">
+                <h3>ThS. Trần Thị Bình</h3>
+                <div class="expert-specialties">
+                    <span class="specialty-tag">Trầm cảm</span>
+                    <span class="specialty-tag">Tâm lý xã hội</span>
+                </div>
+                <div class="expert-rating">
+                    <div class="stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <span>4.8 (98 đánh giá)</span>
+                </div>
+                <button class="btn-connect" onclick="checkAndOpenBooking('ttbinh')">Đặt lịch hẹn</button>
+                <button class="btn-connect btn-chat" onclick="openChat('ttbinh')">
+                    Chat với chuyên gia
+                </button>
+            </div>
         </div>
-      </div>
 
-      <div class="expert-card">
-        <div class="expert-avatar">
-          <i class="fas fa-user-circle"></i>
-          <span class="expert-status offline"><span class="status-dot"></span> Offline</span>
-        </div>
-        <div class="expert-info">
-          <h3>BS. Lê Văn Cường</h3>
-          <div class="expert-specialties">
-            <span class="specialty-tag">Rối loạn giấc ngủ</span>
-            <span class="specialty-tag">Áp lực thi cử</span>
-          </div>
-          <div class="expert-rating">
-            <div class="stars">
-              <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
-                class="fas fa-star"></i><i class="fas fa-star"></i>
+        <div class="expert-card" data-expert-id="lvcuong">
+            <div class="expert-avatar">
+                <i class="fas fa-user-circle"></i>
+                <span class="expert-status offline status-label">
+                    <span class="status-dot"></span> Offline
+                </span>
             </div>
-            <span>4.9 (156 đánh giá)</span>
-          </div>
-          <button class="btn-connect" onclick="checkAndOpenBooking('lvcuong')">Đặt lịch hẹn</button>
-          <button class="btn-connect btn-chat" onclick="window.location.href='/user/chat?expert=lvcuong'">
-            Chat với chuyên gia
-          </button>
+            <div class="expert-info">
+                <h3>BS. Lê Văn Cường</h3>
+                <div class="expert-specialties">
+                    <span class="specialty-tag">Rối loạn giấc ngủ</span>
+                    <span class="specialty-tag">Áp lực thi cử</span>
+                </div>
+                <div class="expert-rating">
+                    <div class="stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <span>4.9 (156 đánh giá)</span>
+                </div>
+                <button class="btn-connect" onclick="checkAndOpenBooking('lvcuong')">Đặt lịch hẹn</button>
+                <button class="btn-connect btn-chat" onclick="openChat('lvcuong')">
+                    Chat với chuyên gia
+                </button>
+            </div>
         </div>
-      </div>
 
     </div>
-  </section>
+</section>
   <section class="resources" id="resources">
     <div class="section-header">
       <h2>Kho Tài nguyên</h2>
