@@ -230,5 +230,13 @@
         "text": "tôi tên là đạt",
         "target_student_id": null,
         "timestamp": "2025-12-13 21:02:37"
+    },
+    {
+        "room": "nvan",
+        "sender_id": "nvan",
+        "sender_type": "counselor",
+        "text": "hello",
+        "target_student_id": "24127020",
+        "timestamp": "2026-01-02 15:54:27"
     }
 ]
