@@ -26,6 +26,7 @@ from datetime import datetime
 from google import generativeai as genai
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+import shutil
 # Cấu hình cơ bản
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -126,12 +127,50 @@ def start_file_watcher():
     observer.start()
     logging.info(f"👀 Started watching folder: {path}")
 
+
+PAPERWORKS_FOLDER = "paperworks"
+if not os.path.exists(PAPERWORKS_FOLDER):
+    os.makedirs(PAPERWORKS_FOLDER)
+    logging.info(f"📁 Created paperworks folder: {PAPERWORKS_FOLDER}")
+
+app.config["PAPERWORKS_FOLDER"] = PAPERWORKS_FOLDER
+
+def move_verification_files_to_paperworks(username):
+    """Di chuyển ảnh xác thực sang thư mục paperworks khi duyệt"""
+    moved_files = []
+    try:
+        if not os.path.exists(UPLOAD_FOLDER):
+            return []
+
+        files = os.listdir(UPLOAD_FOLDER)
+        for f in files:
+            # Tìm file bắt đầu bằng username_ (ví dụ: nvan_degree.jpg)
+            if f.startswith(f"{username}_"):
+                src_path = os.path.join(UPLOAD_FOLDER, f)
+                dst_path = os.path.join(PAPERWORKS_FOLDER, f)
+                
+                # Di chuyển file
+                shutil.move(src_path, dst_path)
+                logging.info(f"Moved file: {src_path} -> {dst_path}")
+                
+                # Chỉ lấy file ảnh để hiển thị (bỏ qua file json meta nếu không muốn hiện)
+                if f.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    moved_files.append(f)
+                    
+        return moved_files
+    except Exception as e:
+        logging.error(f"Error moving files for {username}: {e}")
+        return []
 # -------------------------------------------------
 # Routes
 # -------------------------------------------------
 # --- CÁC HÀM TIỆN ÍCH MỚI (Đọc/Ghi file) ---
 USER_DETAILS_FILE = 'user_details.json'
 TEST_RESULTS_FILE = 'test_results.txt'
+
+if not os.path.exists(TEST_RESULTS_FILE):
+    with open(TEST_RESULTS_FILE, "w", encoding="utf-8") as f:
+        f.write("Time;Username;Scores;Tags;RawAnswers\n")
 
 def read_user_details():
     """Đọc file user_details.json"""
@@ -146,57 +185,40 @@ def write_user_details(data):
     with open(USER_DETAILS_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
         
-import datetime  # Thêm import này ở đầu file nếu chưa có
-import json      # Thêm import này ở đầu file nếu chưa có
-from flask_login import login_required, current_user
+if not os.path.exists(TEST_RESULTS_FILE):
+    with open(TEST_RESULTS_FILE, "w", encoding="utf-8") as f:
+        f.write("Time;Username;Scores;Tags;RawAnswers\n")
 
-# (Giữ nguyên các import và code cũ của bạn...)
-
-# Định nghĩa tên file (nếu bạn chưa có)
-TEST_RESULTS_FILE = 'test_results.txt'
-
-# --- DÁN HÀM MỚI NÀY VÀO main.py ---
 @app.route('/api/save-dass21-results', methods=['POST'])
-@login_required  # Yêu cầu người dùng phải đăng nhập
+@login_required # Yêu cầu đăng nhập mới lưu được
 def save_dass21_results():
-    """
-    Nhận kết quả DASS-21 từ client và lưu vào test_results.txt
-    """
     try:
-        data = request.get_json()
-        user_id = str(current_user.id) # Lấy ID của user đang đăng nhập
+        data = request.json
+        answers = data.get('answers', [])
+        tags = data.get('problem_tags', [])
+        scores = data.get('scores', {}) # {D: ..., A: ..., S: ...}
         
-        # Lấy dữ liệu từ JavaScript
-        answers = data.get('answers')       # Đây là mảng [0, 1, 3, ...]
-        problem_tags = data.get('problem_tags') # Đây là mảng ['stress', 'lo_au']
-        scores = data.get('scores')         # Đây là object {'D': 10, 'A': 8, 'S': 15}
+        # Lấy thời gian hiện tại
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        username = current_user.username
         
-        # Lấy ngày giờ hiện tại
-        now = datetime.datetime.now()
-        test_date = now.strftime("%Y-%m-%d")
-        test_time = now.strftime("%H:%M:%S")
+        # Format dữ liệu để lưu vào file text
+        # Cấu trúc: Thời gian;User;Điểm(D-A-S);Tags;Answers
+        scores_str = f"D:{scores.get('D',0)}-A:{scores.get('A',0)}-S:{scores.get('S',0)}"
+        tags_str = ",".join(tags)
+        answers_str = ",".join(map(str, answers))
         
-        # Định dạng dữ liệu để ghi vào file
-        answers_str = json.dumps(answers) # Chuyển mảng [0,1,2] thành chuỗi "[0, 1, 2]"
-        tags_str = ",".join(problem_tags) if problem_tags else "none"
+        log_line = f"{now};{username};{scores_str};{tags_str};{answers_str}\n"
         
-        # Chúng ta sẽ lưu object scores {'D':10, 'A':8, 'S':15}
-        # vào cột Score (thay vì 1 số duy nhất)
-        scores_str = json.dumps(scores) 
-        
-        # Định dạng dòng mới theo cấu trúc file test_results.txt
-        # UserID;TestDate;TestTime;Answers;ProblemTags;Score
-        new_line = f"{user_id};{test_date};{test_time};{answers_str};{tags_str};{scores_str}\n"
-        
-        # Mở file ở chế độ 'a' (append - ghi nối tiếp)
-        with open(TEST_RESULTS_FILE, 'a', encoding='utf-8') as f:
-            f.write(new_line)
+        # Ghi vào file (mode 'a' để nối thêm vào cuối file)
+        with open(TEST_RESULTS_FILE, "a", encoding="utf-8") as f:
+            f.write(log_line)
             
-        return jsonify({"message": "Kết quả đã được lưu."}), 200
+        return jsonify({"message": "Kết quả đã được lưu thành công."}), 200
         
     except Exception as e:
-        print(f"Lỗi khi lưu kết quả DASS-21: {e}")
-        return jsonify({"message": "Lỗi máy chủ khi lưu kết quả."}), 500
+        logging.error(f"Lỗi khi lưu kết quả test: {e}")
+        return jsonify({"message": "Lỗi server khi lưu kết quả."}), 500
 
 def get_latest_tags(user_id):
     """Lấy tags từ bài test mới nhất của user"""
@@ -1263,6 +1285,7 @@ def find_matching_counselors():
             results.append(
                 {
                     "id": counselor.id,
+                    "username": counselor.user_name,
                     "name": counselor.name,
                     "specialties": counselor.specialties,
                     "rating": counselor.rating,
@@ -1425,20 +1448,25 @@ def get_chat_partners():
         user_username = current_user.username
         
         # 1. Gọi hàm xử lý logic từ matching_system
-        # Hàm này trả về một List[Counselor] (các object Counselor)
         counselor_objects = matching_system.load_Chatted_Counselors(user_username)
         
-        # 2. Serialize dữ liệu (Chuyển Object thành Dict để trả về JSON)
+        # 2. Serialize dữ liệu
         partners_data = []
         
         for c in counselor_objects:
+            # --- [SỬA LỖI TẠI ĐÂY] ---
+            # Kiểm tra trong RAM xem người này có đang online không
+            # Lưu ý: c.user_name là ID dùng để định danh
+            real_status = "online" if c.user_name in online_experts else "offline"
+            # -------------------------
+
             partners_data.append({
-                "id": c.user_name,       # QUAN TRỌNG: Frontend dùng user_name làm Room ID để chat
-                "real_id": c.id,         # ID số trong database (dùng để tham chiếu nếu cần)
-                "name": c.name,          # Tên hiển thị (VD: ThS. Nguyễn Văn A)
+                "id": c.user_name,       
+                "real_id": c.id,         
+                "name": c.name,          
                 "specialties": c.specialties,
                 "rating": c.rating,
-                "status": c.status,
+                "status": real_status,   # <--- Dùng real_status thay vì c.status
                 "experience": c.experience
             })
             
@@ -1957,17 +1985,45 @@ def check_expert_status():
 # --- CÁC HÀM XỬ LÝ SOCKET ĐÃ KHÔI PHỤC LOGIC ROLE ---
 
 
-@socketio.on("connect")
-def handle_connect():
-    # Kiểm tra đăng nhập VÀ CÓ ROLE (rất quan trọng)
-    if "user_id" not in session or "role" not in session:
-        print(f"--- KẾT NỐI BỊ TỪ CHỐI: Client chưa đăng nhập hoặc thiếu role.")
-        return False
+# --- [TÌM VÀ THAY THẾ ĐOẠN CUỐI CỦA main.py] ---
 
-    session["sid"] = request.sid  # Lưu lại SID để debug
-    print(
-        f"--- KẾT NỐI THÀNH CÔNG: Client {session.get('username')} (Role: {session.get('role')}) | SID: {request.sid}"
-    )
+# 1. Biến toàn cục để quản lý kết nối
+# Lưu danh sách username đang online (để kiểm tra nhanh status khi load trang)
+online_experts = set()
+
+# Map để biết socket_id này thuộc về user nào: {'sid_123': 'nvan'}
+# Dùng để xử lý khi disconnect (biết ai vừa thoát)
+socket_id_to_user = {}
+
+@socketio.on('connect')
+def handle_connect():
+    # Lấy socket id của kết nối hiện tại
+    sid = request.sid
+    print(f"⚡ Kết nối mới: {sid}")
+
+    if current_user.is_authenticated:
+        username = current_user.username
+        
+        # 1. Lưu ánh xạ SID -> Username
+        socket_id_to_user[sid] = username
+
+        # 2. Nếu là Chuyên gia -> Xử lý trạng thái Online
+        is_counselor = getattr(current_user, 'is_counselor', False)
+        
+        if is_counselor:
+            # Thêm vào danh sách online
+            online_experts.add(username)
+            
+            print(f"🟢 CHUYÊN GIA ONLINE: {username} (SID: {sid})")
+            
+            # Bắn tín hiệu cho TOÀN BỘ client biết
+            emit('expert_status_change', {
+                'username': username,
+                'status': 'online'
+            }, broadcast=True)
+        else:
+            print(f"👤 User connected: {username}")
+
 
 @socketio.on("counselor_join_room")
 def handle_counselor_join(data):
@@ -2000,24 +2056,38 @@ def handle_counselor_join(data):
     
     emit("receive_message", {"text": "Hệ thống đã kết nối.", "sender_type": "system"}, to=request.sid)
 
-@socketio.on("disconnect")
-def handle_disconnect():
-    # --- [MỚI] Xử lý khi mất kết nối ---
-    if request.sid in socket_id_to_user:
-        disconnected_user = socket_id_to_user[request.sid]
-        
-        # Xóa khỏi danh sách online
-        if disconnected_user in online_counselors:
-            online_counselors.remove(disconnected_user)
-            
-        # Xóa khỏi map
-        del socket_id_to_user[request.sid]
-        
-        # Bắn sự kiện Offline cho mọi người
-        emit("expert_status_change", {"username": disconnected_user, "status": "offline"}, broadcast=True)
-        logging.info(f"Counselor {disconnected_user} disconnected (OFFLINE)")
-    # -----------------------------------
 
+@socketio.on('disconnect')
+def handle_disconnect():
+    sid = request.sid
+    
+    # 1. Tìm xem ai vừa thoát dựa trên SID
+    username = socket_id_to_user.get(sid)
+    
+    if username:
+        # Xóa SID này khỏi map
+        del socket_id_to_user[sid]
+        print(f"❌ Ngắt kết nối: {username} (SID: {sid})")
+
+        # 2. Kiểm tra xem user này còn kết nối nào khác không? (Mở nhiều tab)
+        # Nếu user vẫn còn sid khác trong socket_id_to_user -> Vẫn tính là Online
+        user_still_connected = False
+        if username in socket_id_to_user.values():
+            user_still_connected = True
+        
+        # 3. Nếu thực sự đã thoát hết tab -> Báo Offline
+        if not user_still_connected:
+            # Nếu là chuyên gia thì xóa khỏi danh sách và báo offline
+            if username in online_experts:
+                online_experts.remove(username)
+                
+                print(f"🔴 CHUYÊN GIA OFFLINE HOÀN TOÀN: {username}")
+                
+                # Bắn tín hiệu Offline
+                emit('expert_status_change', {
+                    'username': username,
+                    'status': 'offline'
+                }, broadcast=True)
 
 # Khi CHUYÊN GIA từ chối chat
 @socketio.on("reject_chat")
@@ -2284,7 +2354,7 @@ def approve_expert():
                 f"{verified_status}\n"
             )
 
-        delete_user_files(username_to_approve)
+        move_verification_files_to_paperworks(username_to_approve)
         if not os.path.exists(COUNSELOR_FILE):
             with open(COUNSELOR_FILE, "w", encoding="utf-8") as f:
                 f.write("CounselorID;Username;Name;Email;PasswordHash;Specialties;Rating;Status;Experience;verified\n")
@@ -2305,6 +2375,94 @@ def approve_expert():
 @app.route('/experts')
 def all_experts():
     return render_template('all_experts.html')
+
+# API để truy cập ảnh trong thư mục paperworks
+@app.route("/paperworks/<filename>")
+def get_paperwork_image(filename):
+    return send_from_directory(app.config["PAPERWORKS_FOLDER"], filename)
+
+# API lấy thông tin chi tiết chuyên gia (bao gồm danh sách ảnh bằng cấp)
+@app.route("/api/counselor/<username>/profile", methods=["GET"])
+def get_counselor_public_profile(username):
+    profile_data = {}
+    
+    # 1. Tìm thông tin trong file text
+    found = False
+    if os.path.exists(COUNSELOR_FILE):
+        with open(COUNSELOR_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()[1:]
+            for line in lines:
+                parts = line.strip().split(";")
+                if len(parts) >= 10 and parts[1] == username:
+                    profile_data = {
+                        "id": parts[0],
+                        "username": parts[1],
+                        "name": parts[2],
+                        "email": parts[3],
+                        "specialties": parts[5],
+                        "rating": parts[6],
+                        "experience": parts[8],
+                    }
+                    found = True
+                    break
+    
+    if not found:
+        return jsonify({"error": "Counselor not found"}), 404
+
+    # 2. Quét thư mục paperworks để lấy ảnh bằng cấp của user này
+    images = []
+    if os.path.exists(PAPERWORKS_FOLDER):
+        files = os.listdir(PAPERWORKS_FOLDER)
+        for f in files:
+            # Lọc file bắt đầu bằng username và là ảnh
+            if f.startswith(f"{username}_degree") and f.lower().endswith(('.png', '.jpg', '.jpeg')):
+                images.append(f)
+    
+    profile_data["cert_images"] = images
+    return jsonify(profile_data), 200
+
+@app.route('/api/user/latest-test-result', methods=['GET'])
+@login_required
+def get_user_latest_test_result():
+    TEST_RESULTS_FILE = "test_results.txt"
+    
+    if not os.path.exists(TEST_RESULTS_FILE):
+        return jsonify({"found": False, "tags": []}), 200
+
+    try:
+        # Đọc file
+        with open(TEST_RESULTS_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            
+            # Duyệt ngược từ cuối lên đầu để lấy bài mới nhất
+            for line in reversed(lines):
+                parts = line.strip().split(";")
+                
+                # Cấu trúc dữ liệu: [0]Time; [1]User; [2]Scores; [3]Tags; [4]Answers
+                if len(parts) >= 4:
+                    log_username = parts[1] # Cột 1 là Username
+                    
+                    if log_username == current_user.username:
+                        date_time = parts[0] # Cột 0 là Thời gian
+                        tags_str = parts[3]  # Cột 3 là Tags (tram_cam,lo_au...)
+                        
+                        # Xử lý tags
+                        tags_list = []
+                        if tags_str and tags_str.lower() != "none":
+                            tags_list = tags_str.split(',')
+                            
+                        return jsonify({
+                            "found": True,
+                            "date": date_time,
+                            "tags": tags_list
+                        }), 200
+        
+        # Nếu chạy hết vòng lặp mà không thấy
+        return jsonify({"found": False}), 200
+
+    except Exception as e:
+        logging.error(f"Lỗi đọc lịch sử test: {e}")
+        return jsonify({"error": "Lỗi server"}), 500
 
 if __name__ == "__main__":
     start_file_watcher()

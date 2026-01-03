@@ -180,98 +180,21 @@
     </div>
   </section>
   <section class="experts" id="experts">
-    <div class="section-header">
-        <h2>Đội ngũ Chuyên gia</h2>
-        <p>Kết nối với các chuyên gia tâm lý phù hợp với nhu cầu của bạn</p>
-    </div>
-    <div class="experts-grid">
+      <div class="section-header">
+          <h2>Đội ngũ Chuyên gia</h2>
+          <p>Kết nối với các chuyên gia tâm lý phù hợp với nhu cầu của bạn</p>
+      </div>
+      
+      <div class="experts-grid" id="home-experts-container">
+          <div class="spinner" style="grid-column: span 3; margin: 50px auto;"></div>
+      </div>
 
-        <div class="expert-card" data-expert-id="nvan">
-            <div class="expert-avatar">
-                <i class="fas fa-user-circle"></i>
-                <span class="expert-status offline status-label">
-                    <span class="status-dot"></span> Offline
-                </span>
-            </div>
-            <div class="expert-info">
-                <h3>TS. Nguyễn Văn An</h3>
-                <div class="expert-specialties">
-                    <span class="specialty-tag">Stress học tập</span>
-                    <span class="specialty-tag">Lo âu</span>
-                </div>
-                <div class="expert-rating">
-                    <div class="stars">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    </div>
-                    <span>5.0 (124 đánh giá)</span>
-                </div>
-                <button class="btn-connect" onclick="checkAndOpenBooking('nvan')">Đặt lịch hẹn</button>
-                <button class="btn-connect btn-chat" onclick="window.location.href='/user/chat?expert=nvan'">
-                    Chat với chuyên gia
-                </button>
-            </div>
-        </div>
-
-        <div class="expert-card" data-expert-id="ttbinh">
-            <div class="expert-avatar">
-                <i class="fas fa-user-circle"></i>
-                <span class="expert-status offline status-label">
-                    <span class="status-dot"></span> Offline
-                </span>
-            </div>
-            <div class="expert-info">
-                <h3>ThS. Trần Thị Bình</h3>
-                <div class="expert-specialties">
-                    <span class="specialty-tag">Trầm cảm</span>
-                    <span class="specialty-tag">Tâm lý xã hội</span>
-                </div>
-                <div class="expert-rating">
-                    <div class="stars">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                    </div>
-                    <span>4.8 (98 đánh giá)</span>
-                </div>
-                <button class="btn-connect" onclick="checkAndOpenBooking('ttbinh')">Đặt lịch hẹn</button>
-                <button class="btn-connect btn-chat" onclick="window.location.href='/user/chat?expert=ttbinh'">
-                    Chat với chuyên gia
-                </button>
-            </div>
-        </div>
-
-        <div class="expert-card" data-expert-id="lvcuong">
-            <div class="expert-avatar">
-                <i class="fas fa-user-circle"></i>
-                <span class="expert-status offline status-label">
-                    <span class="status-dot"></span> Offline
-                </span>
-            </div>
-            <div class="expert-info">
-                <h3>BS. Lê Văn Cường</h3>
-                <div class="expert-specialties">
-                    <span class="specialty-tag">Rối loạn giấc ngủ</span>
-                    <span class="specialty-tag">Áp lực thi cử</span>
-                </div>
-                <div class="expert-rating">
-                    <div class="stars">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    </div>
-                    <span>4.9 (156 đánh giá)</span>
-                </div>
-                <button class="btn-connect" onclick="checkAndOpenBooking('lvcuong')">Đặt lịch hẹn</button>
-                <button class="btn-connect btn-chat" onclick="window.location.href='/user/chat?expert=lvcuong'">
-                    Chat với chuyên gia
-                </button>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="view-more-container" style="width: 100%; display: flex; justify-content: center; margin-top: 40px;">
-        <a href="/experts" class="btn-secondary" style="padding: 12px 30px; border-color: var(--primary); color: var(--primary); background: transparent;">
-          Xem tất cả chuyên gia <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
-        </a>
-    </div>
-</section>
+      <div class="view-more-container" style="width: 100%; display: flex; justify-content: center; margin-top: 40px;">
+          <a href="/experts" class="btn-secondary" style="padding: 12px 30px; border-color: var(--primary); color: var(--primary); background: transparent;">
+            Xem tất cả chuyên gia <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+          </a>
+      </div>
+  </section>
   <section class="resources" id="resources">
     <div class="section-header">
       <h2>Kho Tài nguyên</h2>
@@ -506,7 +429,42 @@
       </div>
     </div>
   </div>
+  <div class="modal-overlay" id="expertProfileModal" style="z-index: 9999;">
+        <div class="modal-container" style="max-width: 700px; width: 90%;">
+            <button class="modal-close" type="button" onclick="closeExpertProfileModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="modal-content profile-modal-content">
+                <div class="profile-header-section" style="text-align: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px;">
+                    <div class="expert-avatar-large" style="width: 100px; height: 100px; background: #e0e7ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--primary); margin: 0 auto 15px;">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <h2 id="modalProfileName" style="margin-bottom: 5px;">Tên Chuyên Gia</h2>
+                    <p id="modalProfileExp" style="color: #666;">Kinh nghiệm: ...</p>
+                    <div id="modalProfileRating" style="margin: 10px 0; color: #fbbf24;"></div>
+                    
+                    <div class="profile-actions" style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;">
+                        <button id="modalBtnChat" class="btn-connect btn-chat">Chat ngay</button>
+                        <button id="modalBtnBook" class="btn-connect">Đặt lịch hẹn</button>
+                    </div>
+                </div>
 
+                <div class="profile-body-section">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;"><i class="fas fa-tags"></i> Lĩnh vực chuyên môn</h4>
+                        <div id="modalProfileSpecialties" class="expert-specialties"></div>
+                    </div>
+
+                    <div>
+                        <h4 style="color: var(--primary); margin-bottom: 10px;"><i class="fas fa-certificate"></i> Bằng cấp & Chứng chỉ</h4>
+                        <div id="modalProfileCerts" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
   <div class="modal-overlay" id="loginModal">
     <div class="modal-container">
       <button class="modal-close" type="button" onclick="closeBookingModal()">
@@ -591,7 +549,6 @@
     </div>
   </div>
 </div>
-
   {% if current_user.is_authenticated and not current_user.is_counselor %}
   <div class="counselor-verify-box">
     <a href="{{ url_for('verify_counselor_page') }}">
@@ -666,7 +623,6 @@
           <p>&copy; 2024 StudentMind Connect. All rights reserved.</p>
         </div>
       </footer>
-
       <script src="{{ url_for('static', filename='script.js') }}"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
   </body>

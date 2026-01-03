@@ -3,12 +3,17 @@
  * Logic đăng nhập: SỬ DỤNG MODAL
  * Tích hợp: DASS-21 (Hệ thống 1) + Matching (Hệ thống 2)
  */
-
 // --- Global Initializations & DOM Loading ---
 document.addEventListener("DOMContentLoaded", function () {
   // 1. Kiểm tra trạng thái đăng nhập
   checkLoginStatus();
-
+  refreshExpertStatusOnLoadAll();
+  const socket = io();
+  // --- 2. LẮNG NGHE SỰ KIỆN TỪ SERVER ---
+  socket.on('expert_status_change', (data) => {
+      console.log(`🔥 Home Update: ${data.username} -> ${data.status}`);
+      updateExpertStatusUI(data.username, data.status);
+  });
   // 2. Khởi tạo Conversation ID cho Chatbot
   const currentConversationId = getConversationId();
   console.log(`Chatbot Session ID: ${currentConversationId}`);
@@ -22,12 +27,8 @@ document.addEventListener("DOMContentLoaded", function () {
   addFindExpertButton(); // Thêm nút "Tìm chuyên gia" vào chatbot
   loadOldChatHistory(); // Tải lịch sử chat cũ nếu có
   loadAvailableCounselors(); // Tải danh sách chuyên gia có lịch trống
-  refreshExpertStatusOnLoadAll();
-
-  if (typeof loadAllCounselorsPage === 'function') {
-        console.log("Đang gọi hàm loadAllCounselorsPage...");
-        loadAllCounselorsPage();
-  }
+  loadHomeExperts();
+  loadAllCounselorsPage();
 });
 
 // --- Authentication (Đăng nhập/Đăng xuất) ---
@@ -875,37 +876,50 @@ function getTagsFromDassScores(scores) {
 /**
  * Hàm tìm chuyên gia từ tags (được gọi từ DASS-21 hoặc Chatbot)
  */
+/**
+ * Hàm tìm chuyên gia từ tags (được gọi từ DASS-21 hoặc Chatbot)
+ */
 async function findCounselorsFromTags(tags) {
-  // Đóng modal kết quả DASS-21 nếu nó đang mở
-  closeTestResultModal(); 
-  
-  try {
-    showLoadingModal("Đang tìm chuyên gia phù hợp...");
-      
-    const response = await fetch("/api/match/find", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-          problem_tags: tags,
-          only_online: true,
-          min_rating: 4.0
-      })
-    });
-      
-    const data = await response.json();
-    hideLoadingModal();
-      
-    if (data.matches && data.matches.length > 0) {
-      displayMatchingResults(data);
-    } else {
-      alert("Không tìm thấy chuyên gia phù hợp. Vui lòng thử lại sau!");
+    // 1. Ẩn modal kết quả DASS-21 (nếu đang ở trang Test)
+    const resultContainer = document.getElementById('result-container');
+    const questionContainer = document.getElementById('question-container');
+    
+    // Nếu muốn reset giao diện test về ban đầu:
+    // if(resultContainer) resultContainer.style.display = 'none';
+    // if(questionContainer) questionContainer.style.display = 'block'; 
+    // restartTest(); 
+
+    // Hoặc đóng modal nếu DASS-21 nằm trong modal (tùy implementation của bạn)
+    // closeTestResultModal(); 
+     
+    try {
+        showLoadingModal("Hệ thống đang phân tích hồ sơ chuyên gia...");
+          
+        const response = await fetch("/api/match/find", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                  problem_tags: tags,
+                  only_online: true,
+                  min_rating: 4.0
+            })
+        });
+          
+        const data = await response.json();
+        hideLoadingModal();
+          
+        if (data.matches && data.matches.length > 0) {
+            displayMatchingResults(data);
+        } else {
+            alert("Rất tiếc, hiện chưa tìm thấy chuyên gia phù hợp với tiêu chí cụ thể này. Bạn hãy thử xem danh sách tất cả chuyên gia nhé.");
+            window.location.href = "/experts";
+        }
+          
+    } catch (error) {
+        console.error("Error finding counselors:", error);
+        hideLoadingModal();
+        alert("Có lỗi xảy ra khi kết nối server!");
     }
-      
-  } catch (error) {
-    console.error("Error finding counselors:", error);
-    hideLoadingModal();
-    alert("Có lỗi xảy ra!");
-  }
 }
 
 /**
@@ -916,62 +930,88 @@ function displayMatchingResults(data) {
 
     const modalHTML = `
         <div class="matching-modal" id="matchingModal">
-            <div class="matching-modal-content">
+            <div class="matching-modal-content" style="max-width: 900px; width: 95%;">
                 <span class="close-modal" onclick="closeMatchingModal()">&times;</span>
-                <h2>Chuyên gia phù hợp cho bạn</h2>
-                <p class="detected-tags">Vấn đề được phát hiện: ${data.search_tags.map(tag => formatTag(tag)).join(', ')}</p>
-                <div class="matching-results" id="matchingResultsList">
-                    </div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: var(--primary);">Chuyên gia phù hợp cho bạn</h2>
+                    <p class="detected-tags" style="background: #f3f4f6; display: inline-block; padding: 5px 15px; border-radius: 20px; margin-top: 10px;">
+                        <i class="fas fa-search"></i> Vấn đề được phát hiện: 
+                        <strong>${data.search_tags.map(tag => formatTag(tag)).join(', ')}</strong>
+                    </p>
+                </div>
+                <div class="matching-results experts-grid" id="matchingResultsList" 
+                     style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 10px;">
+                </div>
             </div>
         </div>
     `;
 
     document.body.insertAdjacentHTML('beforeend', modalHTML);
-
     const container = document.getElementById('matchingResultsList');
     
-    // --- [MỚI] Render thẻ HTML bằng vòng lặp để dễ thêm thuộc tính data-expert-id ---
-    data.matches.forEach(counselor => {
-        const card = document.createElement('div');
-        card.className = 'match-card';
-        
-        // QUAN TRỌNG: Thêm ID để Socket tìm thấy
-        card.setAttribute('data-expert-id', counselor.id);
+    if (data.matches && data.matches.length > 0) {
+        data.matches.forEach(counselor => {
+            const card = document.createElement('div');
+            card.className = 'expert-card';
+            
+            const expertId = counselor.username || counselor.id;
+            card.setAttribute('data-expert-id', expertId);
 
-        const statusClass = counselor.status === 'online' ? 'online' : 'offline';
-        const statusText = counselor.status === 'online' ? 'Online' : 'Offline';
-        const btnText = counselor.status === 'online' ? 'Kết nối ngay' : 'Đặt lịch hẹn';
-        // Nút bấm: Nếu online -> openChat, nếu offline -> checkAndOpenBooking
-        const btnAction = counselor.status === 'online' 
-              ? `window.location.href='/user/chat?expert=${counselor.username}'` 
-              : `checkAndOpenBooking('${counselor.username}')`;
+            const coverImage = `https://picsum.photos/seed/${expertId}/400/200`;
+            const isOnline = counselor.status === 'online';
+            const statusClass = isOnline ? 'online' : 'offline';
+            const statusText = isOnline ? 'Online' : 'Offline';
+            
+            // --- THAY ĐỔI: Luôn là nút Chat ---
+            const btnText = 'Kết nối ngay'; // Có thể để Chat ngay cũng được
+            const btnAction = `onclick="window.location.href='/user/chat?expert=${expertId}'"`;
+            const btnClass = 'btn-connect btn-chat';
+            // ----------------------------------
 
-        card.innerHTML = `
-            <div class="match-info">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3>${counselor.name}</h3>
-                    <span class="status-badge ${statusClass}">${statusText}</span>
+            const profileAction = `onclick="openExpertProfile('${expertId}')" style="cursor: pointer;"`;
+
+            let specsHtml = '';
+            if (Array.isArray(counselor.specialties)) {
+                specsHtml = counselor.specialties.map(s => `<span class="specialty-tag">${formatTag(s)}</span>`).join('');
+            } else {
+                specsHtml = `<span class="specialty-tag">${formatTag(counselor.specialties)}</span>`;
+            }
+            const ratingVal = parseFloat(counselor.rating) || 0;
+            const starsHtml = '<i class="fas fa-star" style="color: #fbbf24;"></i>'.repeat(Math.round(ratingVal));
+
+            card.innerHTML = `
+                <div class="expert-cover" style="background-image: url('${coverImage}');"></div>
+                <div class="expert-info">
+                    <div class="expert-avatar-wrapper" ${profileAction}>
+                        <div class="expert-avatar-inner">${counselor.name.charAt(0)}</div>
+                        <span class="status-dot ${statusClass}" style="position:absolute; bottom:5px; right:5px; width:14px; height:14px; border-radius:50%; border:2px solid white;"></span>
+                    </div>
+                    <h4 ${profileAction}>${counselor.name} <i class="fas fa-info-circle" style="font-size:0.8em; color:#aaa;"></i></h4>
+                    <div style="margin: 5px 0;">
+                        <span style="background: #ecfdf5; color: #059669; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; border: 1px solid #a7f3d0;">
+                            <i class="fas fa-check-circle"></i> Phù hợp: ${counselor.match_score}%
+                        </span>
+                    </div>
+                    <div style="margin: 5px 0;">
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="expert-rating" style="justify-content: center; margin-bottom: 5px;">
+                        <div class="stars">${starsHtml}</div>
+                        <span style="font-size: 0.85em; color:#666;">(${counselor.rating})</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: #666; margin-bottom: 15px; height: 40px; overflow: hidden;">
+                        ${specsHtml}
+                    </div>
+                    <button class="${btnClass} btn-dynamic" ${btnAction} style="width: 100%;">
+                        ${btnText}
+                    </button>
                 </div>
-                
-                <p class="match-score">Độ phù hợp: ${counselor.match_score}%</p>
-                <p>Kinh nghiệm: ${counselor.experience}</p>
-                
-                <div class="specialties">
-                    ${counselor.specialties.map(s => `<span class="tag">${s}</span>`).join('')}
-                </div>
-                
-                <div class="rating">
-                    <span class="stars">${'⭐'.repeat(Math.round(counselor.rating))}</span>
-                    ${counselor.rating}
-                </div>
-                
-                <button class="btn-connect-counselor btn-connect" onclick="${btnAction}">
-                    ${btnText}
-                </button>
-            </div>
-        `;
-        container.appendChild(card);
-    });
+            `;
+            container.appendChild(card);
+        });
+    } else {
+        container.innerHTML = '<p style="text-align: center; width: 100%; color: #666;">Không tìm thấy chuyên gia phù hợp với tiêu chí này.</p>';
+    }
 }
 
 function closeMatchingModal() {
@@ -2173,50 +2213,26 @@ function initializeCounselorChat(expertUsername) {
     }
 }
 
-socket.on('expert_status_change', (data) => {
-    console.log(`Realtime update: ${data.username} -> ${data.status}`);
-    updateExpertStatusUI(data.username, data.status);
-});
 
-// 2. Hàm cập nhật UI (Sử dụng querySelectorAll để update mọi nơi)
 function updateExpertStatusUI(username, status) {
-    // Tìm TẤT CẢ các thẻ card có data-expert-id tương ứng
-    const cards = document.querySelectorAll(`.expert-card[data-expert-id="${username}"], .match-card[data-expert-id="${username}"]`);
-    
+    // Tìm tất cả thẻ card của chuyên gia này
+    const cards = document.querySelectorAll(`.expert-card[data-expert-id="${username}"]`);
+    const isOnline = status === 'online';
+    const statusText = isOnline ? 'Online' : 'Offline';
+
     cards.forEach(card => {
-        // Tìm badge trạng thái bên trong card
-        const statusLabel = card.querySelector('.status-label') || card.querySelector('.expert-status') || card.querySelector('.status-badge');
-        const chatBtn = card.querySelector('.btn-chat') || card.querySelector('.btn-connect-counselor');
+        // Cập nhật chấm tròn
+        const dot = card.querySelector('.status-dot');
+        if (dot) dot.className = `status-dot ${status}`;
 
-        if (status === 'online') {
-            // --- Chuyển sang ONLINE ---
-            if (statusLabel) {
-                statusLabel.classList.remove('offline');
-                statusLabel.classList.add('online');
-                statusLabel.innerHTML = '<span class="status-dot"></span> Đang online';
-            }
-            
-            if (chatBtn) {
-                chatBtn.style.display = 'inline-block'; // Hiện nút chat
-                chatBtn.textContent = 'Chat ngay';
-                chatBtn.disabled = false;
-                chatBtn.onclick = () => window.location.href = `/user/chat?expert=${username}`;
-            }
-        } else {
-            // --- Chuyển sang OFFLINE ---
-            if (statusLabel) {
-                statusLabel.classList.remove('online');
-                statusLabel.classList.add('offline');
-                statusLabel.innerHTML = '<span class="status-dot"></span> Offline';
-            }
-
-            if (chatBtn) {
-                // Tùy chọn: Ẩn nút chat hoặc làm mờ
-                chatBtn.textContent = 'Chat (Offline)';
-                chatBtn.disabled = true; 
-                // Hoặc ẩn luôn: chatBtn.style.display = 'none';
-            }
+        // Cập nhật text badge
+        const badge = card.querySelector('.status-badge');
+        if (badge) {
+            badge.className = `status-badge ${status}`;
+            badge.textContent = statusText;
         }
+        
+        // (Không cần cập nhật nút Chat vì bạn đã yêu cầu luôn hiện nút Chat)
     });
 }
 
@@ -2240,12 +2256,11 @@ async function refreshExpertStatusOnLoadAll() {
 
 async function loadAvailableCounselors() {
     const container = document.getElementById('available-counselors-list');
-    if (!container) return; // Kiểm tra nếu không có container thì thoát
+    if (!container) return;
 
     container.innerHTML = '<div class="spinner"></div>';
 
     try {
-        // Gọi API này để lấy danh sách (API này đã được sửa ở backend để trả về status realtime)
         const res = await fetch('/api/counselors/availability');
         const data = await res.json();
         container.innerHTML = '';
@@ -2255,40 +2270,59 @@ async function loadAvailableCounselors() {
                 const card = document.createElement('div');
                 card.className = 'expert-card';
                 
-                // [QUAN TRỌNG NHẤT]: Gắn ID để Socket tìm thấy
-                // Backend trả về 'username', hãy chắc chắn dùng đúng trường này
+                // Sử dụng c.username thay vì c.id
                 card.setAttribute('data-expert-id', c.username); 
 
-                // Logic hiển thị ban đầu
                 const isOnline = c.status === 'online';
                 const statusClass = isOnline ? 'online' : 'offline';
                 const statusText = isOnline ? 'Online' : 'Offline';
-                const btnText = isOnline ? 'Chat ngay' : 'Đặt lịch hẹn';
+                const btnText = 'Chat ngay';
                 
-                // Nút bấm: Online -> Chat, Offline -> Đặt lịch
-                const btnAction = isOnline 
-                      ? `window.location.href='/user/chat?expert=${c.username}'` 
-                      : `checkAndOpenBooking('${c.username}')`;
+                // --- SỬA LỖI 1: Thêm onclick="" bao quanh lệnh JS ---
+                const btnAction = `onclick="window.location.href='/user/chat?expert=${c.username}'"`;
+                
                 const btnClass = isOnline ? 'btn-connect btn-chat' : 'btn-connect';
+
+                // --- SỬA LỖI 2: Dùng c.username thay vì c.id ---
+                const profileAction = `onclick="openExpertProfile('${c.username}')" style="cursor: pointer;"`;
+
+                // Xử lý tags chuyên môn
+                let specs = c.specialties;
+                if (typeof specs === 'string') {
+                    specs = specs.split(',');
+                } else if (!Array.isArray(specs)) {
+                    specs = ['Tư vấn chung'];
+                }
+                const tagsHtml = specs.map(tag => `<span class="specialty-tag">${formatTag(tag.trim())}</span>`).join('');
+
+                // Xử lý rating
+                const rating = parseFloat(c.rating) || 0;
+                const starsHtml = '<i class="fas fa-star" style="color: #fbbf24;"></i>'.repeat(Math.round(rating));
 
                 card.innerHTML = `
                     <div class="expert-info" style="padding: 1.5rem; text-align: center;">
-                        <div style="position:relative; width: 60px; height: 60px; margin: 0 auto 10px;">
+                        <div style="position:relative; width: 60px; height: 60px; margin: 0 auto 10px;" ${profileAction}>
                             <div style="width: 100%; height: 100%; background: #e0e7ff; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
                                 ${c.name.charAt(0)}
                             </div>
                             <span class="status-dot ${statusClass}" style="position:absolute; bottom:0; right:0; width:12px; height:12px; border-radius:50%; border:2px solid white;"></span>
                         </div>
                         
-                        <h4>${c.name}</h4>
+                        <h4 ${profileAction}>${c.name} <i class="fas fa-info-circle" style="font-size:0.8em; color:#aaa;"></i></h4>
                         
                         <div style="margin: 5px 0;">
                             <span class="status-badge ${statusClass}">${statusText}</span>
                         </div>
 
-                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px; height: 40px; overflow: hidden;">${c.specialties}</p>
+                        <div class="expert-rating" style="justify-content: center; margin-bottom: 5px;">
+                            <div class="stars">${starsHtml}</div>
+                        </div>
+
+                        <div style="font-size: 0.9rem; color: #666; margin-bottom: 10px; height: 40px; overflow: hidden;">
+                            ${tagsHtml}
+                        </div>
                         
-                        <button class="${btnClass} btn-dynamic" onclick="${btnAction}" style="width: 100%;">
+                        <button class="${btnClass} btn-dynamic" ${btnAction} style="width: 100%;">
                             ${btnText}
                         </button>
                     </div>
@@ -2306,71 +2340,61 @@ async function loadAvailableCounselors() {
 
 async function loadAllCounselorsPage() {
     const container = document.getElementById('all-experts-container');
+    if (!container) return; 
 
     container.innerHTML = '<div class="spinner" style="grid-column: span 3; margin: 50px auto;"></div>';
 
     try {
-        // Gọi API lấy toàn bộ chuyên gia (đã kèm status realtime từ main.py)
         const response = await fetch('/api/counselors/all');
         const data = await response.json();
-
-        container.innerHTML = ''; // Xóa spinner
+        container.innerHTML = ''; 
 
         if (data.counselors && data.counselors.length > 0) {
             data.counselors.forEach(c => {
                 const card = document.createElement('div');
                 card.className = 'expert-card';
-                
-                // [QUAN TRỌNG] Gắn ID để Socket cập nhật trạng thái Online/Offline sau này
-                card.setAttribute('data-expert-id', c.id); 
+                card.setAttribute('data-expert-id', c.id);
 
-                // Xử lý logic hiển thị
+                const coverImage = `https://picsum.photos/seed/${c.id}/400/200`;
                 const isOnline = c.status === 'online';
                 const statusClass = isOnline ? 'online' : 'offline';
                 const statusText = isOnline ? 'Online' : 'Offline';
-                const btnText = isOnline ? 'Chat ngay' : 'Chat (Offline)';
-                const btnDisabled = isOnline ? '' : 'disabled';
                 
-                // Hành động của nút chat
-                const chatAction = isOnline 
-                      ? `onclick="window.location.href='/user/chat?expert=${c.id}'"` 
-                      : `onclick="alert('Chuyên gia đang offline. Vui lòng đặt lịch hẹn.')"`
+                // --- THAY ĐỔI: Luôn là nút Chat ---
+                const btnText = 'Chat ngay';
+                const btnAction = `onclick="window.location.href='/user/chat?expert=${c.id}'"`;
+                const btnClass = 'btn-connect btn-chat';
+                // ----------------------------------
+                
+                const profileAction = `onclick="openExpertProfile('${c.id}')" style="cursor: pointer;"`;
+                
+                let specs = c.specialties;
+                if (typeof specs === 'string') specs = specs.split(',');
+                else if (!Array.isArray(specs)) specs = ['Tư vấn chung'];
+                const tagsHtml = specs.map(tag => `<span class="specialty-tag">${formatTag(tag.trim())}</span>`).join('');
 
-                // Xử lý Rating (sao)
                 const rating = parseFloat(c.rating) || 0;
                 const starsHtml = '<i class="fas fa-star" style="color: #fbbf24;"></i>'.repeat(Math.round(rating));
 
-                // Xử lý Tags chuyên môn (tách chuỗi thành mảng)
-                // Giả sử server trả về string "Stress, Lo âu" hoặc array
-                let specs = c.specialties;
-                if (typeof specs === 'string') {
-                    specs = specs.split(',');
-                } else if (!Array.isArray(specs)) {
-                    specs = ['Tư vấn chung'];
-                }
-
-                const tagsHtml = specs.map(tag => `<span class="specialty-tag">${formatTag(tag.trim())}</span>`).join('');
-
                 card.innerHTML = `
-                    <div class="expert-avatar">
-                        <i class="fas fa-user-circle"></i>
-                        <span class="expert-status ${statusClass} status-label">
-                            <span class="status-dot"></span> ${statusText}
-                        </span>
-                    </div>
+                    <div class="expert-cover" style="background-image: url('${coverImage}');"></div>
                     <div class="expert-info">
-                        <h3>${c.name}</h3>
-                        <div class="expert-specialties">
+                        <div class="expert-avatar-wrapper" ${profileAction}>
+                            <div class="expert-avatar-inner">${c.name.charAt(0)}</div>
+                            <span class="status-dot ${statusClass}" style="position:absolute; bottom:5px; right:5px; width:14px; height:14px; border-radius:50%; border:2px solid white;"></span>
+                        </div>
+                        <h4 ${profileAction}>${c.name} <i class="fas fa-info-circle" style="font-size:0.8em; color:#aaa;"></i></h4>
+                        <div style="margin: 5px 0;">
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="expert-rating" style="justify-content: center; margin-bottom: 5px;">
+                            <div class="stars">${starsHtml}</div>
+                            <span style="font-size: 0.85em; color:#666; margin-left: 5px;">(${c.rating})</span>
+                        </div>
+                        <div style="font-size: 0.9rem; color: #666; margin-bottom: 15px; height: 40px; overflow: hidden;">
                             ${tagsHtml}
                         </div>
-                        <div class="expert-rating">
-                            <div class="stars">${starsHtml}</div>
-                            <span>${rating} (${c.experience})</span>
-                        </div>
-
-                        <button class="btn-connect" onclick="checkAndOpenBooking('${c.id}')">Đặt lịch hẹn</button>
-
-                        <button class="btn-connect btn-chat ${btnDisabled}" ${chatAction} ${btnDisabled}>
+                        <button class="${btnClass} btn-dynamic" ${btnAction} style="width: 100%;">
                             ${btnText}
                         </button>
                     </div>
@@ -2378,11 +2402,165 @@ async function loadAllCounselorsPage() {
                 container.appendChild(card);
             });
         } else {
-            container.innerHTML = '<p style="text-align:center; width:100%; grid-column: span 3;">Chưa có chuyên gia nào trong hệ thống.</p>';
+            container.innerHTML = '<p style="grid-column: span 3; text-align: center; color: #666;">Chưa có chuyên gia nào.</p>';
+        }
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = '<p style="color: red; text-align: center;">Lỗi tải dữ liệu.</p>';
+    }
+}
+
+// --- LOGIC MODAL PROFILE CHUYÊN GIA ---
+
+async function openExpertProfile(username) {
+    const modal = document.getElementById('expertProfileModal');
+    modal.setAttribute('data-current-expert', username);
+    // Hiển thị loading nhẹ hoặc reset nội dung cũ
+    document.getElementById('modalProfileCerts').innerHTML = '<p>Đang tải...</p>';
+    
+    try {
+        const response = await fetch(`/api/counselor/${username}/profile`);
+        if (!response.ok) throw new Error("Không thể tải thông tin");
+        
+        const data = await response.json();
+        
+        // 1. Điền thông tin cơ bản
+        document.getElementById('modalProfileName').textContent = data.name;
+        document.getElementById('modalProfileExp').textContent = `Kinh nghiệm: ${data.experience}`;
+        
+        // Rating
+        const rating = Math.round(parseFloat(data.rating) || 0);
+        document.getElementById('modalProfileRating').innerHTML = '<i class="fas fa-star"></i>'.repeat(rating);
+
+        // 2. Điền Tags chuyên môn
+        const specsContainer = document.getElementById('modalProfileSpecialties');
+        let specs = data.specialties.split(',');
+        specsContainer.innerHTML = specs.map(tag => 
+            `<span class="specialty-tag">${formatTag(tag.trim())}</span>`
+        ).join('');
+
+        // 3. Điền nút hành động (Chat/Book)
+        const btnChat = document.getElementById('modalBtnChat');
+        const btnBook = document.getElementById('modalBtnBook');
+        
+        // Giả sử lấy status từ UI card bên ngoài (hoặc gọi API check status riêng nếu cần chính xác realtime)
+        // Ở đây ta set cứng link, việc check online/offline sẽ do logic chat xử lý
+        btnChat.onclick = () => window.location.href = `/user/chat?expert=${data.username}`;
+        btnBook.onclick = () => {
+            closeExpertProfileModal();
+            checkAndOpenBooking(data.username);
+        };
+
+        // 4. LOAD ẢNH BẰNG CẤP TỪ FOLDER PAPERWORKS
+        const certsContainer = document.getElementById('modalProfileCerts');
+        certsContainer.innerHTML = '';
+        
+        if (data.cert_images && data.cert_images.length > 0) {
+            data.cert_images.forEach(img => {
+                const imgEl = document.createElement('img');
+                imgEl.src = `/paperworks/${img}`;
+                imgEl.style.width = '100%';
+                imgEl.style.borderRadius = '8px';
+                imgEl.style.border = '1px solid #ddd';
+                imgEl.style.cursor = 'pointer';
+                imgEl.onclick = () => window.open(imgEl.src, '_blank'); // Click để xem ảnh to
+                certsContainer.appendChild(imgEl);
+            });
+        } else {
+            certsContainer.innerHTML = '<p style="color:#666; font-style:italic;">Chưa cập nhật hình ảnh bằng cấp.</p>';
         }
 
+        // Mở Modal
+        if (modal) modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
     } catch (error) {
-        console.error("Lỗi tải danh sách chuyên gia:", error);
-        container.innerHTML = '<p style="text-align:center; color:red; grid-column: span 3;">Lỗi kết nối server. Vui lòng thử lại sau.</p>';
+        console.error(error);
+        alert("Lỗi khi tải hồ sơ chuyên gia.");
+    }
+}
+
+function closeExpertProfileModal() {
+    const modal = document.getElementById('expertProfileModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// Đóng modal khi click ra ngoài
+document.getElementById('expertProfileModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeExpertProfileModal();
+});
+
+
+async function loadHomeExperts() {
+    const container = document.getElementById('home-experts-container');
+    if (!container) return;
+
+    container.innerHTML = '<div class="spinner" style="grid-column: span 3; margin: 50px auto;"></div>';
+
+    try {
+        const response = await fetch('/api/counselors/all');
+        const data = await response.json();
+        container.innerHTML = '';
+
+        if (data.counselors && data.counselors.length > 0) {
+            const top3Counselors = data.counselors.slice(0, 3);
+
+            top3Counselors.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'expert-card';
+                card.setAttribute('data-expert-id', c.id);
+
+                const coverImage = `https://picsum.photos/seed/${c.id}/400/200`; 
+                const isOnline = c.status === 'online';
+                const statusClass = isOnline ? 'online' : 'offline';
+                const statusText = isOnline ? 'Online' : 'Offline';
+                
+                // --- THAY ĐỔI: Luôn là nút Chat ---
+                const btnText = 'Chat ngay';
+                const btnAction = `onclick="window.location.href='/user/chat?expert=${c.id}'"`;
+                const btnClass = 'btn-connect btn-chat'; 
+                // ----------------------------------
+
+                const profileAction = `onclick="openExpertProfile('${c.id}')" style="cursor: pointer;"`;
+
+                let specs = c.specialties;
+                if (typeof specs === 'string') specs = specs.split(',');
+                else if (!Array.isArray(specs)) specs = ['Tư vấn chung'];
+                const tagsHtml = specs.map(tag => `<span class="specialty-tag">${formatTag(tag.trim())}</span>`).join('');
+
+                const rating = parseFloat(c.rating) || 0;
+                const starsHtml = '<i class="fas fa-star" style="color: #fbbf24;"></i>'.repeat(Math.round(rating));
+
+                card.innerHTML = `
+                    <div class="expert-cover" style="background-image: url('${coverImage}');"></div>
+                    <div class="expert-info">
+                        <div class="expert-avatar-wrapper" ${profileAction}>
+                            <div class="expert-avatar-inner">${c.name.charAt(0)}</div>
+                            <span class="status-dot ${statusClass}" style="position:absolute; bottom:5px; right:5px; width:14px; height:14px; border-radius:50%; border:2px solid white;"></span>
+                        </div>
+                        <h4 ${profileAction}>${c.name} <i class="fas fa-info-circle" style="font-size:0.8em; color:#aaa;"></i></h4>
+                        <div style="margin: 5px 0;">
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="expert-rating" style="justify-content: center; margin-bottom: 5px;">
+                            <div class="stars">${starsHtml}</div>
+                        </div>
+                        <div style="font-size: 0.9rem; color: #666; margin-bottom: 15px; height: 40px; overflow: hidden;">
+                            ${tagsHtml}
+                        </div>
+                        <button class="${btnClass} btn-dynamic" ${btnAction} style="width: 100%;">
+                            ${btnText}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        } else {
+            container.innerHTML = '<p style="grid-column: span 3; text-align: center; color: #666;">Chưa có chuyên gia nào.</p>';
+        }
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = '<p style="color: red; text-align: center;">Lỗi tải dữ liệu.</p>';
     }
 }

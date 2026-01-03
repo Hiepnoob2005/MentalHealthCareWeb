@@ -1,24 +1,6 @@
 UserID;TestDate;TestTime;Answers;ProblemTags;Score
-24127168;2025-11-10;16:10:03;{"q1": "\u0110\u00f4i khi", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "B\u00ecnh th\u01b0\u1eddng"};hoc_tap;5
-24127168;2025-11-10;16:11:41;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu,hoc_tap,stress,tram_cam,lo_au;8
-24127168;2025-11-10;16:12:11;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu,hoc_tap,stress,tram_cam,lo_au;8
-24127168;2025-11-10;16:12:31;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu,hoc_tap,stress,tram_cam,lo_au;8
-24127168;2025-11-10;16:12:43;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu,hoc_tap,stress,tram_cam,lo_au;8
-24127168;2025-11-10;16:13:11;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu,hoc_tap,stress,tram_cam,lo_au;8
-24127168;2025-11-10;16:29:38;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu,hoc_tap,stress,tram_cam,lo_au;8
-24127168;2025-11-10;16:46:54;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "B\u00ecnh th\u01b0\u1eddng"};none;1
-24127168;2025-11-10;16:47:09;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "R\u1ea5t t\u1ec7, th\u01b0\u1eddng m\u1ea5t ng\u1ee7"};stress,hoc_tap,lo_au,tram_cam,roi_loan_giac_ngu;9
-24127168;2025-11-10;16:53:23;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "B\u00ecnh th\u01b0\u1eddng"};none;1
-24127168;2025-11-10;16:55:25;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu;2
-24127168;2025-11-10;16:55:47;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu;2
-24127168;2025-11-10;16:57:39;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu;2
-24127168;2025-11-10;17:14:52;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "Kh\u00f4ng t\u1ed1t"};roi_loan_giac_ngu;2
-24127168;2025-11-10;17:15:07;{"q1": "Kh\u00f4ng bao gi\u1edd", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "B\u00ecnh th\u01b0\u1eddng"};hoc_tap;4
-24127168;2025-11-10;17:17:40;{"q1": "Th\u01b0\u1eddng xuy\u00ean", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "R\u1ea5t t\u1ed1t"};lo_au,stress;2
-24127168;2025-11-10;17:26:58;{"q1": "Th\u01b0\u1eddng xuy\u00ean", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "R\u1ea5t t\u1ed1t"};lo_au,stress;2
-24127168;2025-11-10;19:06:58;{"q1": "Th\u01b0\u1eddng xuy\u00ean", "q2": "Kh\u00f4ng g\u1eb7p kh\u00f3 kh\u0103n", "q3": "R\u1ea5t t\u1ed1t"};lo_au,stress;2
-24127020;2025-11-12;19:36:27;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "R\u1ea5t t\u1ec7, th\u01b0\u1eddng m\u1ea5t ng\u1ee7"};lo_au,hoc_tap,roi_loan_giac_ngu,tram_cam,stress;9
-24127020;2025-11-12;19:48:11;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "R\u1ea5t t\u1ec7, th\u01b0\u1eddng m\u1ea5t ng\u1ee7"};lo_au,hoc_tap,roi_loan_giac_ngu,tram_cam,stress;9
-24127020;2025-11-12;19:49:20;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "R\u1ea5t t\u1ec7, th\u01b0\u1eddng m\u1ea5t ng\u1ee7"};lo_au,hoc_tap,roi_loan_giac_ngu,tram_cam,stress;9
-24127020;2025-11-16;15:49:21;[1, 0, 0, 0, 1, 2, 0, 1, 2, 0, 1, 0, 2, 1, 0, 1, 0, 2, 1, 0, 1];tram_cam,stress;{"D": 10, "A": 6, "S": 16}
-24127020;2025-11-17;10:46:42;[2, 3, 1, 2, 3, 1, 0, 2, 2, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0];tram_cam,lo_au,stress;{"D": 14, "A": 16, "S": 16}
+2026-01-03 16:40:36;dat;D:42-A:42-S:42;tram_cam,lo_au,stress;3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+2026-01-03 16:42:18;dat;D:28-A:28-S:24;tram_cam,lo_au,stress;0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+2026-01-03 17:11:37;dat;D:14-A:10-S:16;tram_cam,lo_au,stress;1,1,2,1,2,0,0,2,1,2,0,2,0,1,2,1,0,2,0,0,0
+2026-01-03 17:18:21;dat;D:36-A:34-S:40;tram_cam,lo_au,stress;2,1,2,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+2026-01-03 17:38:46;dat;D:26-A:34-S:28;tram_cam,lo_au,stress;1,2,1,2,2,1,2,2,2,2,2,2,2,3,3,3,3,3,3,3,0
