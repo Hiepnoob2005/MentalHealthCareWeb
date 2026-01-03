@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tất cả Chuyên gia - StudentMind Connect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo">
+        <i class="fas fa-brain"></i>
+        StudentMind Connect
+      </a>
+      <div class="navbar-actions">
+        {% if current_user.is_authenticated %}
+            <a href="#" class="btn-cta" id="navbarCtaButton">Xin chào, {{ current_user.username }}</a>
+         {% else %}
+            <a href="#" class="btn-cta" id="navbarCtaButton">Đăng nhập</a>
+         {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <section class="experts" style="padding-top: 120px; min-height: 80vh;">
+    <div class="section-header">
+      <h2>Tất cả Chuyên gia</h2>
+      <p>Danh sách toàn bộ đội ngũ tư vấn viên của StudentMind Connect</p>
+    </div>
+
+    <div class="experts-grid" id="all-experts-container">
+        <div class="spinner" style="margin: 50px auto;"></div> 
+    </div>
+  </section>
+  
+  <div class="modal-overlay" id="loginModal">
+      </div>
+
+  <div class="modal-overlay" id="bookingModal">
+    <div class="modal-container">
+      <button class="modal-close" type="button" onclick="closeBookingModal()">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="modal-content">
+        <div class="modal-logo">
+          <i class="fas fa-calendar-check"></i>
+          <span id="bookingCounselorName">Đặt lịch hẹn</span>
+        </div>
+        <h2>Chọn thời gian tư vấn</h2>
+        <p class="modal-subtitle">Vui lòng chọn ngày và giờ phù hợp với bạn.</p>
+
+        <form id="bookingForm">
+          <input type="hidden" id="selectedTime" name="time">
+          
+          <div class="form-group">
+            <label for="bookingDate" style="display:block; margin-bottom:8px; font-weight:bold;">Ngày:</label>
+            <select id="bookingDate" class="form-input" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+              <option value="">-- Chọn ngày --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label style="display:block; margin-bottom:8px; font-weight:bold;">Giờ rảnh:</label>
+            <div id="bookingSlots" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+              <p style="grid-column: span 3; text-align: center; color: #666;">Vui lòng chọn ngày trước.</p>
+            </div>
+          </div>
+
+          <div id="bookingMessage" style="display: none; margin-bottom: 1rem; text-align: center;"></div>
+
+          <button type="submit" class="btn-submit">Xác nhận đặt lịch</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

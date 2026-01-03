@@ -20,3 +20,5 @@ UserID;TestDate;TestTime;Answers;ProblemTags;Score
 24127020;2025-11-12;19:36:27;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "R\u1ea5t t\u1ec7, th\u01b0\u1eddng m\u1ea5t ng\u1ee7"};lo_au,hoc_tap,roi_loan_giac_ngu,tram_cam,stress;9
 24127020;2025-11-12;19:48:11;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "R\u1ea5t t\u1ec7, th\u01b0\u1eddng m\u1ea5t ng\u1ee7"};lo_au,hoc_tap,roi_loan_giac_ngu,tram_cam,stress;9
 24127020;2025-11-12;19:49:20;{"q1": "Lu\u00f4n lu\u00f4n", "q2": "R\u1ea5t th\u01b0\u1eddng xuy\u00ean", "q3": "R\u1ea5t t\u1ec7, th\u01b0\u1eddng m\u1ea5t ng\u1ee7"};lo_au,hoc_tap,roi_loan_giac_ngu,tram_cam,stress;9
+24127020;2025-11-16;15:49:21;[1, 0, 0, 0, 1, 2, 0, 1, 2, 0, 1, 0, 2, 1, 0, 1, 0, 2, 1, 0, 1];tram_cam,stress;{"D": 10, "A": 6, "S": 16}
+24127020;2025-11-17;10:46:42;[2, 3, 1, 2, 3, 1, 0, 2, 2, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0];tram_cam,lo_au,stress;{"D": 14, "A": 16, "S": 16}

@@ -1,0 +1,802 @@
+/* --- Reset & Base --- */
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #8b5cf6;
+    --accent: #ec4899;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark: #1f2937;
+    --gray: #6b7280;
+    --light: #f9fafb;
+    --white: #ffffff;
+    --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+
+body {
+    background-color: #f0f2f5;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin: 0;
+    /* Font giống Messenger/Facebook */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* --- Navbar (Mô phỏng thanh header của Facebook) --- */
+.chat-navbar {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    height: 56px;
+    /* Chiều cao chuẩn FB */
+    display: flex;
+    align-items: center;
+    z-index: 100;
+    padding: 0 16px;
+    position: relative;
+    background: var(--gradient-1) !important;
+}
+
+.chat-navbar .nav-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+    color: white !important;
+
+}
+
+.chat-navbar .logo {
+    text-decoration: none;
+    font-size: 1.2rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    color: white !important;
+}
+
+.chat-navbar .logo:hover {
+    background: #d8dadf;
+}
+
+.chat-navbar .user-info {
+    font-size: 0.95rem;
+}
+
+/* --- Layout chính --- */
+.chat-layout {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    height: calc(100vh - 56px);
+    width: 100%;
+    background-color: #cecece;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Sidebar (Danh sách người dùng) --- */
+.chat-sidebar {
+    width: 360px;
+    border-right: 1px solid #e5e5e5;
+    border-radius: 10px;
+    /* Đường viền mỏng */
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    flex-shrink: 0;
+    /* Không bị co lại */
+}
+
+.sidebar-header {
+    padding: 10px 16px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: #050505;
+}
+
+.expert-list {
+    flex: 1;
+    overflow-y: auto;
+    list-style: none;
+    padding: 8px;
+    /* Padding xung quanh list để tạo khoảng cách */
+    margin: 0;
+}
+
+/* Scrollbar đẹp */
+.expert-list::-webkit-scrollbar,
+.messages-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.expert-list::-webkit-scrollbar-thumb,
+.messages-container::-webkit-scrollbar-thumb {
+    background: #bcc0c4;
+    border-radius: 4px;
+}
+
+.expert-list::-webkit-scrollbar-track,
+.messages-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Item trong sidebar */
+.expert-item {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 8px;
+    /* Bo góc giống Messenger */
+    transition: background-color 0.2s;
+    margin-bottom: 2px;
+}
+
+.expert-item:hover {
+    background-color: #f2f2f2;
+}
+
+.expert-item.active {
+    background-color: rgba(45, 136, 255, 0.1);
+    /* Xanh nhạt khi active */
+}
+
+.expert-item .avatar {
+    width: 48px;
+    /* Kích thước avatar chuẩn */
+    height: 48px;
+    border-radius: 50%;
+    background: #e4e6eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 1.2rem;
+    color: #050505;
+    flex-shrink: 0;
+}
+
+.expert-item.active .avatar {
+    background: #0084ff;
+    color: white;
+}
+
+.expert-name {
+    font-weight: 500;
+    /* Medium weight */
+    color: #050505;
+    margin-bottom: 2px;
+    font-size: 0.95rem;
+}
+
+.expert-specialty {
+    font-size: 0.8rem;
+    color: #65676b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- Main Chat Area --- */
+.chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    min-width: 0;
+    border-radius: 20px !important;
+    /* Fix lỗi flexbox bị tràn */
+}
+
+/* Header Chat - Chuyển sang màu TRẮNG */
+.chat-header {
+    height: 60px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    background: #fff;
+    /* Messenger header màu trắng */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+}
+
+.expert-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#currentExpertAvatar {
+    width: 40px;
+    height: 40px;
+    background: #e4e6eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #050505;
+}
+
+/* Tên trong header chat chuyển sang màu đen */
+#currentExpertName {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #050505;
+}
+
+#currentExpertStatus {
+    font-size: 0.75rem;
+    color: #65676b;
+    display: block;
+}
+
+/* --- Khung tin nhắn --- */
+.messages-container {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+
+    background-color: #fefefe;
+}
+
+.empty-state {
+    margin: auto;
+    color: rgba(0, 0, 0, 0.5);
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.6);
+    padding: 10px 20px;
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+}
+
+/* --- Bong bóng chat (Messages) --- */
+.message {
+    display: flex;
+    margin-bottom: 8px;
+    /* Khoảng cách giữa các tin nhắn gần hơn */
+    max-width: 70%;
+    position: relative;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.message.received {
+    align-self: flex-start;
+}
+
+.message .bubble {
+    padding: 10px 16px;
+    /* Padding rộng hơn chút */
+    border-radius: 18px;
+    /* Bo tròn mạnh */
+    font-size: 0.95rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    /* Đổ bóng nhẹ */
+}
+
+/* Màu tin nhắn GỬI ĐI (Gradient Blue) */
+.message.sent .bubble {
+    /* Gradient đặc trưng của Messenger */
+    background: var(--gradient-1);
+    color: white;
+    border-bottom-right-radius: 4px;
+    /* Tạo góc nhọn cho tin nhắn cuối */
+}
+
+/* Màu tin nhắn NHẬN (Xám) */
+.message.received .bubble {
+    background-color: #e2dfdf;
+    color: #050505;
+    border-bottom-left-radius: 4px;
+    /* Tạo góc nhọn cho tin nhắn nhận */
+}
+
+.message.system {
+    align-self: center;
+    max-width: 100%;
+    margin: 15px 0;
+}
+
+.message.system .bubble {
+    background: none;
+    box-shadow: none;
+    color: #65676b;
+    font-size: 0.75rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* --- Input Area --- */
+.input-area {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fefefe;
+    border-top: #0505054d solid 1px;
+}
+
+.input-area input {
+    flex: 1;
+    background: #f0f2f5;
+    /* Nền xám nhạt */
+    border: none;
+    padding: 10px 16px;
+    border-radius: 20px;
+    /* Bo tròn dạng viên thuốc */
+    font-size: 15px;
+    outline: none;
+    height: 40px;
+    transition: background 0.2s;
+}
+
+.input-area input:focus {
+    background: #e4e6eb;
+}
+
+.input-area button {
+    background: transparent;
+    border: none;
+    color: #0084ff;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-area button:hover {
+    background-color: #f0f2f5;
+}
+
+/* --- SIDEBAR CONTAINER --- */
+.chat-sidebar {
+    width: 360px;
+    border-right: 1px solid #e5e5e5;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+/* Header của Sidebar */
+.sidebar-header {
+    padding: 20px 16px 10px 16px;
+    /* Căn chỉnh lại padding */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sidebar-header h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    /* Chữ đậm hơn cho hiện đại */
+    margin: 0;
+    color: #050505;
+    letter-spacing: -0.5px;
+}
+
+.header-icons i {
+    font-size: 1.2rem;
+    background: #f0f2f5;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #050505;
+    transition: background 0.2s;
+}
+
+.header-icons i:hover {
+    background: #e4e6eb;
+}
+
+/* --- THANH TÌM KIẾM (NEW) --- */
+.search-container {
+    padding: 0 16px 10px 16px;
+}
+
+.search-box {
+    background: #f0f2f5;
+    border-radius: 20px;
+    /* Bo tròn hình viên thuốc */
+    height: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    transition: background 0.2s;
+}
+
+/* Hiệu ứng focus vào thanh tìm kiếm */
+.search-box:focus-within {
+    background: #e4e6eb;
+}
+
+.search-box i {
+    color: #65676b;
+    margin-right: 8px;
+    font-size: 0.9rem;
+}
+
+.search-box input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.95rem;
+    width: 100%;
+    color: #050505;
+}
+
+/* --- DANH SÁCH CHUYÊN GIA --- */
+.expert-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    /* Cách lề một chút để item không dính sát mép */
+}
+
+/* Từng dòng chuyên gia (Item) */
+.expert-item {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    border-radius: 10px;
+    /* Bo góc mềm mại */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    /* Hiệu ứng chuyển động mượt */
+    margin-bottom: 4px;
+    position: relative;
+    /* Để căn chỉnh chấm online */
+}
+
+/* Hover effect: Nền xám nhẹ */
+.expert-item:hover {
+    background-color: #f2f2f2;
+}
+
+/* Active effect: Nền xanh nhạt + Chữ đậm */
+.expert-item.active {
+    background-color: #eaf3ff;
+    /* Màu xanh rất nhạt đặc trưng của Messenger */
+}
+
+/* Avatar Container */
+.expert-item .avatar {
+    width: 56px;
+    /* Avatar to hơn chút để nổi bật */
+    height: 56px;
+    border-radius: 50%;
+    background: #e4e6eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 1.5rem;
+    color: #555;
+    flex-shrink: 0;
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    /* Viền mỏng cho avatar */
+}
+
+/* Chấm xanh báo Online (Giả lập) */
+.expert-item .avatar::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 14px;
+    height: 14px;
+    background-color: #31a24c;
+    /* Màu xanh lá online */
+    border: 2px solid #fff;
+    /* Viền trắng để tách biệt với avatar */
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Thông tin Text */
+.expert-details-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    /* Cắt bớt chữ nếu quá dài */
+}
+
+.expert-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #050505;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Khi active thì tên chuyển màu xanh cho nổi */
+.expert-item.active .expert-name {
+    color: #0084ff;
+}
+
+.expert-specialty {
+    font-size: 0.85rem;
+    color: #65676b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+}
+
+/* Thêm dấu chấm nhỏ ngăn cách nếu muốn hiển thị thêm giờ (option) */
+.expert-specialty::after {
+    /* content: '• 2m'; Ví dụ: online 2 phút trước */
+    margin-left: 5px;
+    font-size: 0.7rem;
+    opacity: 0.7;
+}
+
+.chat-meeting-notification {
+    background: color-mix(in srgb, var(--popup-chat-theme-color) 10%, white);
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    border: 1px solid color-mix(in srgb, var(--popup-chat-theme-color) 25%, white);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+
+    width: fit-content;
+    max-width: 75%;
+    margin: 12px auto;
+    text-align: center;
+}
+
+.chat-meeting-notification .note-text {
+    color: #333;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.chat-meeting-notification .note-link {
+    color: var(--popup-chat-theme-color);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.chat-meeting-notification .note-link:hover {
+    text-decoration: underline;
+}
+
+/* 1. CSS cho Thông báo tự biến mất (Toast) */
+.custom-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #333;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    font-size: 14px;
+    animation: slideIn 0.3s ease, fadeOut 0.5s ease 2s forwards;
+    /* Tự biến mất sau 2s */
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+/* 2. CSS cho Thẻ Zoom Meeting đẹp (Bubble Chat) */
+.zoom-invite-card {
+    background: #fff;
+    border: 1px solid #e0e7ff;
+    border-radius: 8px;
+    padding: 10px;
+    max-width: 250px;
+    text-align: left;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.bubble:has(.zoom-invite-card) {
+    padding: 0;
+}
+
+.zoom-header {
+    font-weight: bold;
+    color: #2D8CFF;
+    /* Màu xanh Zoom */
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.zoom-btn {
+    display: block;
+    background: #2D8CFF;
+    color: white !important;
+    text-decoration: none;
+    text-align: center;
+    padding: 8px 0;
+    border-radius: 6px;
+    margin-top: 8px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.zoom-btn:hover {
+    background: #1a73e8;
+}
+
+/* ==========================================================================
+   MOBILE CHAT RESPONSIVE (Max-width: 768px)
+   Giả lập giao diện Messenger App
+   ========================================================================== */
+
+/* Nút Back (Quay lại) - Mặc định ẩn trên Desktop */
+.back-to-list-btn {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    /* 1. LAYOUT TỔNG */
+    /* ----------------------------------------------------- */
+    .chat-layout {
+        position: relative;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    /* 2. SIDEBAR (DANH SÁCH NGƯỜI DÙNG) */
+    /* ----------------------------------------------------- */
+    .chat-sidebar {
+        width: 100% !important; /* Chiếm toàn màn hình */
+        height: 100%;
+        border-right: none;
+        z-index: 1;
+        display: flex; /* Mặc định hiện danh sách */
+    }
+
+    /* Khi đang chat thì ẩn Sidebar đi */
+    .chat-layout.mobile-chat-active .chat-sidebar {
+        display: none;
+    }
+
+    /* 3. MAIN CHAT (KHUNG CHAT) */
+    /* ----------------------------------------------------- */
+    .chat-main {
+        width: 100% !important;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+        border-radius: 0 !important; /* Bỏ bo góc trên mobile */
+        display: none; /* Mặc định ẩn khung chat */
+        background: #fff;
+    }
+
+    /* Khi đang chat thì hiện Khung chat lên */
+    .chat-layout.mobile-chat-active .chat-main {
+        display: flex;
+        flex-direction: column;
+        animation: slideInRight 0.3s ease; /* Hiệu ứng trượt vào */
+    }
+
+    /* Hiệu ứng trượt giống Messenger */
+    @keyframes slideInRight {
+        from { transform: translateX(100%); }
+        to { transform: translateX(0); }
+    }
+
+    /* 4. HEADER CHAT & NÚT BACK */
+    /* ----------------------------------------------------- */
+    .chat-header {
+        padding: 0 10px; /* Giảm padding */
+        gap: 10px;
+        display: flex;
+        justify-content: space-between;
+        margin: 0;
+    }
+
+    /* Hiện nút Back trên Mobile */
+    .back-to-list-btn {
+        display: inline;
+        width: 35px;
+        height: 35px;
+        border: none;
+        background: transparent;
+        color: var(--primary);
+        font-size: 1.5rem;
+        cursor: pointer;
+        border-radius: 50%;
+        margin: 0;
+    }
+
+    .back-to-list-btn:hover {
+        background-color: #f0f2f5;
+    }
+
+    /* 5. TIN NHẮN & INPUT */
+    /* ----------------------------------------------------- */
+    .message {
+        max-width: 85%; /* Tin nhắn dài hơn trên màn hình nhỏ */
+    }
+
+    .bubble {
+        font-size: 15px; /* Chữ to dễ đọc */
+    }
+
+    /* Input ghim đáy an toàn với iPhone tai thỏ */
+    .input-area {
+        padding-bottom: max(16px, env(safe-area-inset-bottom)); 
+    }
+}

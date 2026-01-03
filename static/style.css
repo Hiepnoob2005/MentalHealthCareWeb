@@ -15,7 +15,7 @@
   --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
-* {
+*{
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -53,6 +53,104 @@ body {
   justify-content: space-between;
   align-items: center;
 }
+
+/* === BẮT ĐẦU: CSS MỚI CHO PROFILE DROPDOWN === */
+/* (Dán vào cuối file style.css) */
+
+/* 1. Căn chỉnh Container chứa nút và icon menu */
+  .navbar-actions {
+    position: static;
+    display: flex;         /* Sử dụng Flexbox để dàn hàng ngang */
+    align-items: center;   /* Căn giữa theo chiều dọc */
+    gap: 15px;             /* Tạo khoảng cách giữa nút Đăng nhập và icon Menu */
+  }
+
+/* 2. "Box List" (Dropdown) */
+.profile-dropdown {
+  position: absolute;
+  top: 130%;
+  /* Vị trí ngay dưới nút CTA */
+  right: 0;
+  width: 230px;
+  /* Độ rộng của box list */
+  background: var(--white);
+  border-radius: 10px;
+  /* Bo góc giống các card */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  /* Đổ bóng */
+  z-index: 1001;
+
+  /* Ẩn theo mặc định */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+/* 3. Lớp .active để BẬT dropdown (JS sẽ thêm vào) */
+.profile-dropdown.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* 4. Menu bên trong */
+.dropdown-menu {
+  list-style: none;
+  padding: 0.5rem;
+  /* Đệm lót nhỏ */
+}
+
+.dropdown-menu li a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  /* Khoảng cách icon và chữ */
+  padding: 0.8rem 1rem;
+  color: var(--dark);
+  text-decoration: none;
+  border-radius: 8px;
+  /* Bo góc cho link */
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.dropdown-menu li a i {
+  width: 20px;
+  text-align: center;
+  color: var(--gray);
+  transition: all 0.2s ease;
+}
+
+/* 5. Hiệu ứng khi di chuột (hover) */
+.dropdown-menu li a:hover {
+  background: #c0c0c0;
+  color: var(--primary);
+}
+
+.dropdown-menu li a:hover i {
+  color: var(--primary);
+}
+
+/* 6. Đường kẻ ngang trước nút "Đăng xuất" */
+.dropdown-menu li:last-child {
+  border-top: 1px solid #e0e0e0;
+  /* var(--light) hơi mờ */
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
+}
+
+.dropdown-menu li:last-child a:hover {
+  background: #d1d1d1;
+  /* Màu đỏ nhạt khi hover Đăng xuất */
+  color: var(--danger);
+}
+
+.dropdown-menu li:last-child a:hover i {
+  color: var(--danger);
+}
+
+/* === KẾT THÚC: CSS MỚI === */
 
 .logo {
   font-size: 1.5rem;
@@ -105,11 +203,28 @@ body {
 .btn-cta {
   background: var(--gradient-1);
   color: white;
-  padding: 0.7rem 1.5rem;
+  
+  /* 1. Tăng padding 2 bên (trái/phải) để nút trông thoáng hơn */
+  padding: 0.7rem 1.2rem; 
+  
   border-radius: 50px;
   text-decoration: none;
   font-weight: 600;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  /* === CÁC THUỘC TÍNH MỚI ĐỂ FLEXIBLE === */
+  
+  /* Sử dụng Flexbox để căn giữa nội dung trong nút */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* QUAN TRỌNG: Ngăn chặn xuống dòng bất kể màn hình nhỏ thế nào */
+  white-space: nowrap;
+
+  /* Đảm bảo chiều rộng tự động theo nội dung */
+  width: auto;
+  min-width: fit-content;
 }
 
 .btn-cta:hover {
@@ -249,10 +364,12 @@ body {
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-20px);
   }
@@ -404,6 +521,7 @@ body {
     opacity: 0;
     transform: translateX(50px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -456,6 +574,11 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+}
+
+.navigationBox {
+  display: block;
+  gap: 3px;
 }
 
 .btn-prev {
@@ -524,11 +647,36 @@ body {
   transform: translateY(0);
 }
 
+#connectBtn {
+  align-self: flex-end;
+  width: auto;
+  padding: 4px 10px;
+  background: #667de4;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+
+#connectBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+}
+
+#connectBtn:active {
+  transform: scale(0.97);
+}
+
 @keyframes slideUp {
   from {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -564,17 +712,17 @@ body {
 }
 
 .chatbot-cancel {
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 18px;
-    cursor: pointer;
-    margin-left: auto;
-    transition: color 0.2s;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  margin-left: auto;
+  transition: color 0.2s;
 }
 
 .chatbot-cancel:hover {
-    color: #ff6b6b;
+  color: #ff6b6b;
 }
 
 .status-dot {
@@ -586,10 +734,12 @@ body {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -614,6 +764,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -685,16 +836,19 @@ body {
 .typing-dot:nth-child(2) {
   animation-delay: 0.2s;
 }
+
 .typing-dot:nth-child(3) {
   animation-delay: 0.4s;
 }
 
 @keyframes typing {
+
   0%,
   60%,
   100% {
     transform: translateY(0);
   }
+
   30% {
     transform: translateY(-10px);
   }
@@ -853,6 +1007,18 @@ body {
 .btn-connect:hover {
   background: var(--primary-dark);
   transform: translateY(-2px);
+}
+
+.btn-connect.btn-chat {
+  background-color: #ffffff;
+  /* Nền trắng */
+  color: #007bff;
+  /* Chữ màu chính (giống màu viền) */
+}
+
+.btn-connect.btn-chat:hover {
+  background-color: #f8f9fa;
+  /* Màu nền hơi xám khi hover */
 }
 
 /* Resources Section */
@@ -1041,14 +1207,17 @@ body {
   background: rgba(99, 102, 241, 0.1);
   color: var(--primary);
 }
+
 .stat-icon.success {
   background: rgba(16, 185, 129, 0.1);
   color: var(--success);
 }
+
 .stat-icon.warning {
   background: rgba(245, 158, 11, 0.1);
   color: var(--warning);
 }
+
 .stat-icon.danger {
   background: rgba(239, 68, 68, 0.1);
   color: var(--danger);
@@ -1227,6 +1396,7 @@ footer {
     transform: translateY(50px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -1391,285 +1561,285 @@ footer {
 /* thêm vào ngày 10/11/2025 */
 /* Matching Modal Styles */
 .matching-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10001;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10001;
 }
 
 .matching-modal-content {
-    background: white;
-    border-radius: 20px;
-    padding: 2rem;
-    max-width: 800px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    position: relative;
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 800px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
 }
 
 .close-modal {
-    position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-    font-size: 2rem;
-    cursor: pointer;
-    color: #666;
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #666;
 }
 
 .close-modal:hover {
-    color: #000;
+  color: #000;
 }
 
 .detected-tags {
-    color: var(--primary);
-    margin-bottom: 1.5rem;
-    font-weight: 500;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
 }
 
 .matching-results {
-    display: grid;
-    gap: 1.5rem;
+  display: grid;
+  gap: 1.5rem;
 }
 
 .match-card {
-    background: var(--light);
-    padding: 1.5rem;
-    border-radius: 15px;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
+  background: var(--light);
+  padding: 1.5rem;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
 }
 
 .match-card:hover {
-    border-color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .match-info h3 {
-    color: var(--dark);
-    margin-bottom: 0.5rem;
+  color: var(--dark);
+  margin-bottom: 0.5rem;
 }
 
 .match-score {
-    font-weight: 600;
-    color: var(--success);
-    margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--success);
+  margin-bottom: 0.5rem;
 }
 
 .specialties {
-    margin: 1rem 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  margin: 1rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .specialties .tag {
-    background: var(--primary);
-    color: white;
-    padding: 0.3rem 0.8rem;
-    border-radius: 15px;
-    font-size: 0.85rem;
+  background: var(--primary);
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
 }
 
 .btn-connect-counselor {
-    width: 100%;
-    padding: 0.8rem;
-    background: var(--gradient-1);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 1rem;
+  width: 100%;
+  padding: 0.8rem;
+  background: var(--gradient-1);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
 }
 
 .btn-connect-counselor:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
 .btn-find-expert {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: var(--secondary);
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--secondary);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .btn-find-expert:hover {
-    background: var(--secondary-dark);
-    transform: scale(1.1);
+  background: var(--secondary-dark);
+  transform: scale(1.1);
 }
 
 /* Test Result Modal */
 .test-result-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10001;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10001;
 }
 
 .test-result-content {
-    background: white;
-    border-radius: 20px;
-    padding: 2.5rem;
-    max-width: 500px;
-    width: 90%;
-    text-align: center;
-    position: relative;
+  background: white;
+  border-radius: 20px;
+  padding: 2.5rem;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  position: relative;
 }
 
 .result-score {
-    margin: 2rem 0;
+  margin: 2rem 0;
 }
 
 .score-circle {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    margin: 0 auto;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin: 0 auto;
 }
 
 .score-circle.good {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
 }
 
 .score-circle.medium {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: white;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
 }
 
 .score-circle.need-support {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
 }
 
 .score-number {
-    font-size: 2.5rem;
+  font-size: 2.5rem;
 }
 
 .score-max {
-    font-size: 1rem;
-    opacity: 0.9;
+  font-size: 1rem;
+  opacity: 0.9;
 }
 
 .score-level {
-    margin-top: 1rem;
-    font-size: 1.5rem;
-    color: var(--dark);
+  margin-top: 1rem;
+  font-size: 1.5rem;
+  color: var(--dark);
 }
 
 .result-message {
-    color: var(--gray);
-    line-height: 1.6;
-    margin: 1.5rem 0;
+  color: var(--gray);
+  line-height: 1.6;
+  margin: 1.5rem 0;
 }
 
 .detected-issues {
-    background: var(--light);
-    padding: 1.5rem;
-    border-radius: 15px;
-    margin: 1.5rem 0;
+  background: var(--light);
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin: 1.5rem 0;
 }
 
 .detected-issues h4 {
-    margin-bottom: 1rem;
-    color: var(--dark);
+  margin-bottom: 1rem;
+  color: var(--dark);
 }
 
 .issue-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
 }
 
 .issue-tag {
-    background: var(--primary);
-    color: white;
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
+  background: var(--primary);
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
 }
 
 .result-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-    justify-content: center;
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-content: center;
 }
 
 .btn-find-counselor,
 .btn-retake {
-    padding: 0.8rem 1.5rem;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .btn-find-counselor {
-    background: var(--gradient-1);
-    color: white;
+  background: var(--gradient-1);
+  color: white;
 }
 
 .btn-retake {
-    background: var(--light);
-    color: var(--dark);
+  background: var(--light);
+  color: var(--dark);
 }
 
 .btn-find-counselor:hover,
 .btn-retake:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* Loading Modal */
 .loading-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10002;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10002;
 }
 
 .loading-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 15px;
-    text-align: center;
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  text-align: center;
 }
 
 /* --- THÊM MỚI NGÀY 12/11: BOX XÁC THỰC CỐ VẤN --- */
@@ -1678,7 +1848,8 @@ footer {
   position: fixed;
   bottom: 30px;
   left: 30px;
-  z-index: 998; /* Dưới chatbot 1 bậc */
+  z-index: 998;
+  /* Dưới chatbot 1 bậc */
   background: var(--white);
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
@@ -1725,42 +1896,1724 @@ footer {
 }
 
 .spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid var(--light);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    margin: 0 auto 1rem;
-    animation: spin 1s linear infinite;
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--light);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Style cho ô chọn giờ của Counselor */
 .time-slot-item {
-    padding: 12px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: white;
-    cursor: pointer;
-    text-align: center;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    color: var(--dark);
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: var(--dark);
 }
 
 .time-slot-item:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .time-slot-item.selected {
-    background: var(--gradient-1);
+  background: var(--gradient-1);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+}
+
+/* --- CSS CHO CỬA SỔ CHAT MỚI --- */
+
+/* Giả sử đây là CSS cho bot AI CŨ của bạn (để tham khảo)
+.chatbot-window {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  ... (display, transform, v.v...)
+}
+*/
+
+/* CSS MỚI cho cửa sổ chat chuyên gia
+  Nó dùng chung class .chatbot-window,
+  nhưng chúng ta ghi đè vị trí bằng ID
+*/
+#expertChatWindow {
+  /* Ẩn theo mặc định */
+  opacity: 0;
+  transform: scale(0.9);
+  transform-origin: bottom left;
+  display: none;
+  /* Dùng none để không tương tác được */
+
+  /* Định vị ở góc TRÁI (để không đè lên bot AI ở góc phải) */
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  /* <- Khác với bot AI */
+  z-index: 999;
+
+  /* Các thuộc tính khác được kế thừa từ .chatbot-window
+     (ví dụ: width, height, box-shadow, border-radius) 
+     Nhờ vậy, 2 box sẽ có "tính chất tương tự" nhau
+  */
+}
+
+/* Lớp .active để BẬT cửa sổ chat chuyên gia
+  (JavaScript sẽ thêm/xóa lớp này)
+*/
+#expertChatWindow.active {
+  display: flex;
+  /* Hoặc 'block' tùy vào .chatbot-window của bạn */
+  opacity: 1;
+  transform: scale(1);
+  transition: all 0.3s ease-out;
+}
+
+/* CSS cho nội dung chat-container BÊN TRONG 
+  (Đây là code từ câu trả lời trước, đảm bảo nó có trong CSS)
+*/
+.chat-container {
+  /* Bắt buộc: Phải bo theo cửa sổ cha */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: white;
+  /* Thêm nền trắng */
+}
+
+.chat-header {
+  padding: 15px 20px;
+  background: #0084ff;
+  /* Dùng màu chính của bạn */
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  /* Không co lại */
+}
+
+.chat-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.chat-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.chat-messages {
+  flex: 1;
+  /* Quan trọng: Tự co giãn */
+  overflow-y: scroll;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+
+  background: #f9f9f9;
+  /* Thêm màu nền cho khung chat */
+}
+
+.bubble {
+  border-radius: 18px;
+  line-height: 1.5;
+}
+
+/* Tin nhắn GỬI ĐI (của bạn) - Sửa lỗi "chuyên gia ơi"
+*/
+.message.sent {
+  align-self: flex-end;
+  /* Đẩy sang phải */
+}
+
+.message.sent .bubble {
+  background: var(--primary, #007bff);
+  /* Màu xanh */
+  color: rgb(255, 255, 255);
+  border-bottom-right-radius: 4px;
+}
+
+/* Tin nhắn NHẬN ĐƯỢC (của chuyên gia) 
+*/
+.message.received {
+  align-self: flex-start;
+  /* Đẩy sang trái */
+}
+
+.message.received .bubble {
+  background: #333;
+  /* Màu xám nhạt */
+  color: #fff;
+  border-bottom-left-radius: 4px;
+}
+
+.chat-input-form {
+  display: flex;
+  align-items: center;
+  /* Căn giữa theo chiều dọc */
+  padding: 12px 10px;
+  background-color: #ffffff;
+  border-top: 1px solid #eff2f5;
+  /* Đường kẻ mờ phía trên */
+  gap: 8px;
+  /* Khoảng cách giữa các phần tử */
+}
+
+/* Ô nhập liệu (Textarea) */
+#expertChatInput {
+  flex: 1;
+  /* Chiếm toàn bộ không gian còn lại */
+  background-color: #f0f2f5;
+  /* Màu xám đặc trưng của Messenger */
+  border: none;
+  border-radius: 20px;
+  /* Bo tròn hình viên thuốc */
+  padding: 10px 15px;
+  font-size: 15px;
+  color: #050505;
+  outline: none;
+  /* Bỏ viền xanh khi click vào */
+  resize: none;
+  /* Không cho kéo giãn */
+  font-family: inherit;
+  line-height: 1.4;
+  height: 40px;
+  /* Chiều cao cố định ban đầu */
+  transition: background-color 0.2s;
+}
+
+#expertChatInput:focus {
+  background-color: #e4e6eb;
+  /* Đậm hơn chút khi focus */
+}
+
+/* Style chung cho các nút (Video & Gửi) */
+#connectBtn,
+#expertChatSendBtn {
+  background: transparent;
+  /* Nền trong suốt */
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  /* Hình tròn */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+/* Hiệu ứng khi di chuột vào nút */
+#connectBtn:hover,
+#expertChatSendBtn:hover {
+  background-color: #f0f2f5;
+  /* Hiện vòng tròn xám mờ */
+}
+
+/* Hiệu ứng khi nhấn nút */
+#connectBtn:active,
+#expertChatSendBtn:active {
+  transform: scale(0.95);
+}
+
+/* Màu sắc icon */
+#connectBtn i {
+  color: #0084ff;
+  /* Màu xanh Messenger (hoặc dùng var(--primary)) */
+  font-size: 20px;
+}
+
+#expertChatSendBtn i {
+  color: #0084ff;
+  /* Màu xanh Messenger */
+  font-size: 18px;
+  margin-left: -2px;
+  /* Căn chỉnh nhẹ cho icon máy bay giấy */
+}
+
+/* Tin nhắn HỆ THỐNG - Sửa lỗi "Đã kết nối..."
+*/
+.message.system {
+  align-self: center;
+  /* Ra giữa */
+  max-width: 100%;
+  font-size: 0.8rem;
+  color: #aaa;
+  text-align: center;
+}
+
+/* Hệ thống không cần bubble */
+.message.system .bubble {
+  padding: 0;
+  background: none;
+  color: #aaa;
+}
+
+/* === CSS MỚI CHO TRANG PROFILE === */
+/* (Dán vào cuối file style.css) */
+
+.profile-page-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+  display: grid;
+  /* Hiển thị 2 cột trên PC, 1 cột trên mobile */
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+}
+
+.profile-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  height: fit-content;
+  /* Tự co giãn chiều cao */
+}
+
+.profile-card h2 {
+  font-size: 1.8rem;
+  color: var(--dark);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.profile-card h2 i {
+  color: var(--primary);
+}
+
+.profile-subtitle {
+  color: var(--gray);
+  margin-bottom: 2rem;
+}
+
+/* Style cho form */
+.form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--dark);
+}
+
+.form-group input[disabled] {
+  background: var(--light);
+  color: var(--gray);
+  cursor: not-allowed;
+}
+
+/* Style cho thông báo (success/error) */
+.form-message {
+  margin-top: 1rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.form-message.success {
+  color: var(--success);
+}
+
+.form-message.error {
+  color: var(--danger);
+}
+
+.form-message.loading {
+  color: var(--gray);
+}
+
+/* Style cho khung hiển thị tags */
+.profile-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  background: var(--light);
+  padding: 1.5rem;
+  border-radius: 10px;
+  min-height: 80px;
+}
+
+/* Tái sử dụng style .issue-tag từ modal */
+.issue-tag {
+  background: var(--primary);
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.spinner-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--gray);
+}
+
+.messenger-container {
+  display: flex;
+  height: 600px;
+  width: 100%;
+  border: 1px solid #ddd;
+  font-family: Arial, sans-serif;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 300px;
+  border-right: 1px solid #ddd;
+  background: #f5f5f5;
+  overflow-y: auto;
+}
+
+.student-item {
+  padding: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  position: relative;
+}
+
+.student-item:hover,
+.student-item.active {
+  background: #e9efff;
+}
+
+.student-item .info {
+  margin-left: 10px;
+  flex: 1;
+}
+
+.student-item .name {
+  font-weight: bold;
+  display: block;
+}
+
+.student-item .preview {
+  font-size: 0.8em;
+  color: #666;
+}
+
+/* Notification Badge (Thông báo đỏ) */
+.badge {
+  background: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  display: none;
+  /* Mặc định ẩn */
+}
+
+.badge.show {
+  display: block;
+}
+
+.messenger-container {
+  display: flex;
+  height: 600px;
+  width: 100%;
+  border: 1px solid #ddd;
+  font-family: Arial, sans-serif;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 300px;
+  border-right: 1px solid #ddd;
+  background: #f5f5f5;
+  overflow-y: auto;
+}
+
+.student-item {
+  padding: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  position: relative;
+}
+
+.student-item:hover,
+.student-item.active {
+  background: #e9efff;
+}
+
+.student-item .info {
+  margin-left: 10px;
+  flex: 1;
+}
+
+.student-item .name {
+  font-weight: bold;
+  display: block;
+}
+
+.student-item .preview {
+  font-size: 0.8em;
+  color: #666;
+}
+
+/* Notification Badge (Thông báo đỏ) */
+.badge {
+  background: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  display: none;
+  /* Mặc định ẩn */
+}
+
+.badge.show {
+  display: block;
+}
+
+/* Chat Area */
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages-box {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.chat-input-area {
+  padding: 15px;
+  border-top: 1px solid #ddd;
+  display: flex;
+}
+
+.chat-input-area input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+}
+
+.chat-input-area button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  background: #0084ff;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+/* Bong bóng chat */
+.message {
+  margin-bottom: 10px;
+  display: flex;
+}
+
+.message.sent {
+  justify-content: flex-end;
+}
+
+/* Expert gửi - Bên phải */
+.message.received {
+  justify-content: flex-start;
+}
+
+/* User gửi - Bên trái */
+.bubble {
+  padding: 8px 12px;
+  border-radius: 15px;
+  word-wrap: normal;
+}
+
+.message.sent .bubble {
+  background: #0084ff;
+  color: white;
+}
+
+.message.received .bubble {
+  background: #f1f0f0;
+  color: black;
+}
+
+.chat-meeting-notification {
+  background: color-mix(in srgb, var(--popup-chat-theme-color) 10%, white);
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  border: 1px solid color-mix(in srgb, var(--popup-chat-theme-color) 25%, white);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+
+  width: fit-content;
+  max-width: 75%;
+  margin: 12px auto;
+  text-align: center;
+}
+
+.chat-meeting-notification .note-text {
+  color: #333;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.chat-meeting-notification .note-link {
+  color: var(--popup-chat-theme-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.chat-meeting-notification .note-link:hover {
+  text-decoration: underline;
+}
+
+/* 1. CSS cho Thông báo tự biến mất (Toast) */
+.custom-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #333;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 9999;
+    font-size: 14px;
+    animation: slideIn 0.3s ease, fadeOut 0.5s ease 2s forwards; /* Tự biến mất sau 2s */
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes fadeOut {
+    to { opacity: 0; visibility: hidden; }
+}
+
+/* 2. CSS cho Thẻ Zoom Meeting đẹp (Bubble Chat) */
+.zoom-invite-card {
+    background: #fff;
+    border: 1px solid #e0e7ff;
+    border-radius: 8px;
+    padding: 10px;
+    max-width: 250px;
+    text-align: left;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.bubble:has(.zoom-invite-card) {
+  padding: 10px;
+}
+
+.zoom-header {
+    font-weight: bold;
+    color: #2D8CFF; /* Màu xanh Zoom */
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.zoom-btn {
+    display: block;
+    background: #2D8CFF;
+    color: white !important;
+    text-decoration: none;
+    text-align: center;
+    padding: 8px 0;
+    border-radius: 6px;
+    margin-top: 8px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+.zoom-btn:hover {
+    background: #1a73e8;
+}
+
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE (Max-width: 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+
+  /* 1. CẤU TRÚC CHUNG (GLOBAL) */
+  /* ---------------------------------------------------------- */
+  body {
+    overflow-x: hidden; /* Ngăn thanh cuộn ngang khó chịu */
+    font-size: 15px; /* Giảm nhẹ size chữ chuẩn */
+  }
+
+  .nav-container, 
+  .hero, 
+  .features, 
+  .quick-test, 
+  .experts, 
+  .resources, 
+  .dashboard, 
+  .profile-page-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  /* 2. NAVIGATION BAR & DROPDOWN */
+  /* ---------------------------------------------------------- */
+  .navbar-actions {
+    position: static; /* Để dropdown có thể căn theo màn hình thay vì nút */
+  }
+
+  .nav-links {
+    display: none; /* Ẩn menu chính, cần JS để toggle nút hamburger */
+  }
+
+  .mobile-menu-toggle {
+    display: block; /* Hiện nút hamburger */
+    font-size: 1.8rem;
+    margin-right: 1rem;
+  }
+
+  /* Dropdown Profile trên mobile: Tràn full chiều ngang để dễ bấm */
+  .profile-dropdown {
+    width: 94%; /* Gần full màn hình */
+    left: 3%;
+    right: 3%;
+    top: 70px; /* Cách header 1 đoạn */
+    transform-origin: top center;
+  }
+
+  .btn-cta {
+    padding: 0.6rem 1rem; /* Nút nhỏ lại chút */
+    font-size: 0.9rem;
+  }
+
+  /* 3. HERO SECTION */
+  /* ---------------------------------------------------------- */
+  .hero {
+    margin-top: 60px;
+    text-align: center;
+  }
+
+  .hero-container {
+    grid-template-columns: 1fr; /* 1 cột */
+    gap: 2rem;
+  }
+
+  .hero-content {
+    order: 1; /* Chữ lên trước */
+  }
+
+  .hero-image {
+    order: 2; /* Ảnh xuống sau */
+    margin-top: 1rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2.2rem;
+    line-height: 1.3;
+  }
+
+  .hero-buttons {
+    justify-content: center; /* Căn giữa nút */
+    flex-direction: column; /* Nút xếp dọc cho dễ bấm */
+    gap: 1rem;
+  }
+
+  .btn-primary, .btn-secondary {
+    width: 100%; /* Nút full chiều rộng */
+    justify-content: center;
+  }
+
+  .floating-card {
+    display: none; /* Ẩn các thẻ bay bay để đỡ rối mắt */
+  }
+
+  /* 4. GRIDS (Features, Experts, Resources, Stats) */
+  /* ---------------------------------------------------------- */
+  .features-grid, 
+  .experts-grid, 
+  .resources-grid, 
+  .stats-grid,
+  .footer-content {
+    grid-template-columns: 1fr; /* Chuyển hết về 1 cột */
+    gap: 1.5rem;
+  }
+
+  /* Resource Card: Ảnh nhỏ lại chút */
+  .resource-image {
+    height: 180px;
+  }
+
+  /* 5. QUICK TEST */
+  /* ---------------------------------------------------------- */
+  .test-container {
+    padding: 1.5rem;
+    width: 100%;
+  }
+
+  .test-header h2 {
+    font-size: 1.6rem;
+  }
+
+  .answer-option {
+    padding: 1rem; /* Dễ bấm hơn */
+  }
+
+  .test-navigation {
+    flex-direction: column-reverse; /* Nút Next lên trên, Prev xuống dưới */
+    gap: 0.8rem;
+  }
+
+  .test-navigation button {
+    width: 100%;
+  }
+
+  /* 6. DASHBOARD (User & Counselor) */
+  /* ---------------------------------------------------------- */
+  .dashboard-container {
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Biến Sidebar thành Menu trượt ngang phía trên */
+  .dashboard-sidebar {
+    display: block; /* Hiện lại nếu đang ẩn */
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    overflow-x: auto; /* Cho phép cuộn ngang */
+    white-space: nowrap; /* Không xuống dòng */
+    background: white;
+    border-bottom: 2px solid var(--light);
+  }
+
+  .dashboard-menu {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .dashboard-menu li {
+    margin: 0;
+  }
+
+  .dashboard-menu a {
+    padding: 0.6rem 1rem;
+    border: 1px solid #eee;
+    background: #f9f9f9;
+    font-size: 0.9rem;
+  }
+
+  .mood-chart {
+    height: 250px; /* Giảm chiều cao biểu đồ */
+  }
+
+  /* 7. PROFILE PAGE */
+  /* ---------------------------------------------------------- */
+  .profile-page-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .profile-card {
+    padding: 1.5rem;
+  }
+
+  .profile-card h2 {
+    font-size: 1.5rem;
+  }
+
+  /* 8. BOOKING & SLOTS (Quan trọng) */
+  /* ---------------------------------------------------------- */
+  #counselorSlotContainer, 
+  #bookingSlots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 cột nút giờ */
+    gap: 0.8rem;
+  }
+
+  .time-slot-item, 
+  .slot-btn {
+    padding: 10px 5px;
+    font-size: 0.9rem;
+  }
+
+  /* 9. MODALS (Login, Matching, Result) */
+  /* ---------------------------------------------------------- */
+  .modal-container {
+    width: 95%;
+    height: auto;
+    max-height: 90vh;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .modal-image {
+    display: none; /* Ẩn ảnh minh họa bên trái form login */
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+    width: 100%;
+  }
+
+  .matching-modal-content, 
+  .test-result-content {
+    width: 95%;
+    padding: 1.5rem;
+    max-height: 85vh;
+  }
+
+  .matching-results {
+    grid-template-columns: 1fr;
+  }
+
+  .score-circle {
+    width: 100px;
+    height: 100px;
+  }
+
+  .score-number {
+    font-size: 2rem;
+  }
+
+  /* 10. CHATBOT WINDOW (AI) */
+  /* ---------------------------------------------------------- */
+  .chatbot-window {
+    width: 100%;
+    height: 100%; /* Full màn hình khi mở */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 0;
+    z-index: 9999;
+  }
+
+  .chatbot-toggle {
+    bottom: 15px;
+    right: 15px;
+    width: 55px;
+    height: 55px;
+  }
+
+  /* 11. MESSENGER (Counselor Mode & User Expert Chat) */
+  /* ---------------------------------------------------------- */
+  
+  /* Layout Chat: Chuyển từ Ngang sang Dọc */
+  .messenger-container {
+    flex-direction: column;
+    height: 80vh; /* Chiều cao cố định */
+    border: none;
+  }
+
+  /* Danh sách người chat: Chiếm 30% chiều cao */
+  .sidebar {
+    width: 100%;
+    height: 30%;
+    overflow-y: auto;
+    border-right: none;
+    border-bottom: 2px solid #eee;
+    display: flex; /* Biến thành danh sách ngang nếu muốn, hoặc dọc */
+    flex-direction: column;
+  }
+  
+  .student-item {
+    padding: 10px;
+  }
+
+  /* Khung chat chính: Chiếm 70% chiều cao */
+  .chat-area {
+    width: 100%;
+    height: 70%;
+  }
+
+  .chat-input-area {
+    padding: 10px;
+  }
+
+  /* Cửa sổ chat Popup của User */
+  #expertChatWindow {
+    width: 100%;
+    height: 100%;
+    bottom: 0;
+    left: 0;
+    border-radius: 0;
+    z-index: 10000;
+  }
+
+  #expertChatWindow .chat-container {
+    height: 100%;
+    border-radius: 0;
+  }
+
+  /* 12. UTILS & OTHERS */
+  /* ---------------------------------------------------------- */
+  .counselor-verify-box {
+    display: none; /* Ẩn box xác thực ở góc trái để đỡ vướng */
+  }
+
+  .custom-toast {
+    width: 90%; /* Thông báo rộng hơn */
+    left: 5%;
+    right: 5%;
+    bottom: 80px; /* Hiện phía dưới, trên thanh input */
+    top: auto;
+    text-align: center;
+  }
+}
+
+/* ==========================================================================
+   EXTRA SMALL DEVICES (Max-width: 480px)
+   ========================================================================== */
+@media (max-width: 480px) {
+  
+  /* Giảm font size tiêu đề lần nữa */
+  .hero-content h1 {
+    font-size: 1.8rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.8rem;
+  }
+
+  /* Lưới chọn giờ: Giảm còn 2 cột nếu màn hình quá bé */
+  #counselorSlotContainer, 
+  #bookingSlots {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Thống kê Dashboard */
+  .stat-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .stat-icon {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Footer Links căn giữa */
+  .footer-bottom {
+    font-size: 0.8rem;
+  }
+}
+
+/* ==========================================================================
+   TOÀN BỘ CẤU HÌNH MOBILE RESPONSIVE (Max-width: 768px)
+   Dán đoạn này vào cuối file style.css
+   ========================================================================== */
+
+@media (max-width: 768px) {
+
+  /* 1. CẤU HÌNH CHUNG & BODY
+     ----------------------------------------------------- */
+  body {
+    font-size: 15px; /* Giảm size chữ cơ bản */
+    overflow-x: hidden; /* Chặn cuộn ngang tuyệt đối */
+  }
+
+  /* Giảm padding cho tất cả các section lớn */
+  .hero, .features, .quick-test, .experts, 
+  .resources, .dashboard, .profile-page-container {
+    padding: 3rem 1rem;
+  }
+
+  .nav-container {
+    padding: 0.8rem 1rem;
+  }
+
+  /* 2. NAVIGATION & DROPDOWN PROFILE
+     ----------------------------------------------------- */
+  .nav-links {
+    display: none; /* Ẩn menu desktop */
+  }
+
+  .mobile-menu-toggle {
+    display: block; /* Hiện nút hamburger */
+    font-size: 1.6rem;
+    margin-right: 1rem;
+  }
+
+  .navbar-actions {
+    position: static; /* Để dropdown căn theo màn hình */
+  }
+
+  .btn-cta {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  /* Dropdown profile tràn màn hình để dễ bấm */
+  .profile-dropdown {
+    width: 94%;
+    left: 3%;
+    right: 3%;
+    top: 70px;
+    transform-origin: top center;
+  }
+
+  /* 3. HERO SECTION
+     ----------------------------------------------------- */
+  .hero {
+    margin-top: 60px;
+    text-align: center;
+  }
+
+  .hero-container {
+    grid-template-columns: 1fr; /* 1 cột */
+    gap: 2rem;
+  }
+
+  .hero-content {
+    order: 1; /* Chữ lên trước */
+  }
+
+  .hero-image {
+    order: 2; /* Ảnh xuống sau */
+    margin-top: 1rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2rem;
+    line-height: 1.3;
+  }
+
+  .hero-content p {
+    font-size: 1rem;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+    flex-direction: column; /* Nút xếp dọc */
+  }
+
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .floating-card {
+    display: none; /* Ẩn các thẻ bay để đỡ rối */
+  }
+
+  /* 4. FEATURES, EXPERTS, RESOURCES (GRID SYSTEM)
+     ----------------------------------------------------- */
+  /* Chuyển tất cả Grid thành 1 cột */
+  .features-grid, 
+  .experts-grid, 
+  .resources-grid, 
+  .stats-grid,
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  /* 5. QUICK TEST
+     ----------------------------------------------------- */
+  .test-container {
+    padding: 1.5rem;
+    width: 100%;
+  }
+
+  .test-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .answer-option {
+    padding: 1rem;
+  }
+
+  /* Đảo ngược nút điều hướng: Tiếp theo lên trên */
+  .test-navigation {
+    flex-direction: column-reverse;
+    gap: 1rem;
+  }
+
+  .test-navigation button {
+    width: 100%;
+  }
+
+  /* 6. CHATBOT WINDOW (AI)
+     ----------------------------------------------------- */
+  /* Bung full màn hình để bàn phím ảo không che mất ô nhập */
+  .chatbot-window {
+    width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 0;
+    z-index: 9999;
+  }
+
+  .chatbot-toggle {
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+  }
+
+  /* 7. EXPERT CHAT WINDOW (POPUP CHAT VỚI NGƯỜI)
+     ----------------------------------------------------- */
+  #expertChatWindow {
+    width: 100%;
+    height: 100%;
+    bottom: 0;
+    left: 0;
+    border-radius: 0;
+    z-index: 10000;
+  }
+
+  #expertChatWindow .chat-container {
+    border-radius: 0;
+  }
+
+  /* 8. DASHBOARD (USER & COUNSELOR VIEW)
+     ----------------------------------------------------- */
+  .dashboard-container {
+    grid-template-columns: 1fr; /* Bỏ layout 2 cột */
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Biến Sidebar dọc thành Menu ngang trượt được */
+  .dashboard-sidebar {
+    display: block !important; /* Ghi đè nếu có chỗ nào ẩn */
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    background: white;
+    border-bottom: 2px solid var(--light);
+  }
+
+  .dashboard-menu {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .dashboard-menu li {
+    margin: 0;
+  }
+
+  .dashboard-menu a {
+    padding: 0.6rem 1rem;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    font-size: 0.9rem;
+  }
+
+  .mood-chart {
+    height: 250px;
+  }
+
+  /* 9. MESSENGER CONTAINER (GIAO DIỆN CHAT CỦA BÁC SĨ)
+     ----------------------------------------------------- */
+  /* Chuyển từ layout Trái-Phải sang Trên-Dưới */
+  .messenger-container {
+    flex-direction: column;
+    height: 85vh; /* Chiều cao cố định */
+    border: none;
+  }
+
+  /* Danh sách sinh viên: nằm trên, cao 30% */
+  .sidebar {
+    width: 100%;
+    height: 30%;
+    overflow-y: auto;
+    border-right: none;
+    border-bottom: 2px solid #eee;
+  }
+  
+  .student-item {
+    padding: 10px;
+  }
+
+  /* Khung chat: nằm dưới, cao 70% */
+  .chat-area {
+    width: 100%;
+    height: 70%;
+  }
+
+  /* 10. BOOKING SYSTEM & SLOTS
+     ----------------------------------------------------- */
+  /* Chia lưới giờ thành 3 cột cho dễ bấm */
+  #counselorSlotContainer, 
+  #bookingSlots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .time-slot-item, .slot-btn {
+    padding: 10px 2px;
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  /* 11. PROFILE PAGE
+     ----------------------------------------------------- */
+  .profile-page-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1rem;
+  }
+
+  .profile-card {
+    padding: 1.5rem;
+  }
+
+  .profile-card h2 {
+    font-size: 1.4rem;
+  }
+
+  /* 12. MODALS (LOGIN, REGISTER, MATCHING) - PHIÊN BẢN NHỎ GỌN
+     ----------------------------------------------------- */
+  .modal-container,
+  .matching-modal-content,
+  .test-result-content {
+    /* Kích thước thẻ: Nhỏ gọn như một tấm card */
+    width: 90% !important;       /* Chừa lề 2 bên (5% mỗi bên) */
+    max-width: 360px !important; /* Không bao giờ to quá 360px */
+    height: auto !important;     /* Chiều cao tự co giãn theo nội dung */
+    max-height: 85vh !important; /* Không được cao quá 85% màn hình */
+    
+    /* Căn chỉnh & Giao diện */
+    margin: auto;                /* Tự động căn giữa màn hình */
+    padding: 1.5rem !important;  /* Padding vừa đủ, không quá rộng */
+    border-radius: 20px !important; /* Bo tròn mềm mại */
+    
+    /* Layout */
+    flex-direction: column;
+    overflow-y: auto;            /* Nếu nội dung dài quá thì cuộn bên trong modal */
+  }
+
+  /* Ẩn hoàn toàn ảnh minh họa (cột trái của login) để tiết kiệm chỗ */
+  .modal-image {
+    display: none !important; 
+  }
+
+  /* Nội dung bên trong (Form) */
+  .modal-content {
+    padding: 0 !important; /* Bỏ padding thừa vì cha đã có padding rồi */
+    width: 100%;
+    text-align: center; /* Căn giữa nội dung cho đẹp */
+  }
+
+  /* Tiêu đề modal nhỏ lại cho cân đối */
+  .modal-content h2,
+  .matching-modal-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .modal-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Các thẻ kết quả Matching */
+  .matching-results {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .match-card {
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem; /* Chữ nhỏ lại chút */
+  }
+  
+  /* Nút tắt (X) to ra chút cho dễ bấm trên màn hình cảm ứng */
+  .close-modal, .modal-close {
+    top: 10px;
+    right: 15px;
+    font-size: 1.8rem;
+    padding: 5px; 
+  }
+
+  /* 13. UTILS & THÔNG BÁO
+     ----------------------------------------------------- */
+  .counselor-verify-box {
+    display: none; /* Ẩn box xác thực ở góc để đỡ vướng */
+  }
+
+  /* Toast hiển thị giữa màn hình phía dưới */
+  .custom-toast {
+    width: 90%;
+    left: 5%;
+    right: 5%;
+    top: auto;
+    bottom: 80px;
+    text-align: center;
+  }
+}
+
+/* ==========================================================================
+   MÀN HÌNH RẤT NHỎ (Mobile nhỏ < 480px)
+   ========================================================================== */
+@media (max-width: 480px) {
+  
+  .hero-content h1 {
+    font-size: 1.7rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.6rem;
+  }
+
+  /* Nút chọn giờ giảm còn 2 cột */
+  #counselorSlotContainer, 
+  #bookingSlots {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .btn-submit, 
+  .btn-connect, 
+  .btn-connect-counselor {
+    padding: 0.8rem;
+    font-size: 1rem;
+  }
+
+  .chat-header h3 {
+    font-size: 1rem;
+  }
+  
+  .modal-logo {
+    font-size: 1.2rem;
+  }
+}
+
+/* =========================================================
+     10. AI CHATBOT WINDOW (Giao diện "Thẻ nổi" nhỏ gọn)
+     Thay thế đoạn chatbot cũ trong @media (max-width: 768px)
+     ========================================================= */
+
+  .chatbot-container {
+    bottom: 20px;
+    right: 20px;
+    z-index: 9998;
+  }
+
+  /* Nút bật tắt */
+  .chatbot-toggle {
+    width: 60px;
+    height: 60px;
+    box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4); /* Thêm bóng đổ màu tím */
+  }
+
+  /* KHUNG CHAT: NHỎ GỌN & BO TRÒN */
+  .chatbot-window {
+    position: fixed;
+    
+    /* Kích thước gọn gàng */
+    width: 340px !important;    /* Chiều rộng cố định vừa phải */
+    max-width: 90%;             /* Không quá 90% màn hình nếu đt quá nhỏ */
+    height: 500px !important;   /* Chiều cao cố định */
+    max-height: 70vh;           /* Không cao quá 70% màn hình */
+    
+    /* Vị trí: Nằm trên nút toggle một chút */
+    bottom: 90px; 
+    right: 20px;
+    left: auto; /* Bỏ left: 0 của full screen */
+    top: auto;  /* Bỏ top: 0 của full screen */
+    
+    /* Trang trí: Bo góc & Đổ bóng đẹp */
+    border-radius: 25px !important; /* Bo tròn mạnh (đẹp hơn 10px) */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important; /* Bóng đổ sâu tạo chiều sâu */
+    
+    margin: 0;
+    z-index: 10000;
+    
+    /* Hiệu ứng xuất hiện: Phóng to từ góc dưới phải */
+    transform-origin: bottom right;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Hiệu ứng nảy nhẹ */
+  }
+
+  /* Đảm bảo header bo theo khung */
+  .chatbot-header {
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+    padding: 1rem;
+  }
+  
+  /* Đảm bảo input bo theo khung */
+  .chatbot-input {
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+    padding-bottom: 10px; /* Reset padding của iPhone X */
+  }
+  
+  /* Chỉnh lại font chữ input cho dễ nhìn */
+  .chatbot-input input {
+    font-size: 14px; 
+    padding: 10px 15px;
+    border-radius: 20px;
+  }
+
+  .status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-badge.online {
+    background-color: #d1fae5;
+    color: #047857; /* Xanh lá */
+}
+
+.status-badge.offline {
+    background-color: #f3f4f6;
+    color: #6b7280; /* Xám */
+}
+
+/* Chấm tròn trạng thái */
+.status-dot.online { background-color: #10b981; }
+.status-dot.offline { background-color: #9ca3af; }
+
+
+/* --- Messenger Container Layout --- */
+.messenger-container {
+    display: flex;
+    height: 600px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+/* Sidebar danh sách sinh viên */
+.messenger-container .sidebar {
+    width: 300px;
+    border-right: 1px solid #f0f0f0;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+}
+
+.messenger-container .sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #fff;
+}
+
+.messenger-container .student-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.student-item {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.student-item:hover {
+    background: #e9ecef;
+}
+
+.student-item.active {
+    background: #e3f2fd; /* Màu xanh nhạt khi đang chọn */
+    border-left: 4px solid var(--primary);
+}
+
+/* --- Avatar Styles --- */
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ddd;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-right: 12px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+/* --- Chat Area --- */
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+.chat-header {
+    padding: 15px 25px;
+    border-bottom: 1px solid #f0f0f0;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    z-index: 10;
+}
+
+/* --- Messages Box --- */
+.messages-box {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #fdfdfd;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Khoảng cách giữa các tin nhắn */
+}
+
+/* Tin nhắn chung */
+.message-row {
+    display: flex;
+    align-items: flex-end;
+    max-width: 80%;
+}
+
+.message-bubble {
+    padding: 10px 15px;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    position: relative;
+    word-wrap: break-word;
+}
+
+/* Tin nhắn TỪ NGƯỜI DÙNG (Sinh viên) - Bên trái */
+.message-row.received {
+    align-self: flex-start;
+}
+
+.message-row.received .avatar-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+    margin-right: 8px;
+    margin-bottom: 5px; /* Căn chỉnh với đáy tin nhắn */
+}
+
+.message-row.received .message-bubble {
+    background: #e4e6eb;
+    color: #050505;
+    border-bottom-left-radius: 4px; /* Tạo góc nhọn */
+}
+
+/* Tin nhắn TỪ CHUYÊN GIA (Mình gửi) - Bên phải */
+.message-row.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse; /* Đảo chiều để avatar (nếu muốn) nằm bên phải */
+}
+
+.message-row.sent .message-bubble {
+    background: var(--primary); /* Dùng màu chủ đạo của web */
     color: white;
-    border-color: transparent;
-    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+    border-bottom-right-radius: 4px;
+}
+
+/* Ẩn avatar cho tin nhắn mình gửi (thường chat app không hiện avatar mình) */
+.message-row.sent .avatar-circle {
+    display: none; 
+}
+
+/* --- Input Area --- */
+.chat-input-area {
+    padding: 15px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    background: #fff;
+}
+
+.chat-input-area input {
+    flex: 1;
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    outline: none;
+    transition: border 0.3s;
+    background: #f8f9fa;
+}
+
+.chat-input-area input:focus {
+    border-color: var(--primary);
+    background: #fff;
+}
+
+.chat-input-area button {
+    margin-left: 10px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-input-area button:hover {
+    transform: scale(1.1);
+}
+
+#connectBtn {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+/* Thêm vào style.css */
+.student-preview {
+    font-size: 0.85rem;
+    color: #666;
+    white-space: nowrap;      /* Không xuống dòng */
+    overflow: hidden;         /* Ẩn phần thừa */
+    text-overflow: ellipsis;  /* Thêm dấu ... */
+    max-width: 200px;         /* Giới hạn chiều rộng */
+    display: block;
 }

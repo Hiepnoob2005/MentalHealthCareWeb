@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ cá nhân | StudentMind Connect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS riêng cho trang Profile */
+        .profile-page-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .profile-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+        .profile-subtitle { color: #666; margin-bottom: 1.5rem; }
+        .hidden { display: none !important; }
+        
+        /* Style cho Tags chuyên môn */
+        .spec-badge {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .info-label { font-weight: 600; color: #555; }
+        .info-value { color: #333; font-weight: 500; }
+    </style>
+</head>
+<body>
+    
+    <nav class="navbar" style="position: static;">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="fas fa-brain"></i> StudentMind Connect
+            </a>
+            <div class="navbar-actions">
+                <a href="/" class="btn-cta" style="background: none; border: 2px solid var(--primary); color: var(--primary);">
+                    Quay về Trang chủ
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-page-container">
+        
+        <div class="profile-card">
+            <h2><i class="fas fa-user-circle"></i> Thông tin tài khoản</h2>
+            <p class="profile-subtitle">Quản lý thông tin đăng nhập và liên lạc.</p>
+
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="username">Tên đăng nhập</label>
+                    <input type="text" id="username" name="username" disabled style="background: #f9f9f9;">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email liên hệ</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Số điện thoại</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Chưa cập nhật số điện thoại">
+                </div>
+                
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save"></i> Lưu thay đổi
+                </button>
+                <div id="formMessage" class="form-message"></div>
+            </form>
+        </div>
+
+        <div id="studentSection" class="profile-card hidden">
+            <h2><i class="fas fa-clipboard-check"></i> Kết quả sức khỏe tinh thần</h2>
+            <p class="profile-subtitle">
+                Các vấn đề được ghi nhận từ bài kiểm tra DASS-21 mới nhất.
+            </p>
+            
+            <div class="profile-tags-container" id="latestTagsContainer">
+                <div class="spinner-container">
+                    <div class="spinner" style="margin: 0;"></div>
+                    <span>Đang tải...</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 1rem; text-align: right;">
+                <a href="/#test" style="color: var(--primary); text-decoration: none; font-weight: 500;">Làm bài test mới &rarr;</a>
+            </div>
+        </div>
+
+        <div id="counselorSection" class="profile-card hidden">
+            <h2><i class="fas fa-id-card"></i> Hồ sơ chuyên môn</h2>
+            <p class="profile-subtitle">Thông tin hiển thị công khai với sinh viên.</p>
+
+            <div class="counselor-details">
+                <div class="info-row">
+                    <span class="info-label">Họ và tên hiển thị:</span>
+                    <span class="info-value" id="c_name">...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Kinh nghiệm:</span>
+                    <span class="info-value" id="c_experience">...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Đánh giá:</span>
+                    <span class="info-value"><i class="fas fa-star" style="color: orange;"></i> <span id="c_rating">0</span></span>
+                </div>
+                <div class="info-row" style="border: none; padding-top: 15px; display: block;">
+                    <span class="info-label" style="display: block; margin-bottom: 8px;">Lĩnh vực tư vấn:</span>
+                    <div id="c_specialties">
+                        </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 1.5rem; background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; font-size: 0.9rem;">
+                <i class="fas fa-info-circle"></i> Để cập nhật thông tin chuyên môn, vui lòng liên hệ Admin hoặc nộp lại hồ sơ xác thực.
+            </div>
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='profile.js') }}"></script>
+</body>
+</html>

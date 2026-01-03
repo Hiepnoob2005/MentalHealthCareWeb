@@ -10,12 +10,27 @@ class Counselor:
     """Class để lưu thông tin chuyên gia"""
     id: str
     name: str
+    user_name: str
     email: str
     specialties: List[str]
     rating: float
     status: str
     experience: str
     match_score: float = 0.0
+    
+    # Thêm hàm chuyển đổi sang Dictionary để trả về JSON API
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "username": self.user_name,
+            "email": self.email,
+            "specialties": self.specialties,
+            "rating": self.rating,
+            "status": self.status,
+            "experience": self.experience,
+            "match_score": self.match_score
+        }
 
 class MatchingSystem:
     """Hệ thống matching thông minh giữa sinh viên và chuyên gia"""
@@ -23,6 +38,7 @@ class MatchingSystem:
     def __init__(self, counselor_file: str = "counselor_accounts.txt"):
         self.counselor_file = counselor_file
         self.counselors = self.load_counselors()
+        # [ĐÃ SỬA] Không gọi load_Chatted_Counselors ở đây vì chưa có username
         
         # Định nghĩa các tags và synonyms
         self.tag_synonyms = {
@@ -38,42 +54,79 @@ class MatchingSystem:
         }
     
     def load_counselors(self) -> List[Counselor]:
-            """Load danh sách chuyên gia từ file"""
-            counselors = []
+        """Load danh sách chuyên gia từ file"""
+        counselors = []
             
-            if not os.path.exists(self.counselor_file):
-                logging.warning(f"File {self.counselor_file} không tồn tại")
-                return counselors
+        try:
+            with open(self.counselor_file, 'r', encoding='utf-8') as f:
+                lines = f.readlines()[1:]  # Bỏ qua header
                 
+                for line in lines:
+                    parts = line.strip().split(';')
+                    # Cấu trúc: ID(0);Username(1);Name(2);Email(3);Pass(4);Specialties(5);Rating(6);Status(7);Exp(8);Verified(9)
+                    if len(parts) >= 10: 
+                        # Chỉ load những người đã Verified = yes
+                        if parts[9].strip().lower() != 'yes':
+                            continue
+
+                        counselor = Counselor(
+                            id=parts[0],
+                            user_name=parts[1],
+                            name=parts[2],
+                            email=parts[3],
+                            specialties=parts[5].split(','),
+                            rating=float(parts[6]),
+                            status=parts[7],
+                            experience=parts[8]
+                        )
+                        counselors.append(counselor)
+                        
+        except Exception as e:
+            logging.error(f"Lỗi khi load counselors: {e}")
+            
+        return counselors                     
+
+    def load_Chatted_Counselors(self, current_username: str) -> List[Counselor]:
+        """
+        Hàm này lấy danh sách các chuyên gia mà 'current_username' đã từng trò chuyện.
+        Dùng để hiển thị lên Sidebar lịch sử chat.
+        """
+        
+        # --- BƯỚC 1: Tìm danh sách Username chuyên gia từ lịch sử chat ---
+        chatted_expert_ids = set() # Dùng set để tránh trùng lặp
+        chat_file_path = 'chat_history.json'
+
+        if os.path.exists(chat_file_path):
             try:
-                with open(self.counselor_file, 'r', encoding='utf-8') as f:
-                    lines = f.readlines()[1:]  # Bỏ qua header
+                with open(chat_file_path, 'r', encoding='utf-8') as f:
+                    messages = json.load(f)
                     
-                    for line in lines:
-                        parts = line.strip().split(';')
-                        # Cấu trúc MỚI: ID(0);Username(1);Name(2);Email(3);Pass(4);Specialties(5);Rating(6);Status(7);Exp(8);Verified(9)
-                        if len(parts) >= 10: 
-                            # Chỉ load những người đã Verified = yes để hiển thị cho user
-                            if parts[9].strip().lower() != 'yes':
-                                continue
+                    for msg in messages:
+                        # Kiểm tra xem tin nhắn này có liên quan đến user hiện tại không
+                        is_sender = (msg.get('sender_type') == 'user' and msg.get('sender_id') == current_username)
+                        is_receiver = (msg.get('target_student_id') == current_username)
 
-                            counselor = Counselor(
-                                id=parts[0],
-                                name=parts[2], # Index lệch +1 so với cũ
-                                email=parts[3],
-                                specialties=parts[5].split(','),
-                                rating=float(parts[6]),
-                                status=parts[7],
-                                experience=parts[8]
-                            )
-                            counselors.append(counselor)
-                            
+                        if is_sender or is_receiver:
+                            # Trong hệ thống này, 'room' chính là username của chuyên gia
+                            if 'room' in msg:
+                                chatted_expert_ids.add(msg['room'])
+                                
             except Exception as e:
-                logging.error(f"Lỗi khi load counselors: {e}")
-                
-            return counselors                        
+                logging.error(f"Lỗi đọc history để lấy danh sách: {e}")
 
-    
+        # Nếu chưa chat với ai thì trả về rỗng luôn
+        if not chatted_expert_ids:
+            return []
+
+        # --- BƯỚC 2: Lọc từ danh sách chuyên gia đã load sẵn trong RAM ---
+        # (Tối ưu: Không cần đọc lại file counselor_accounts.txt)
+        result_list = []
+        for c in self.counselors:
+            if c.user_name in chatted_expert_ids:
+                result_list.append(c)
+        
+        return result_list
+
     def normalize_tags(self, tags: List[str]) -> List[str]:
         """Chuẩn hóa tags dựa trên synonyms"""
         normalized = []
@@ -114,15 +167,7 @@ class MatchingSystem:
                     top_k: int = 5) -> List[Counselor]:
         """
         Tìm các chuyên gia phù hợp
-        
-        Args:
-            problem_tags: Danh sách problem tags của sinh viên
-            only_online: Chỉ tìm chuyên gia đang online
-            min_rating: Rating tối thiểu
-            top_k: Số lượng kết quả trả về
-            
-        Returns:
-            Danh sách chuyên gia được sắp xếp theo match_score
+        Returns: Danh sách chuyên gia được sắp xếp theo match_score
         """
         
         matching_counselors = []
@@ -150,9 +195,9 @@ class MatchingSystem:
         return matching_counselors[:top_k]
     
     def get_counselor_by_id(self, counselor_id: str) -> Optional[Counselor]:
-        """Lấy thông tin chuyên gia theo ID"""
+        """Lấy thông tin chuyên gia theo ID (hoặc Username)"""
         for counselor in self.counselors:
-            if counselor.id == counselor_id:
+            if counselor.id == counselor_id or counselor.user_name == counselor_id:
                 return counselor
         return None
 
@@ -160,47 +205,41 @@ class MatchingSystem:
 class TagExtractor:
     """Trích xuất Problem Tags từ kết quả Quick Test hoặc chat history"""
     
-@staticmethod
-def extract_from_test_results(answers: Dict[str, str]) -> List[str]:
-    """
-    Trích xuất tags từ câu trả lời của Quick Test
-    (ĐÃ ĐỒNG BỘ VỚI QuickTestProcessor của main.py)
-    """
-    problem_tags = []
+    # [ĐÃ SỬA] Thụt đầu dòng đúng chuẩn Python
+    @staticmethod
+    def extract_from_test_results(answers: Dict[str, str]) -> List[str]:
+        """
+        Trích xuất tags từ câu trả lời của Quick Test
+        """
+        problem_tags = []
 
-    # Mapping điểm
-    q1_mapping = {"Không bao giờ": 0, "Đôi khi": 1, "Thường xuyên": 2, "Luôn luôn": 3}
-    q2_mapping = {"Không gặp khó khăn": 0, "Ít khi": 1, "Thỉnh thoảng": 2, "Rất thường xuyên": 3}
-    q3_mapping = {"Rất tốt": 0, "Bình thường": 1, "Không tốt": 2, "Rất tệ, thường mất ngủ": 3}
+        # Mapping điểm
+        q1_mapping = {"Không bao giờ": 0, "Đôi khi": 1, "Thường xuyên": 2, "Luôn luôn": 3}
+        q2_mapping = {"Không gặp khó khăn": 0, "Ít khi": 1, "Thỉnh thoảng": 2, "Rất thường xuyên": 3}
+        q3_mapping = {"Rất tốt": 0, "Bình thường": 1, "Không tốt": 2, "Rất tệ, thường mất ngủ": 3}
 
-    # Tính điểm
-    q1_score = q1_mapping.get(answers.get('q1', ''), 0)
-    q2_score = q2_mapping.get(answers.get('q2', ''), 0)
-    q3_score = q3_mapping.get(answers.get('q3', ''), 0)
-    total_score = q1_score + q2_score + q3_score
+        # Tính điểm
+        q1_score = q1_mapping.get(answers.get('q1', ''), 0)
+        q2_score = q2_mapping.get(answers.get('q2', ''), 0)
+        q3_score = q3_mapping.get(answers.get('q3', ''), 0)
+        total_score = q1_score + q2_score + q3_score
 
-    # Gán problem tags
-    if q1_score >= 2:
-        problem_tags.extend(['stress', 'lo_au'])
-    if q2_score >= 2:
-        problem_tags.append('hoc_tap')
-    if q3_score >= 2:
-        problem_tags.append('roi_loan_giac_ngu')
-    if total_score >= 7:
-        problem_tags.append('tram_cam')
+        # Gán problem tags
+        if q1_score >= 2:
+            problem_tags.extend(['stress', 'lo_au'])
+        if q2_score >= 2:
+            problem_tags.append('hoc_tap')
+        if q3_score >= 2:
+            problem_tags.append('roi_loan_giac_ngu')
+        if total_score >= 7:
+            problem_tags.append('tram_cam')
 
-    return list(set(problem_tags)) # Loại bỏ duplicates
+        return list(set(problem_tags)) # Loại bỏ duplicates
     
     @staticmethod
     def extract_from_chat_history(conversation_id: str) -> List[str]:
         """
         Trích xuất tags từ lịch sử chat (đã được AI tóm tắt)
-        
-        Args:
-            conversation_id: ID của cuộc trò chuyện
-            
-        Returns:
-            List các problem tags
         """
         tags = []
         chat_file = f"chat_history/{conversation_id}.json"

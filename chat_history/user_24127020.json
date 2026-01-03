@@ -1,0 +1,26 @@
+{
+    "conversation_id": "user_24127020",
+    "last_updated_date": "2026-01-02",
+    "last_updated_time": "12:13:26",
+    "topic": "Chưa xác định",
+    "issue": "Chưa xác định",
+    "symptoms": "Chưa xác định",
+    "messages": [
+        {
+            "role": "user",
+            "text": "hello"
+        },
+        {
+            "role": "model",
+            "text": "Chào bạn, mình là StudentMind Connect AI. Mình ở đây để lắng nghe và hỗ trợ bạn về sức khỏe tinh thần. Bạn có điều gì muốn chia sẻ không?"
+        },
+        {
+            "role": "user",
+            "text": "bye"
+        },
+        {
+            "role": "model",
+            "text": "Tạm biệt bạn. Chúc bạn một ngày tốt lành và hy vọng bạn luôn giữ gìn sức khỏe tinh thần của mình. Nếu bạn cần trò chuyện lần nữa, mình luôn ở đây."
+        }
+    ]
+}
