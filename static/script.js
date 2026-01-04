@@ -40,38 +40,41 @@ document.addEventListener("DOMContentLoaded", function () {
  * 1. Kiểm tra xem người dùng đã đăng nhập chưa khi tải trang
  */
 async function checkLoginStatus() {
-  try {
-    const response = await fetch("/api/status");
-    
-    // NẾU LỖI MẠNG HOẶC SERVER -> Coi như chưa đăng nhập
-    if (!response.ok) {
-      initializeCTAListeners();
-      return;
-    }
+  try {
+    const response = await fetch("/api/status");
+    
+    if (!response.ok) {
+      initializeCTAListeners();
+      return;
+    }
 
-    const data = await response.json();
-    if (data.logged_in && data.username) {
-      // --- ĐÃ ĐĂNG NHẬP ---
-      
-      // 1. Cập nhật UI (nút Xin chào, Dropdown)
-      updateUIAfterLogin(data.username);
-      
-      // 2. Khởi tạo Chat (nếu cần)
-      const messengerContainer = document.querySelector('.messenger-container');
-      if (messengerContainer) {
-          initializeCounselorChat(data.username);
-      }
+    const data = await response.json();
+    
+    // --- SỬA ĐOẠN NÀY: XỬ LÝ ADMIN ---
+    if (data.logged_in && data.is_admin) {
+        // Thay vì đổi nút, ta chuyển hướng NGAY LẬP TỨC sang Dashboard
+        window.location.href = "/admin/dashboard"; 
+        return; // Dừng code lại, không chạy tiếp các phần bên dưới
+    }
+    // ----------------------------------
 
-    } else {
-      // --- CHƯA ĐĂNG NHẬP ---
-      initializeCTAListeners(); 
-    }
-  } catch (err) {
-    console.error("Lỗi kiểm tra trạng thái:", err);
-    initializeCTAListeners();
-  }
+    if (data.logged_in && data.username) {
+      // --- Logic cũ cho User/Counselor (Giữ nguyên) ---
+      updateUIAfterLogin(data.username);
+      
+      const messengerContainer = document.querySelector('.messenger-container');
+      if (messengerContainer) {
+          initializeCounselorChat(data.username);
+      }
+
+    } else {
+      initializeCTAListeners(); 
+    }
+  } catch (err) {
+    console.error("Lỗi kiểm tra trạng thái:", err);
+    initializeCTAListeners();
+  }
 }
-
 /**
  * 2. Cập nhật nút CTA trên Navbar VÀ THAY ĐỔI STYLE
  */

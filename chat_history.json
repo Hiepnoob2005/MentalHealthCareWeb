@@ -326,5 +326,13 @@
         "text": "\n<div class=\"zoom-invite-card\">\n<div class=\"zoom-header\">\n<i class=\"fas fa-video\"></i> Video Call\n</div>\n<div style=\"font-size: 0.9em; color: #555;\">\nBác sĩ mời bạn tham gia cuộc họp trực tuyến.\n</div>\n<a href=\"https://us04web.zoom.us/j/78871889118?pwd=ai0PahbhUoNFOdcM1ukiunDBbln3WV.1\" target=\"_blank\" class=\"zoom-btn\">\nTham gia ngay\n</a>\n</div>",
         "target_student_id": "dat",
         "timestamp": "2026-01-04 15:34:34"
+    },
+    {
+        "room": "lvcuong",
+        "sender_id": "lvcuong",
+        "sender_type": "counselor",
+        "text": "skibidi",
+        "target_student_id": "24127020",
+        "timestamp": "2026-01-04 16:15:57"
     }
 ]

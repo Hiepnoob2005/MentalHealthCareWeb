@@ -512,3 +512,101 @@ body {
   padding: 0;
   background: none;
 }
+
+/* --- BẮT ĐẦU: CSS CHO TRANG THỐNG KÊ --- */
+
+/* Container cho các view (Dashboard/Thống kê) */
+.admin-view {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Style cho Bảng dữ liệu */
+.table-responsive {
+    overflow-x: auto; /* Cho phép cuộn ngang nếu bảng quá to */
+    margin-top: 15px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden; /* Để bo góc hoạt động */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.admin-table thead {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid var(--border);
+}
+
+.admin-table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.admin-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-main);
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+.admin-table tbody tr:hover {
+    background-color: #f1f5f9; /* Hiệu ứng hover dòng */
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Nút Hủy quyền (Màu đỏ nhạt) */
+.btn-revoke {
+    /* Màu sắc nền và chữ (Tông đỏ hồng cảnh báo nhẹ nhàng) */
+    background-color: #fff1f2; /* Nền rất nhạt */
+    color: #be123c;            /* Chữ màu đỏ hồng đậm */
+    border: 1px solid #fda4af; /* Viền màu hồng trung tính */
+
+    /* Bo tròn và kích thước */
+    border-radius: 50px;       /* Bo tròn hoàn toàn (hình viên thuốc) */
+    padding: 8px 16px;         /* Tăng padding để nút trông đầy đặn hơn */
+    font-size: 0.85rem;
+    font-weight: 600;          /* Chữ đậm hơn một chút để dễ đọc */
+    
+    /* Căn chỉnh icon và chữ */
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;                  /* Khoảng cách giữa icon và chữ */
+    
+    cursor: pointer;
+    transition: all 0.3s ease; /* Hiệu ứng chuyển đổi mượt mà */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Bóng đổ rất nhẹ tạo chiều sâu */
+}
+
+/* Hiệu ứng khi di chuột vào */
+.btn-revoke:hover {
+    background-color: #e11d48; /* Chuyển sang nền đỏ đậm */
+    color: white;              /* Chữ chuyển sang trắng */
+    border-color: #e11d48;     /* Viền cùng màu nền */
+    box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.3), 0 2px 4px -1px rgba(225, 29, 72, 0.1); /* Bóng đổ đỏ nổi bật hơn */
+    transform: translateY(-1px); /* Nút nổi lên nhẹ 1 chút */
+}
+
+/* Hiệu ứng khi bấm vào nút */
+.btn-revoke:active {
+    background-color: #be123c; /* Màu tối hơn chút khi click */
+    transform: translateY(0);  /* Nút lún xuống lại */
+    box-shadow: none;
+}
+/* --- KẾT THÚC: CSS CHO TRANG THỐNG KÊ --- */
