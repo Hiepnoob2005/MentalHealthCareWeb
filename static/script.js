@@ -1281,271 +1281,6 @@ function addFindExpertButton() {
   // Thêm vào TRƯỚC nút send
   chatInputContainer.appendChild(findExpertBtn);
 }
-
-// --- LOGIC RIÊNG CHO COUNSELOR (Đã nâng cấp) ---
-document.addEventListener('DOMContentLoaded', function() {
-    // Chỉ chạy nếu đang ở giao diện Counselor
-    if (!document.getElementById('counselorDatePicker')) return;
-
-    // --- 1. KHỞI TẠO BIẾN & LỊCH ---
-    let fpInstance; // Flatpickr instance
-    const slots = ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-    const container = document.getElementById("counselorSlotContainer");
-
-    // Khởi tạo Flatpickr
-    if (typeof flatpickr !== 'undefined') {
-        fpInstance = flatpickr("#counselorDatePicker", { 
-            minDate: "today", 
-            dateFormat: "Y-m-d",
-            locale: "vn"
-        });
-    }
-
-    // Vẽ các nút giờ
-    if(container) {
-        container.innerHTML = ''; // Clear cũ
-        slots.forEach(time => {
-            const div = document.createElement("div");
-            div.className = "time-slot-item";
-            div.textContent = time;
-            div.dataset.time = time; // Để dễ query
-            div.onclick = () => div.classList.toggle("selected");
-            container.appendChild(div);
-        });
-    }
-
-    // --- 2. XỬ LÝ CHUYỂN TAB (Sidebar) ---
-    const tabs = {
-        'tab-overview': 'view-overview',
-        'tab-schedule': 'view-schedule',
-        'tab-history': 'view-history'
-    };
-
-    Object.keys(tabs).forEach(tabId => {
-        const tabEl = document.getElementById(tabId);
-        if (tabEl) {
-            tabEl.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Update Active Class cho Sidebar
-                document.querySelectorAll('.dashboard-menu a').forEach(a => a.classList.remove('active'));
-                this.classList.add('active');
-
-                // Ẩn hết các view, hiện view tương ứng
-                Object.values(tabs).forEach(viewId => {
-                    const el = document.getElementById(viewId);
-                    if(el) el.style.display = 'none';
-                });
-                document.getElementById(tabs[tabId]).style.display = 'block';
-
-                // Nếu bấm vào tab Lịch sử, tải dữ liệu ngay
-                if (tabId === 'tab-history') {
-                    loadHistoryLogs();
-                }
-            });
-        }
-    });
-
-    // --- 3. LOGIC LƯU LỊCH (Tab Lịch hẹn) ---
-    const saveBtn = document.getElementById('btnSaveAvailability');
-    if(saveBtn) {
-        saveBtn.addEventListener('click', async function() {
-            const date = document.getElementById("counselorDatePicker").value;
-            if(!date) return alert("Vui lòng chọn ngày!");
-            
-            const selectedSlots = Array.from(document.querySelectorAll(".time-slot-item.selected"))
-                                       .map(el => el.textContent);
-            
-            if(selectedSlots.length === 0) return alert("Vui lòng chọn ít nhất 1 khung giờ rảnh!");
-
-            const originalText = this.textContent;
-            this.textContent = "Đang lưu...";
-            this.disabled = true;
-
-            try {
-                const res = await fetch("/api/counselor/availability", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({ date, slots: selectedSlots })
-                });
-                
-                if(res.ok) {
-                    alert("Đã cập nhật lịch rảnh thành công!");
-                    // Sau khi lưu, có thể muốn reset hoặc giữ nguyên tùy trải nghiệm
-                } else {
-                    alert("Lỗi khi lưu lịch.");
-                }
-            } catch (err) {
-                console.error(err);
-                alert("Lỗi kết nối server.");
-            } finally {
-                this.textContent = originalText;
-                this.disabled = false;
-            }
-        });
-    }
-
-    // --- 4. LOGIC TẢI & HIỂN THỊ LỊCH SỬ (Tab Lịch sử) ---
-    async function loadHistoryLogs() {
-        const tbody = document.getElementById('historyTableBody');
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Đang tải...</td></tr>';
-
-        try {
-            const res = await fetch("/api/counselor/history-logs");
-            const data = await res.json();
-
-            tbody.innerHTML = ''; // Clear loading
-
-            if (data.logs && data.logs.length > 0) {
-                data.logs.forEach(log => {
-                    const tr = document.createElement('tr');
-                    tr.style.borderBottom = "1px solid #eee";
-                    tr.style.cursor = "pointer"; // Để biết là click được
-                    tr.title = "Click để sửa lại lịch này";
-                    
-                    // Sự kiện click vào dòng -> Chuyển sang tab Lịch hẹn để sửa
-                    tr.onclick = () => editLog(log.target_date, log.slots);
-
-                    tr.innerHTML = `
-                        <td style="padding: 12px;">${log.action_time}</td>
-                        <td style="padding: 12px; color: var(--primary); font-weight: bold;">${log.target_date}</td>
-                        <td style="padding: 12px;">${log.slots.join(', ')}</td>
-                        <td style="padding: 12px;">
-                            <button class="btn-edit-log" style="background:none; border:none; color:var(--primary); cursor:pointer;">
-                                <i class="fas fa-edit"></i> Sửa
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } else {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Chưa có lịch sử cập nhật nào.</td></tr>';
-            }
-        } catch (err) {
-            console.error(err);
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Lỗi tải dữ liệu.</td></tr>';
-        }
-    }
-
-    // --- 5. HÀM SỬA LỊCH (Chuyển Tab & Điền dữ liệu) ---
-    window.editLog = function(date, slots) {
-        // 1. Chuyển sang tab Lịch hẹn
-        document.getElementById('tab-schedule').click(); 
-
-        // 2. Điền ngày vào DatePicker
-        if(fpInstance) {
-            fpInstance.setDate(date);
-        } else {
-            document.getElementById('counselorDatePicker').value = date;
-        }
-
-        // 3. Reset các slot và chọn lại các slot từ log
-        document.querySelectorAll(".time-slot-item").forEach(el => {
-            el.classList.remove("selected"); // Reset hết
-            if (slots.includes(el.textContent)) {
-                el.classList.add("selected"); // Chọn lại slot trong log
-            }
-        });
-
-        // Cuộn lên đầu để thấy form
-        document.querySelector('.dashboard-content').scrollIntoView({behavior: 'smooth'});
-    };
-});
-
-// --- LOGIC RIÊNG CHO USER THƯỜNG (Booking & History) ---
-document.addEventListener('DOMContentLoaded', function() {
-    // Kiểm tra nếu là User thường (có tab overview nhưng ko có datepicker của counselor)
-    if (!document.getElementById('user-view-overview')) return;
-
-    // 1. XỬ LÝ CHUYỂN TAB
-    const userTabs = {
-        'tab-overview': 'user-view-overview',
-        'tab-schedule': 'user-view-booking', // Tab Lịch hẹn
-        'tab-history': 'user-view-history'   // Tab Lịch sử
-    };
-
-    Object.keys(userTabs).forEach(tabId => {
-        const tabEl = document.getElementById(tabId);
-        if (tabEl) {
-            tabEl.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('.dashboard-menu a').forEach(a => a.classList.remove('active'));
-                this.classList.add('active');
-
-                Object.values(userTabs).forEach(viewId => {
-                    const el = document.getElementById(viewId);
-                    if(el) el.style.display = 'none';
-                });
-                document.getElementById(userTabs[tabId]).style.display = 'block';
-
-                // Load dữ liệu khi chuyển tab
-                if (tabId === 'tab-schedule') loadAvailableCounselors();
-                if (tabId === 'tab-history') loadUserHistory();
-            });
-        }
-    });
-
-    // 3. LOAD LỊCH SỬ
-    async function loadUserHistory() {
-        const tbody = document.getElementById('user-history-body');
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Đang tải...</td></tr>';
-        
-        try {
-            const res = await fetch('/api/user/appointments');
-            const data = await res.json();
-            tbody.innerHTML = '';
-
-            if (data.appointments && data.appointments.length > 0) {
-                data.appointments.forEach(appt => {
-                    const statusColor = appt.status === 'confirmed' ? 'green' : 'gray';
-                    const statusText = appt.status === 'confirmed' ? 'Đã xác nhận' : 'Đã hủy';
-                    
-                    let actionHtml = '';
-                    if(appt.status === 'confirmed') {
-                        actionHtml = `<button onclick="cancelBooking('${appt.id}')" style="color: red; border: 1px solid red; padding: 4px 8px; border-radius: 4px; background: white; cursor: pointer;">Hủy</button>`;
-                    }
-
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td style="padding: 12px;">${appt.date} <br> <b>${appt.time}</b></td>
-                        <td style="padding: 12px;">${appt.counselor}</td>
-                        <td style="padding: 12px; color: ${statusColor}; font-weight: bold;">${statusText}</td>
-                        <td style="padding: 12px;">${actionHtml}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } else {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Chưa có lịch sử đặt hẹn.</td></tr>';
-            }
-        } catch (e) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: red;">Lỗi tải.</td></tr>';
-        }
-    }
-});
-
-// --- GLOBAL FUNCTIONS (Để gọi từ HTML onclick) ---
-
-// Hàm kiểm tra trước khi mở modal đặt lịch
-
-async function cancelBooking(apptId) {
-    if(!confirm("Bạn chắc chắn muốn hủy lịch hẹn này?")) return;
-    
-    try {
-        const res = await fetch('/api/booking/cancel', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({id: apptId})
-        });
-        if(res.ok) {
-            alert("Đã hủy thành công.");
-            // Reload tab history (giả lập click lại tab)
-            document.getElementById('tab-history').click();
-        }
-    } catch (e) {
-        alert("Lỗi khi hủy.");
-    }
-}
-
 // ==========================================
 // LOGIC CHAT VỚI CHUYÊN GIA 
 // ==========================================
@@ -2504,7 +2239,7 @@ function initializeCounselorScheduleLogic() {
                    initCalendar();
                }
                if (tabId === 'tab-history') {
-                   loadCounselorHistoryLogs();
+                   loadHistoryLogs();
                }
            });
        }
@@ -2656,4 +2391,85 @@ function initializeCounselorScheduleLogic() {
            }
       };
   }
+
+  async function loadHistoryLogs() {
+        const tbody = document.getElementById('historyTableBody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px;">Đang tải dữ liệu...</td></tr>';
+        
+        try {
+            // Gọi API mới vừa tạo ở Bước 1
+            const res = await fetch("/api/counselor/appointments");
+            const data = await res.json();
+            
+            tbody.innerHTML = '';
+            
+            if (data.appointments && data.appointments.length > 0) {
+                data.appointments.forEach(appt => {
+                    const tr = document.createElement('tr');
+                    
+                    // Xác định màu trạng thái
+                    let statusColor = 'green';
+                    let statusText = 'Đã xác nhận';
+                    if (appt.status === 'cancelled') {
+                        statusColor = 'red';
+                        statusText = 'Đã hủy';
+                    }
+
+                    tr.innerHTML = `
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            <div style="font-weight:bold; color:var(--primary)">${appt.time}</div>
+                            <div style="font-size:0.9em; color:#666">${appt.date}</div>
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            <i class="fas fa-user-graduate" style="color:#666; margin-right:5px;"></i>
+                            <b>${appt.student_name}</b>
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            <span style="color:${statusColor}; font-weight:500; padding: 4px 8px; background: ${statusColor === 'red' ? '#fee2e2' : '#dcfce7'}; border-radius: 4px;">
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            ${appt.status === 'confirmed' ? 
+                                `<button onclick="cancelAppointment('${appt.id}')" style="color:red; background:none; border:1px solid red; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:0.8em;">
+                                    Hủy
+                                </button>` : '-'}
+                        </td> 
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px;">Chưa có cuộc hẹn nào.</td></tr>';
+            }
+        } catch (e) { 
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Lỗi tải dữ liệu.</td></tr>'; 
+        }
+    }
+
+    // Hàm hỗ trợ hủy lịch (Thêm vào bên ngoài hoặc bên trong initializeCounselorScheduleLogic đều được, nhưng tốt nhất để global scope để HTML gọi được)
+    window.cancelAppointment = async function(id) {
+        if(!confirm("Bạn có chắc chắn muốn hủy cuộc hẹn này không?")) return;
+        
+        try {
+            const res = await fetch('/api/booking/cancel', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id})
+            });
+            
+            if(res.ok) {
+                alert("Đã hủy thành công!");
+                loadHistoryLogs(); // Tải lại bảng
+                // Reload lại các slot ở tab Lịch
+                if(selectedDate) loadSlotsForDate(selectedDate);
+            } else {
+                alert("Lỗi khi hủy.");
+            }
+        } catch(e) {
+            alert("Lỗi kết nối.");
+        }
+    };
 }
