@@ -1957,7 +1957,28 @@ function renderExpertCard(c, container) {
     const statusClass = isOnline ? 'online' : 'offline';
     const statusText = isOnline ? 'Online' : 'Offline';
 
-    const btnAction = `onclick="window.location.href='/user/chat?expert=${c.id}'"`;
+    // --- PHẦN SỬA ĐỔI: Kiểm tra đăng nhập để tạo nút Chat ---
+    let chatButtonHtml = '';
+    
+    // Biến window.isUserLoggedIn lấy từ Bước 1
+    if (window.isUserLoggedIn) {
+        // Nếu ĐÃ đăng nhập: Nút màu xanh, bấm được
+        chatButtonHtml = `
+            <button class="btn-connect btn-chat btn-dynamic" 
+                    onclick="window.location.href='/user/chat?expert=${c.id}'">
+                Chat ngay
+            </button>`;
+    } else {
+        // Nếu CHƯA đăng nhập: Nút màu xám, không bấm được (disabled)
+        chatButtonHtml = `
+            <button class="btn-connect btn-chat btn-dynamic" 
+                    style="background-color: #ccc; cursor: not-allowed; opacity: 0.8;" 
+                    disabled>
+                Chat ngay
+            </button>`;
+    }
+    // -------------------------------------------------------
+
     const profileAction = `onclick="openExpertProfile('${c.id}')" style="cursor: pointer;"`;
 
     let specs = c.specialties;
@@ -1971,7 +1992,8 @@ function renderExpertCard(c, container) {
     card.innerHTML = `
         <div class="expert-cover" style="background-image: url('${coverImage}');"></div>
         
-        <div class="expert-info1"> <div class="expert-avatar-wrapper" ${profileAction}>
+        <div class="expert-info1"> 
+            <div class="expert-avatar-wrapper" ${profileAction}>
                 <div class="expert-avatar-inner">${c.name.charAt(0)}
                 <span class="status-dot ${statusClass}"></span>
                 </div>
@@ -1992,9 +2014,7 @@ function renderExpertCard(c, container) {
                 ${tagsHtml}
             </div>
             
-            <button class="btn-connect btn-chat btn-dynamic" ${btnAction}>
-                Chat ngay
-            </button>
+            ${chatButtonHtml}
         </div>
     `;
     container.appendChild(card);
