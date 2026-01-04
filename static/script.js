@@ -927,92 +927,45 @@ async function findCounselorsFromTags(tags) {
  * Hiển thị modal kết quả matching
  */
 function displayMatchingResults(data) {
-    closeMatchingModal();
+  closeMatchingModal();
+  // Lưu ý: Đã xóa các khoảng trắng thừa ở đầu dòng để tránh sinh ra &nbsp;
+  const html = `
+<div class="matching-modal" id="matchingModal">
+    <div class="matching-modal-content" style="max-width: 900px; width: 95%;">
+        <span class="close-modal" onclick="closeMatchingModal()">&times;</span>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: var(--primary);">Chuyên gia phù hợp cho bạn</h2>
+            <p class="detected-tags" style="background: #f3f4f6; display: inline-block; padding: 5px 15px; border-radius: 20px; margin-top: 10px;">
+                <i class="fas fa-search"></i> Vấn đề được phát hiện: 
+                <strong>${data.search_tags.map(tag => formatTag(tag)).join(', ')}</strong>
+            </p>
+        </div>
+        <div class="matching-results experts-grid" id="matchingResultsList" 
+             style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 10px;">
+        </div>
+    </div>
+</div>`;
 
-    const modalHTML = `
-        <div class="matching-modal" id="matchingModal">
-            <div class="matching-modal-content" style="max-width: 900px; width: 95%;">
-                <span class="close-modal" onclick="closeMatchingModal()">&times;</span>
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h2 style="color: var(--primary);">Chuyên gia phù hợp cho bạn</h2>
-                    <p class="detected-tags" style="background: #f3f4f6; display: inline-block; padding: 5px 15px; border-radius: 20px; margin-top: 10px;">
-                        <i class="fas fa-search"></i> Vấn đề được phát hiện: 
-                        <strong>${data.search_tags.map(tag => formatTag(tag)).join(', ')}</strong>
-                    </p>
-                </div>
-                <div class="matching-results experts-grid" id="matchingResultsList" 
-                     style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 10px;">
-                </div>
-            </div>
-        </div>
-    `;
+  document.body.insertAdjacentHTML('beforeend', html);
+  
+  const container = document.getElementById('matchingResultsList');
+  if (data.matches && data.matches.length > 0) {
+      data.matches.forEach(c => {
+           const expertId = c.username || c.id; 
 
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    const container = document.getElementById('matchingResultsList');
-    
-    if (data.matches && data.matches.length > 0) {
-        data.matches.forEach(counselor => {
-            const card = document.createElement('div');
-            card.className = 'expert-card';
-            
-            const expertId = counselor.username || counselor.id;
-            card.setAttribute('data-expert-id', expertId);
-
-            const coverImage = `https://picsum.photos/seed/${expertId}/400/200`;
-            const isOnline = counselor.status === 'online';
-            const statusClass = isOnline ? 'online' : 'offline';
-            const statusText = isOnline ? 'Online' : 'Offline';
-            
-            // --- THAY ĐỔI: Luôn là nút Chat ---
-            const btnText = 'Kết nối ngay'; // Có thể để Chat ngay cũng được
-            const btnAction = `onclick="window.location.href='/user/chat?expert=${expertId}'"`;
-            const btnClass = 'btn-connect btn-chat';
-            // ----------------------------------
-
-            const profileAction = `onclick="openExpertProfile('${expertId}')" style="cursor: pointer;"`;
-
-            let specsHtml = '';
-            if (Array.isArray(counselor.specialties)) {
-                specsHtml = counselor.specialties.map(s => `<span class="specialty-tag">${formatTag(s)}</span>`).join('');
-            } else {
-                specsHtml = `<span class="specialty-tag">${formatTag(counselor.specialties)}</span>`;
-            }
-            const ratingVal = parseFloat(counselor.rating) || 0;
-            const starsHtml = '<i class="fas fa-star" style="color: #fbbf24;"></i>'.repeat(Math.round(ratingVal));
-
-            card.innerHTML = `
-                <div class="expert-cover" style="background-image: url('${coverImage}');"></div>
-                <div class="expert-info">
-                    <div class="expert-avatar-wrapper" ${profileAction}>
-                        <div class="expert-avatar-inner">${counselor.name.charAt(0)}</div>
-                        <span class="status-dot ${statusClass}" style="position:absolute; bottom:5px; right:5px; width:14px; height:14px; border-radius:50%; border:2px solid white;"></span>
-                    </div>
-                    <h4 ${profileAction}>${counselor.name} <i class="fas fa-info-circle" style="font-size:0.8em; color:#aaa;"></i></h4>
-                    <div style="margin: 5px 0;">
-                        <span style="background: #ecfdf5; color: #059669; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; border: 1px solid #a7f3d0;">
-                            <i class="fas fa-check-circle"></i> Phù hợp: ${counselor.match_score}%
-                        </span>
-                    </div>
-                    <div style="margin: 5px 0;">
-                        <span class="status-badge ${statusClass}">${statusText}</span>
-                    </div>
-                    <div class="expert-rating" style="justify-content: center; margin-bottom: 5px;">
-                        <div class="stars">${starsHtml}</div>
-                        <span style="font-size: 0.85em; color:#666;">(${counselor.rating})</span>
-                    </div>
-                    <div style="font-size: 0.9rem; color: #666; margin-bottom: 15px; height: 40px; overflow: hidden;">
-                        ${specsHtml}
-                    </div>
-                    <button class="${btnClass} btn-dynamic" ${btnAction} style="width: 100%;">
-                        ${btnText}
-                    </button>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    } else {
-        container.innerHTML = '<p style="text-align: center; width: 100%; color: #666;">Không tìm thấy chuyên gia phù hợp với tiêu chí này.</p>';
-    }
+             const expertObj = {
+                 id: expertId, // Gán ID chuẩn (username) vào đây
+                 name: c.name,
+                 status: c.status,
+                 specialties: c.specialties,
+                 rating: c.rating,
+                 experience: c.experience
+             };
+             renderExpertCard(expertObj, container);
+      });
+  } else {
+      container.innerHTML = '<p style="text-align: center; width: 100%; color: #666;">Không tìm thấy chuyên gia phù hợp.</p>';
+  }
 }
 
 function closeMatchingModal() {

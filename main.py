@@ -1321,7 +1321,7 @@ def find_matching_counselors():
     """
     data = request.get_json()
     problem_tags = data.get("problem_tags", [])
-    only_online = data.get("only_online", True)
+    only_online = data.get("only_online", False)
     min_rating = data.get("min_rating", 0.0)
 
     if not problem_tags:
@@ -1335,6 +1335,7 @@ def find_matching_counselors():
         # Convert to JSON-serializable format
         results = []
         for counselor in matches:
+            status = "online" if counselor.user_name in online_counselors else "offline"
             results.append(
                 {
                     "id": counselor.id,
@@ -1342,7 +1343,7 @@ def find_matching_counselors():
                     "name": counselor.name,
                     "specialties": counselor.specialties,
                     "rating": counselor.rating,
-                    "status": counselor.status,
+                    "status": status,
                     "experience": counselor.experience,
                     "match_score": round(counselor.match_score, 1),
                 }
@@ -1742,7 +1743,6 @@ def update_availability():
                     real_status = "online" if parts[1] in online_counselors else "offline"
 
                     results.append({
-                        "id": parts[1],
                         "username": parts[1], 
                         "name": parts[2],
                         "specialties": parts[5],
