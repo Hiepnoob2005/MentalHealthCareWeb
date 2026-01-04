@@ -2738,6 +2738,10 @@ def get_evaluations():
     except Exception as e:
         logging.error(f"Lỗi đọc file đánh giá: {e}")
         return jsonify({"message": "Lỗi server"}), 500
+    
+@app.route("/articles")
+def articles_page():
+    return render_template("articles.html")
 
 if __name__ == "__main__":
     start_file_watcher()

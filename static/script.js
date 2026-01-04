@@ -2100,15 +2100,10 @@ async function openExpertProfile(username) {
 
         // 3. Điền nút hành động (Chat/Book)
         const btnChat = document.getElementById('modalBtnChat');
-        const btnBook = document.getElementById('modalBtnBook');
         
         // Giả sử lấy status từ UI card bên ngoài (hoặc gọi API check status riêng nếu cần chính xác realtime)
         // Ở đây ta set cứng link, việc check online/offline sẽ do logic chat xử lý
         btnChat.onclick = () => window.location.href = `/user/chat?expert=${data.username}`;
-        btnBook.onclick = () => {
-            closeExpertProfileModal();
-            checkAndOpenBooking(data.username);
-        };
 
         // 4. LOAD ẢNH BẰNG CẤP TỪ FOLDER PAPERWORKS
         const certsContainer = document.getElementById('modalProfileCerts');
@@ -2467,11 +2462,6 @@ function initializeUserDashboardLogic() {
                   else if(a.status === 'cancelled') statusHtml = `<span style="color:gray;">Đã hủy</span>`;
                   else statusHtml = `<span>${a.status}</span>`;
 
-                  // Nút hủy
-                  const btnCancel = a.status === 'confirmed' 
-                      ? `<button onclick="cancelBooking('${a.id}')" class="btn-action-cancel" style="padding:5px 10px; border:1px solid red; color:red; background:white; border-radius:5px; cursor:pointer;">Hủy</button>` 
-                      : '-';
-
                   tr.innerHTML = `
                       <td style="padding:12px;">
                           <div style="font-weight:bold; color:var(--primary);">${a.time}</div>
@@ -2479,7 +2469,6 @@ function initializeUserDashboardLogic() {
                       </td>
                       <td style="padding:12px;">BS. ${a.counselor}</td>
                       <td style="padding:12px;">${statusHtml}</td>
-                      <td style="padding:12px;">${btnCancel}</td>
                   `;
                   tbody.appendChild(tr);
               });
