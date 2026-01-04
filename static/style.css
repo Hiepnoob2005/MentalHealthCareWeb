@@ -2319,6 +2319,7 @@ footer {
   color: #666;
 }
 
+
 /* Notification Badge (Thông báo đỏ) */
 .badge {
   background: red;
@@ -3654,18 +3655,16 @@ footer {
     background: transparent;
 }
 
-/* Chỉnh lại wrapper của Avatar để có viền trắng tách biệt */
+/* 1. Thẻ bao ngoài (Wrapper): Làm mốc tọa độ và giữ kích thước */
 .expert-avatar-wrapper {
-    position: relative; 
-    width: 80px; 
-    height: 80px; 
-    margin: 0 auto 10px; 
-    border-radius: 50%; 
-    background: white; /* Viền trắng */
-    padding: 4px; /* Độ dày viền trắng */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    position: relative; /* QUAN TRỌNG: Để chấm tròn neo vào đây */
+    width: 50px;        /* Định kích thước ở đây */
+    height: 50px;
+    margin-right: 12px; /* Chuyển margin từ inner sang đây */
+    flex-shrink: 0;     /* Chống bị bóp méo trong flexbox */
 }
 
+/* 2. Phần hình tròn bên trong (Inner): Chỉ lo hiển thị màu và chữ */
 .expert-avatar-inner {
     width: 100%; 
     height: 100%; 
@@ -3679,6 +3678,17 @@ footer {
     font-size: 1.5rem;
 }
 
+/* 3. Chấm trạng thái (Status Dot): Neo góc dưới phải */
+.expert-avatar-wrapper .status-dot {
+    position: absolute; /* Tuyệt đối so với wrapper */
+    bottom: 0px;        /* Sát đáy (hoặc -2px để lòi ra ngoài xíu) */
+    right: 0px;         /* Sát phải */
+    width: 13px;        /* Kích thước chấm */
+    height: 13px;
+    border-radius: 50%;
+    border: 2px solid white; /* Viền trắng để tách biệt với avatar */
+    z-index: 5;         /* Nằm trên avatar */
+}
 /* Thêm vào style.css */
 
 /* Modal Matching Styles */
@@ -3725,3 +3735,123 @@ footer {
     }
 }
 
+.expert-item {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 8px;
+    /* Bo góc giống Messenger */
+    transition: background-color 0.2s;
+    margin-bottom: 2px;
+}
+
+.expert-item:hover {
+    background-color: #f2f2f2;
+}
+
+.expert-item.active {
+    background-color: rgba(45, 136, 255, 0.1);
+    /* Xanh nhạt khi active */
+}
+
+.expert-item .avatar {
+    width: 48px;
+    /* Kích thước avatar chuẩn */
+    height: 48px;
+    border-radius: 50%;
+    background: #e4e6eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 1.2rem;
+    color: #050505;
+    flex-shrink: 0;
+}
+
+.expert-item.active .avatar {
+    background: #0084ff;
+    color: white;
+}
+
+.expert-item {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    border-radius: 10px;
+    /* Bo góc mềm mại */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    /* Hiệu ứng chuyển động mượt */
+    margin-bottom: 4px;
+    position: relative;
+    /* Để căn chỉnh chấm online */
+}
+
+/* Hover effect: Nền xám nhẹ */
+.expert-item:hover {
+    background-color: #f2f2f2;
+}
+
+/* Active effect: Nền xanh nhạt + Chữ đậm */
+.expert-item.active {
+    background-color: #eaf3ff;
+    /* Màu xanh rất nhạt đặc trưng của Messenger */
+}
+
+/* Avatar Container */
+.expert-item .avatar {
+    width: 56px;
+    /* Avatar to hơn chút để nổi bật */
+    height: 56px;
+    border-radius: 50%;
+    background: #e4e6eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 1.5rem;
+    color: #555;
+    flex-shrink: 0;
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    /* Viền mỏng cho avatar */
+}
+
+/* Chấm xanh báo Online (Giả lập) */
+/* 1. Đặt Avatar là mốc tọa độ (relative) */
+.expert-item .avatar {
+    position: relative; /* Quan trọng để chấm tròn neo vào đây */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Giữ nguyên các style cũ của avatar (width, height, radius...) */
+}
+
+/* 2. Style chung cho chấm tròn (Đây là thẻ span thật trong HTML) */
+.expert-item .status-dot {
+    position: absolute; /* Tuyệt đối so với cha (.avatar) */
+    bottom: 0px;        /* Nằm sát đáy */
+    right: 0px;         /* Nằm sát phải */
+    width: 13px;
+    height: 13px;
+    border-radius: 50%; /* Tròn */
+    border: 2px solid #fff; /* Viền trắng tách biệt */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+/* 3. Màu xanh khi Online */
+.expert-item .status-dot.online {
+    background-color: #31a24c;
+}
+
+/* 4. Màu xám khi Offline */
+.expert-item .status-dot.offline {
+    background-color: #95a5a6;
+}
+
+.expert-item.active .expert-name {
+    color: #0084ff;
+}

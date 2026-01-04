@@ -101,6 +101,10 @@ def get_zoom_token():
         logging.error(f"❌ Token Exception: {e}")
         return None
 
+AVAILABILITY_FILE = "counselor_availability.txt"
+AVAILABILITY_LOGS_FILE = "availability_logs.txt"
+APPOINTMENTS_FILE = "appointments.txt"
+
 # -------------------------------------------------
 # Class xử lý sự kiện file
 class UploadFolderHandler(FileSystemEventHandler):
@@ -323,6 +327,55 @@ def home():
 online_counselors = set() 
 # Map socket_id ngược lại username để xử lý khi disconnect: {'socket_id': 'username'}
 socket_id_to_user = {} 
+
+# --- Thêm vào main.py ---
+
+@app.route("/api/counselor/create-manual-appointment", methods=["POST"])
+@login_required
+def create_manual_appointment():
+    """
+    API cho chuyên gia tự tạo lịch hẹn với sinh viên (nhập tay tên).
+    """
+    if not current_user.is_counselor:
+        return jsonify({"message": "Access Denied"}), 403
+
+    data = request.get_json()
+    date = data.get("date")
+    time = data.get("time")
+    student_name = data.get("student_name") # Tên sinh viên nhập tay
+
+    if not date or not time or not student_name:
+        return jsonify({"message": "Vui lòng nhập đầy đủ thông tin"}), 400
+
+    try:
+        # 1. Kiểm tra xem giờ đó đã bị đặt chưa (tránh trùng lặp)
+        if os.path.exists(APPOINTMENTS_FILE):
+            with open(APPOINTMENTS_FILE, "r", encoding="utf-8") as f:
+                for line in f:
+                    parts = line.strip().split(";")
+                    # Cấu trúc: ApptID;UserID;CounselorID;Date;Time;Status
+                    if len(parts) >= 6:
+                        # Kiểm tra: Cùng Counselor, Cùng Ngày, Cùng Giờ, Trạng thái Confirmed
+                        if (parts[2] == current_user.username and 
+                            parts[3] == date and 
+                            parts[4] == time and 
+                            parts[5] == "confirmed"):
+                            return jsonify({"message": "Khung giờ này đã có người đặt!"}), 409
+
+        # 2. Tạo lịch hẹn mới
+        appt_id = str(uuid.uuid4())[:8]
+        # Lưu student_name vào vị trí UserID (cột thứ 2)
+        # Format: ApptID;StudentName;CounselorID;Date;Time;Status
+        new_line = f"{appt_id};{student_name};{current_user.username};{date};{time};confirmed\n"
+
+        with open(APPOINTMENTS_FILE, "a", encoding="utf-8") as f:
+            f.write(new_line)
+
+        return jsonify({"message": "Đã tạo cuộc hẹn thành công!", "id": appt_id}), 200
+
+    except Exception as e:
+        logging.error(f"Lỗi tạo lịch thủ công: {e}")
+        return jsonify({"message": "Lỗi server"}), 500
 
 @app.route("/create_meeting")
 def create_meeting():
@@ -1436,7 +1489,49 @@ def get_all_counselors():
         return jsonify({"counselors": counselors}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# --- Thêm vào main.py ---
+
+@app.route("/api/counselor/appointments", methods=["GET"])
+@login_required
+def get_counselor_appointments_history():
+    """Lấy lịch sử cuộc hẹn của Chuyên gia (đọc từ appointments.txt)"""
+    if not current_user.is_counselor:
+        return jsonify({"message": "Access Denied"}), 403
+
+    history = []
     
+    # Đọc file appointments.txt
+    if os.path.exists(APPOINTMENTS_FILE):
+        try:
+            with open(APPOINTMENTS_FILE, "r", encoding="utf-8") as f:
+                # Bỏ qua dòng header
+                lines = f.readlines()[1:] 
+                
+                for line in lines:
+                    parts = line.strip().split(";")
+                    # Cấu trúc: ApptID;StudentName(UserID);CounselorID;Date;Time;Status
+                    if len(parts) >= 6:
+                        counselor_id = parts[2]
+                        
+                        # Chỉ lấy cuộc hẹn của chuyên gia đang đăng nhập
+                        if counselor_id == current_user.username:
+                            history.append({
+                                "id": parts[0],
+                                "student_name": parts[1], # Đây là tên SV bạn nhập tay lúc tạo lịch
+                                "date": parts[3],
+                                "time": parts[4],
+                                "status": parts[5]
+                            })
+        except Exception as e:  
+            logging.error(f"Lỗi đọc file appointments: {e}")
+            return jsonify({"appointments": []}), 500
+
+    # Sắp xếp: Ngày giờ mới nhất lên đầu
+    history.sort(key=lambda x: f"{x['date']} {x['time']}", reverse=True)
+
+    return jsonify({"appointments": history}), 200
+
 @app.route("/api/user/chat-partners", methods=["GET"])
 @login_required
 def get_chat_partners():
@@ -1613,10 +1708,6 @@ def uploaded_file(filename):
 
 # --- BOOKING SYSTEM ---
 
-AVAILABILITY_FILE = "counselor_availability.txt"
-AVAILABILITY_LOGS_FILE = "availability_logs.txt"
-APPOINTMENTS_FILE = "appointments.txt"
-
 # --- Tìm và thay thế hàm này trong main.py ---
 
 @app.route("/api/counselors/availability", methods=["GET"])
@@ -1651,6 +1742,7 @@ def update_availability():
                     real_status = "online" if parts[1] in online_counselors else "offline"
 
                     results.append({
+                        "id": parts[1],
                         "username": parts[1], 
                         "name": parts[2],
                         "specialties": parts[5],
@@ -1747,11 +1839,16 @@ def check_existing_booking():
 @app.route("/api/booking/cancel", methods=["POST"])
 @login_required
 def cancel_booking():
-    """Hủy lịch hẹn"""
-    appt_id = request.get_json().get("id")
+    """Hủy lịch hẹn (Cho phép cả Sinh viên và Chuyên gia hủy)"""
+    data = request.get_json()
+    if not data or "id" not in data:
+        return jsonify({"error": "Thiếu ID lịch hẹn"}), 400
+
+    appt_id = data.get("id")
     lines = []
     found = False
 
+    # Đọc file hiện tại
     if os.path.exists(APPOINTMENTS_FILE):
         with open(APPOINTMENTS_FILE, "r", encoding="utf-8") as f:
             lines = f.readlines()
@@ -1759,25 +1856,30 @@ def cancel_booking():
     new_lines = []
     for line in lines:
         parts = line.strip().split(";")
-        if (
-            len(parts) >= 6
-            and parts[0] == appt_id
-            and parts[1] == current_user.username
-        ):
-            # Đổi trạng thái thành cancelled
-            parts[5] = "cancelled"
-            new_lines.append(";".join(parts) + "\n")
-            found = True
+        # Cấu trúc: ApptID;UserID;CounselorID;Date;Time;Status
+        if len(parts) >= 6 and parts[0] == appt_id:
+            # SỬA LỖI TẠI ĐÂY:
+            # Kiểm tra nếu người dùng hiện tại là Sinh viên (cột 1) HOẶC là Chuyên gia (cột 2)
+            if parts[1] == current_user.username or parts[2] == current_user.username:
+                # Đổi trạng thái thành cancelled
+                parts[5] = "cancelled"
+                new_lines.append(";".join(parts) + "\n")
+                found = True
+            else:
+                # Tìm thấy ID nhưng người dùng không có quyền hủy (không phải chủ lịch hẹn)
+                new_lines.append(line) 
         else:
+            # Không phải dòng cần tìm, giữ nguyên
             new_lines.append(line)
 
     if found:
+        # Ghi lại file
         with open(APPOINTMENTS_FILE, "w", encoding="utf-8") as f:
             f.writelines(new_lines)
         return jsonify({"message": "Đã hủy lịch hẹn."}), 200
     else:
-        return jsonify({"error": "Không tìm thấy lịch hẹn."}), 404
-
+        return jsonify({"error": "Không tìm thấy lịch hẹn hoặc bạn không có quyền hủy."}), 404
+    
 @app.route("/api/user/appointments", methods=["GET"])
 @login_required
 def get_user_appointments():
@@ -1887,7 +1989,7 @@ def get_counselor_slots():
         return jsonify({"slots": []}), 400
 
     all_slots = []
-    booked_slots = []
+    booked_info = {}
 
     try:
         # 1. Lấy slot gốc từ file availability (Của Counselor)
@@ -1914,19 +2016,20 @@ def get_counselor_slots():
                         if (
                             parts[2] == counselor_username
                             and parts[3] == date
-                            and parts[5].strip() == "confirmed"
-                        ):
-                            booked_slots.append(parts[4])
+                            and parts[5].strip() == "confirmed"):
+    
+                            time_slot = parts[4]
+                            student_id = parts[1]
+                            booked_info[time_slot] = student_id # Lưu tên SV vào giờ đó
 
-        # 3. Trừ đi slot đã đặt
-        final_slots = [s for s in all_slots if s not in booked_slots]
-        final_slots.sort()
-
-        return jsonify({"slots": final_slots}), 200
+        return jsonify({
+        "slots": all_slots,   # Những giờ Counselor đã đánh dấu rảnh
+        "booked": booked_info # Những giờ đã bị User đặt mất
+        }), 200
 
     except Exception as e:
         logging.error(f"Lỗi lấy slot: {e}")
-        return jsonify({"slots": []}), 500
+        return jsonify({"slots": [], "booked": {}}), 500
 
 
 # --- SỬA LOGIC GHI FILE (Khắc phục lỗi không lưu được) ---
@@ -1955,7 +2058,12 @@ def book_appointment():
             # Đảm bảo xuống dòng (\n) ở cuối
             line = f"{appt_id};{current_user.username};{counselor_username};{date};{time};confirmed\n"
             f.write(line)
-
+            
+            socketio.emit('booking_confirmed', {
+            'counselor_username': counselor_username,
+            'date': date,
+            'time': time
+        })
         return jsonify({"message": "OK", "id": appt_id}), 200
     except Exception as e:
         logging.error(f"Lỗi ghi file: {e}")
