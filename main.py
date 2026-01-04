@@ -1192,7 +1192,13 @@ def logout():
 @app.route("/api/status")
 def get_status():
     if current_user.is_authenticated:
-        return jsonify({"logged_in": True, "username": current_user.username})
+        # Trả về đầy đủ role để JS xử lý
+        return jsonify({
+            "logged_in": True, 
+            "username": current_user.username,
+            "is_admin": getattr(current_user, 'is_admin', False),
+            "is_counselor": getattr(current_user, 'is_counselor', False)
+        })
     else:
         return jsonify({"logged_in": False})
 
@@ -1559,7 +1565,7 @@ def get_chat_partners():
             # --- [SỬA LỖI TẠI ĐÂY] ---
             # Kiểm tra trong RAM xem người này có đang online không
             # Lưu ý: c.user_name là ID dùng để định danh
-            real_status = "online" if c.user_name in online_experts else "offline"
+            real_status = "online" if c.user_name in online_counselors else "offline"
             # -------------------------
 
             partners_data.append({
@@ -2102,10 +2108,6 @@ def check_expert_status():
 
 # --- [TÌM VÀ THAY THẾ ĐOẠN CUỐI CỦA main.py] ---
 
-# 1. Biến toàn cục để quản lý kết nối
-# Lưu danh sách username đang online (để kiểm tra nhanh status khi load trang)
-online_experts = set()
-
 # Map để biết socket_id này thuộc về user nào: {'sid_123': 'nvan'}
 # Dùng để xử lý khi disconnect (biết ai vừa thoát)
 socket_id_to_user = {}
@@ -2127,7 +2129,7 @@ def handle_connect():
         
         if is_counselor:
             # Thêm vào danh sách online
-            online_experts.add(username)
+            online_counselors.add(username)
             
             print(f"🟢 CHUYÊN GIA ONLINE: {username} (SID: {sid})")
             
@@ -2193,8 +2195,8 @@ def handle_disconnect():
         # 3. Nếu thực sự đã thoát hết tab -> Báo Offline
         if not user_still_connected:
             # Nếu là chuyên gia thì xóa khỏi danh sách và báo offline
-            if username in online_experts:
-                online_experts.remove(username)
+            if username in online_counselors:
+                online_counselors.remove(username)
                 
                 print(f"🔴 CHUYÊN GIA OFFLINE HOÀN TOÀN: {username}")
                 
@@ -2486,6 +2488,81 @@ def approve_expert():
         logging.error(f"Lỗi khi duyệt chuyên gia: {e}")
         return jsonify({"message": "Lỗi server khi xử lý file"}), 500
     
+# API để xoá quyền chuyên gia (Admin only)
+@app.route("/api/admin/stats", methods=["GET"])
+@login_required
+def get_admin_stats():
+    if not current_user.is_admin:
+        return jsonify({"error": "Forbidden"}), 403
+    
+    users = []
+    counselors = []
+    
+    # Đọc User
+    if os.path.exists(USER_FILE):
+        with open(USER_FILE, "r", encoding="utf-8") as f:
+            for line in f.readlines()[1:]:
+                parts = line.strip().split(";")
+                if len(parts) >= 2:
+                    users.append({"username": parts[0], "email": parts[1]})
+                    
+    # Đọc Counselor
+    if os.path.exists(COUNSELOR_FILE):
+        with open(COUNSELOR_FILE, "r", encoding="utf-8") as f:
+            for line in f.readlines()[1:]:
+                parts = line.strip().split(";")
+                if len(parts) >= 10:
+                    counselors.append({
+                        "username": parts[1],
+                        "name": parts[2],
+                        "email": parts[3],
+                        "specialties": parts[5]
+                    })
+                    
+    return jsonify({"users": users, "counselors": counselors})
+
+@app.route("/api/admin/revoke-counselor", methods=["POST"])
+@login_required
+def revoke_counselor():
+    if not current_user.is_admin:
+        return jsonify({"message": "Forbidden"}), 403
+        
+    data = request.get_json()
+    username = data.get("username")
+    
+    target_counselor = None
+    remaining_counselors = []
+    
+    # 1. Tìm và xóa khỏi file Counselor
+    if os.path.exists(COUNSELOR_FILE):
+        with open(COUNSELOR_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            header = lines[0]
+            for line in lines[1:]:
+                parts = line.strip().split(";")
+                if parts[1] == username:
+                    target_counselor = {
+                        "username": parts[1],
+                        "email": parts[3],
+                        "password_hash": parts[4]
+                    }
+                else:
+                    remaining_counselors.append(line)
+                    
+    if not target_counselor:
+        return jsonify({"message": "Không tìm thấy chuyên gia"}), 404
+
+    # 2. Ghi lại file Counselor
+    with open(COUNSELOR_FILE, "w", encoding="utf-8") as f:
+        f.write(header)
+        f.writelines(remaining_counselors)
+
+    # 3. Thêm vào file User (Duy trì format 3 cột: Username;Email;PasswordHash)
+    with open(USER_FILE, "a", encoding="utf-8") as f:
+        f.write(f"{target_counselor['username']};{target_counselor['email']};{target_counselor['password_hash']}\n")
+        
+    return jsonify({"message": f"Đã hủy quyền chuyên gia của {username}"})
+
 
 @app.route('/experts')
 def all_experts():

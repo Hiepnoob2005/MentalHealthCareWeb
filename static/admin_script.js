@@ -183,3 +183,71 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1500);
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Xử lý chuyển tab
+    const menuLinks = document.querySelectorAll('.nav-menu .nav-link');
+    menuLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const text = this.innerText.trim();
+            
+            // UI Switch
+            menuLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+
+            if (text === "Dashboard") {
+                document.getElementById('view-dashboard').style.display = 'block';
+                document.getElementById('view-stats').style.display = 'none';
+            } else if (text === "Thống kê") {
+                document.getElementById('view-dashboard').style.display = 'none';
+                document.getElementById('view-stats').style.display = 'block';
+                loadAdminStats();
+            }
+        });
+    });
+});
+
+async function loadAdminStats() {
+    const res = await fetch('/api/admin/stats');
+    const data = await res.json();
+    
+    // Render Counselor
+    const cBody = document.getElementById('counselor-stats-body');
+    cBody.innerHTML = data.counselors.map(c => `
+        <tr>
+            <td>${c.username}</td>
+            <td>${c.name}</td>
+            <td>${c.email}</td>
+            <td>${c.specialties}</td>
+            <td>
+                <button class="btn-revoke" onclick="revokeCounselor('${c.username}')">
+                    <i class="fas fa-user-minus"></i> Hủy quyền
+                </button>
+            </td>
+        </tr>
+    `).join('');
+
+    // Render User
+    const uBody = document.getElementById('user-stats-body');
+    uBody.innerHTML = data.users.map(u => `
+        <tr>
+            <td>${u.username}</td>
+            <td>${u.email}</td>
+        </tr>
+    `).join('');
+}
+
+async function revokeCounselor(username) {
+    if(confirm(`Bạn có chắc muốn hủy quyền chuyên gia của ${username}? Người này sẽ trở thành người dùng thường.`)) {
+        const res = await fetch('/api/admin/revoke-counselor', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username})
+        });
+        if(res.ok) {
+            alert("Thành công!");
+            loadAdminStats();
+        }
+    }
+}

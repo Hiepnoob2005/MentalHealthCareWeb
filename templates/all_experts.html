@@ -115,5 +115,6 @@
     </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script> window.isUserLoggedIn = "{{ 'true' if current_user.is_authenticated else 'false' }}" === "true";  </script>
 </body>
 </html>

@@ -1,8 +1,7 @@
 ApptID;UserID;CounselorID;Date;Time;Status
 5b4f1ad0;dat;nvan;2026-01-10;16:00;cancelled
 e4324381;lkquoc1;nvan;2026-01-10;16:00;confirmed
-e8bb0be5;Trần Duy Khang;nvan;2026-01-03;08:00;confirmed 
+e8bb0be5;Trần Duy Khang;nvan;2026-01-03;08:00;cancelled
 6f1bfa90;quốc;nvan;2026-01-04;08:00;cancelled
-cda09334;đạt;nvan;2026-01-13;09:00;confirmed
-0fd9734e;A;nvan;2026-01-13;12:00;cancelled
-35ae9ea3;ABC;nvan;2026-01-13;17:00;cancelled
+cda09334;đạt;nvan;2026-01-13;09:00;confirmedb49711d9;dat;nvan;2026-01-13;11:00;confirmed
+be7cdb0a;dat;nvan;2026-01-13;12:00;confirmed
