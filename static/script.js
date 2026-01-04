@@ -30,6 +30,8 @@ document.addEventListener("DOMContentLoaded", function () {
   loadAvailableCounselors(); // Tải danh sách chuyên gia có lịch trống
   loadHomeExperts();
   loadAllCounselorsPage();
+  initializeCounselorScheduleLogic();
+  initializeUserDashboardLogic();
 });
 
 // --- Authentication (Đăng nhập/Đăng xuất) ---
@@ -2417,4 +2419,350 @@ async function loadHomeExperts() {
         console.error(e);
         container.innerHTML = '<p style="color: red; text-align: center;">Lỗi tải dữ liệu.</p>';
     }
+}
+
+    function initializeUserDashboardLogic() {
+        if (!document.getElementById('user-view-overview')) return;
+
+        const userTabs = { 'tab-overview': 'user-view-overview', 'tab-schedule': 'user-view-booking', 'tab-history': 'user-view-history' };
+        Object.keys(userTabs).forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.onclick = (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.dashboard-menu a').forEach(a => a.classList.remove('active'));
+                el.classList.add('active');
+                Object.values(userTabs).forEach(v => document.getElementById(v).style.display = 'none');
+                document.getElementById(userTabs[id]).style.display = 'block';
+                if (id === 'tab-schedule') loadAvailableCounselors();
+                if (id === 'tab-history') loadUserHistory();
+            }
+        });
+
+        async function loadUserHistory() {
+            const tbody = document.getElementById('user-history-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="4">Đang tải...</td></tr>';
+            try {
+                const res = await fetch('/api/user/appointments');
+                const data = await res.json();
+                tbody.innerHTML = '';
+                if (data.appointments?.length) {
+                    data.appointments.forEach(a => {
+                        const isConf = a.status === 'confirmed';
+                        const btn = isConf ? `<button onclick="cancelBooking('${a.id}')" style="color:red;border:1px solid red;">Hủy</button>` : '';
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${a.date}<br><b>${a.time}</b></td><td>${a.counselor}</td><td style="color:${isConf ? 'green' : 'gray'}">${isConf ? 'Đã xác nhận' : 'Đã hủy'}</td><td>${btn}</td>`;
+                        tbody.appendChild(tr);
+                    });
+                } else tbody.innerHTML = '<tr><td colspan="4">Chưa có lịch hẹn.</td></tr>';
+            } catch (e) { tbody.innerHTML = '<tr><td colspan="4">Lỗi tải.</td></tr>'; }
+        }
+    }
+
+    async function cancelBooking(id) {
+        if (!confirm("Hủy lịch hẹn này?")) return;
+        try {
+            await fetch('/api/booking/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+            document.getElementById('tab-history').click(); // Reload
+        } catch (e) { alert("Lỗi khi hủy."); }
+    }
+
+function initializeCounselorScheduleLogic() {
+    // Chỉ chạy nếu có DatePicker (Giao diện Counselor)
+    const datePickerEl = document.getElementById('counselorDatePicker');
+    if (!datePickerEl) return;
+
+    // --- BIẾN CỤC BỘ (QUAN TRỌNG: Để tất cả hàm bên dưới đều dùng được) ---
+    let selectedDate = null;
+    let currentSelectedSlot = null;
+    let fpInstance;
+
+    // 1. Hàm vẽ giao diện (Render Slots)
+    function renderSlots(savedSlots, bookedInfo) {
+        const container = document.getElementById('counselorSlotContainer');
+        if (!container) return;
+        container.innerHTML = ''; 
+        
+        currentSelectedSlot = null; // Reset lựa chọn
+
+        // Tạo giờ cố định 08:00 - 17:00
+        const allTimeSlots = [];
+        for (let i = 8; i <= 17; i++) {
+            allTimeSlots.push((i < 10 ? '0' : '') + i + ":00");
+        }
+
+        allTimeSlots.forEach(time => {
+            const btn = document.createElement('button');
+            btn.className = 'slot-btn';
+            
+            // Style inline (Nên đưa vào CSS)
+            btn.style.width = '100%';
+            btn.style.minHeight = '60px';
+            btn.style.padding = '10px';
+            btn.style.borderRadius = '8px';
+            btn.style.border = '1px solid #ddd';
+            btn.style.cursor = 'pointer';
+            btn.style.display = 'flex';
+            btn.style.flexDirection = 'column';
+            btn.style.alignItems = 'center';
+            btn.style.justifyContent = 'center';
+            btn.style.fontWeight = 'bold';
+            btn.style.background = 'white';
+
+            // Check trạng thái
+            const studentName = bookedInfo ? bookedInfo[time] : null;
+
+            if (studentName) {
+                // ĐÃ CÓ HẸN -> MÀU ĐỎ
+                btn.style.backgroundColor = '#fee2e2'; 
+                btn.style.color = '#b91c1c';
+                btn.style.borderColor = '#fca5a5';
+                btn.disabled = true;
+                btn.innerHTML = `
+                    <span>${time}</span>
+                    <span style="font-size: 11px; font-weight: normal; margin-top: 5px;">
+                        <i class="fas fa-user"></i> ${studentName}
+                    </span>
+                `;
+            } else {
+                // TRỐNG -> MÀU TRẮNG
+                btn.style.backgroundColor = 'white';
+                btn.style.color = '#333';
+                btn.innerHTML = `<span>${time}</span>`;
+                
+                btn.onclick = function() {
+                    // Reset các nút khác
+                    container.querySelectorAll('.slot-btn').forEach(b => {
+                        if (!b.disabled) {
+                            b.style.backgroundColor = 'white';
+                            b.style.color = '#333';
+                            b.dataset.selected = "false";
+                        }
+                    });
+                    // Highlight nút chọn
+                    this.style.backgroundColor = '#4f46e5';
+                    this.style.color = 'white';
+                    this.dataset.selected = "true";
+                    currentSelectedSlot = time;
+                };
+            }
+            container.appendChild(btn);
+        });
+    }
+
+    // 2. Hàm tải dữ liệu từ Server
+    async function loadSlotsForDate(date) {
+        const container = document.getElementById('counselorSlotContainer');
+        if (!container) return;
+        container.innerHTML = '<div class="spinner"></div>';
+
+        try {
+            // Gọi API lấy slot và thông tin booking
+            const res = await fetch(`/api/counselor/get-slots?username=${currentUserUsername}&date=${date}`);
+            const data = await res.json();
+            
+            // Gọi hàm render đã định nghĩa ở trên
+            renderSlots(data.slots || [], data.booked || {});
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = '<p style="color:red">Lỗi tải dữ liệu.</p>';
+        }
+    }
+
+    // 3. Khởi tạo Lịch (Flatpickr)
+    if (typeof flatpickr !== 'undefined') {
+        fpInstance = flatpickr("#counselorDatePicker", { 
+            minDate: "today", 
+            dateFormat: "Y-m-d", 
+            locale: "vn",
+            onChange: function(dates, dateStr) {
+                selectedDate = dateStr;
+                
+                // Mở khóa vùng hiển thị (Quan trọng)
+                const slotArea = document.getElementById('slot-selection-area');
+                if (slotArea) slotArea.style.display = 'block'; 
+                
+                document.getElementById('counselorSlotContainer').style.display = 'grid'; 
+                loadSlotsForDate(dateStr);
+            }
+        });
+    }
+
+    // 4. Xử lý nút "Tạo cuộc hẹn"
+    const btnCreate = document.getElementById('btnCreateAppointment');
+    if (btnCreate) {
+        // Xóa listener cũ (nếu có) để tránh double click
+        const newBtn = btnCreate.cloneNode(true);
+        btnCreate.parentNode.replaceChild(newBtn, btnCreate);
+
+        newBtn.addEventListener('click', async () => {
+            const studentInput = document.getElementById('manualStudentInput');
+            const studentName = studentInput ? studentInput.value.trim() : "";
+
+            if (!selectedDate) return alert("Vui lòng chọn ngày!");
+            if (!currentSelectedSlot) return alert("Vui lòng chọn một khung giờ trống!");
+            if (!studentName) return alert("Vui lòng nhập tên sinh viên!");
+
+            const originalText = newBtn.innerHTML;
+            newBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+            newBtn.disabled = true;
+
+            try {
+                const res = await fetch('/api/counselor/create-manual-appointment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        date: selectedDate,
+                        time: currentSelectedSlot,
+                        student_name: studentName
+                    })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert("Tạo lịch hẹn thành công!");
+                    if(studentInput) studentInput.value = ""; 
+                    loadSlotsForDate(selectedDate); // Reload lại màu đỏ
+                } else {
+                    alert(data.message || "Lỗi khi tạo lịch.");
+                }
+            } catch (e) {
+                alert("Lỗi kết nối server.");
+            } finally {
+                newBtn.innerHTML = originalText;
+                newBtn.disabled = false;
+            }
+        });
+    }
+
+    // 5. Real-time Listener (Cập nhật màu đỏ ngay khi có người đặt)
+    // Đặt trong setTimeout để đảm bảo socket đã kết nối
+    setTimeout(() => {
+        if (typeof expertSocket !== 'undefined' && expertSocket) {
+            expertSocket.off('booking_confirmed'); // Xóa listener cũ tránh trùng
+            expertSocket.on('booking_confirmed', (data) => {
+                // Nếu đúng là ngày đang xem và đúng là mình
+                if (selectedDate === data.date && currentUserUsername === data.counselor_username) {
+                    loadSlotsForDate(selectedDate);
+                    
+                    // Toast thông báo
+                    const toast = document.createElement('div');
+                    toast.className = 'custom-toast'; // Cần CSS
+                    toast.style.position = 'fixed';
+                    toast.style.bottom = '20px';
+                    toast.style.right = '20px';
+                    toast.style.background = '#10b981';
+                    toast.style.color = 'white';
+                    toast.style.padding = '12px 20px';
+                    toast.style.borderRadius = '8px';
+                    toast.style.zIndex = '9999';
+                    toast.innerHTML = `📅 Khách mới đặt lịch lúc ${data.time}`;
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+                }
+            });
+        }
+    }, 2000);
+
+    // 6. Xử lý chuyển Tab (Giữ nguyên)
+    const tabs = { 'tab-overview': 'view-overview', 'tab-schedule': 'view-schedule', 'tab-history': 'view-history' };
+    Object.keys(tabs).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.onclick = (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.dashboard-menu a').forEach(a => a.classList.remove('active'));
+            el.classList.add('active');
+            Object.values(tabs).forEach(v => {
+                const view = document.getElementById(v);
+                if(view) view.style.display = 'none';
+            });
+            const activeView = document.getElementById(tabs[id]);
+            if(activeView) activeView.style.display = 'block';
+            
+            if (id === 'tab-history') loadHistoryLogs();
+        }
+    });
+
+    // 7. Hàm tải lịch sử log (cho tab History)
+    // 7. Hàm tải lịch sử cuộc hẹn (ĐÃ CẬP NHẬT: Hiển thị tên SV)
+    async function loadHistoryLogs() {
+        const tbody = document.getElementById('historyTableBody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px;">Đang tải dữ liệu...</td></tr>';
+        
+        try {
+            // Gọi API mới vừa tạo ở Bước 1
+            const res = await fetch("/api/counselor/appointments");
+            const data = await res.json();
+            
+            tbody.innerHTML = '';
+            
+            if (data.appointments && data.appointments.length > 0) {
+                data.appointments.forEach(appt => {
+                    const tr = document.createElement('tr');
+                    
+                    // Xác định màu trạng thái
+                    let statusColor = 'green';
+                    let statusText = 'Đã xác nhận';
+                    if (appt.status === 'cancelled') {
+                        statusColor = 'red';
+                        statusText = 'Đã hủy';
+                    }
+
+                    tr.innerHTML = `
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            <div style="font-weight:bold; color:var(--primary)">${appt.time}</div>
+                            <div style="font-size:0.9em; color:#666">${appt.date}</div>
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            <i class="fas fa-user-graduate" style="color:#666; margin-right:5px;"></i>
+                            <b>${appt.student_name}</b>
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            <span style="color:${statusColor}; font-weight:500; padding: 4px 8px; background: ${statusColor === 'red' ? '#fee2e2' : '#dcfce7'}; border-radius: 4px;">
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            ${appt.status === 'confirmed' ? 
+                                `<button onclick="cancelAppointment('${appt.id}')" style="color:red; background:none; border:1px solid red; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:0.8em;">
+                                    Hủy
+                                </button>` : '-'}
+                        </td> 
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px;">Chưa có cuộc hẹn nào.</td></tr>';
+            }
+        } catch (e) { 
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Lỗi tải dữ liệu.</td></tr>'; 
+        }
+    }
+
+    // Hàm hỗ trợ hủy lịch (Thêm vào bên ngoài hoặc bên trong initializeCounselorScheduleLogic đều được, nhưng tốt nhất để global scope để HTML gọi được)
+    window.cancelAppointment = async function(id) {
+        if(!confirm("Bạn có chắc chắn muốn hủy cuộc hẹn này không?")) return;
+        
+        try {
+            const res = await fetch('/api/booking/cancel', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id})
+            });
+            
+            if(res.ok) {
+                alert("Đã hủy thành công!");
+                loadHistoryLogs(); // Tải lại bảng
+                // Reload lại các slot ở tab Lịch
+                if(selectedDate) loadSlotsForDate(selectedDate);
+            } else {
+                alert("Lỗi khi hủy.");
+            }
+        } catch(e) {
+            alert("Lỗi kết nối.");
+        }
+    };
 }
