@@ -330,48 +330,41 @@ socket_id_to_user = {}
 
 # --- Thêm vào main.py ---
 
+# --- THÊM VÀO main.py ---
+
 @app.route("/api/counselor/create-manual-appointment", methods=["POST"])
 @login_required
 def create_manual_appointment():
-    """
-    API cho chuyên gia tự tạo lịch hẹn với sinh viên (nhập tay tên).
-    """
+    """API để chuyên gia tự tạo lịch hẹn với sinh viên"""
     if not current_user.is_counselor:
-        return jsonify({"message": "Access Denied"}), 403
+        return jsonify({"message": "Unauthorized"}), 403
 
     data = request.get_json()
+    student_username = data.get("student_name")
     date = data.get("date")
     time = data.get("time")
-    student_name = data.get("student_name") # Tên sinh viên nhập tay
 
-    if not date or not time or not student_name:
-        return jsonify({"message": "Vui lòng nhập đầy đủ thông tin"}), 400
+    if not all([student_username, date, time]):
+        return jsonify({"message": "Thiếu thông tin (Tên SV, Ngày hoặc Giờ)"}), 400
 
     try:
-        # 1. Kiểm tra xem giờ đó đã bị đặt chưa (tránh trùng lặp)
-        if os.path.exists(APPOINTMENTS_FILE):
-            with open(APPOINTMENTS_FILE, "r", encoding="utf-8") as f:
-                for line in f:
-                    parts = line.strip().split(";")
-                    # Cấu trúc: ApptID;UserID;CounselorID;Date;Time;Status
-                    if len(parts) >= 6:
-                        # Kiểm tra: Cùng Counselor, Cùng Ngày, Cùng Giờ, Trạng thái Confirmed
-                        if (parts[2] == current_user.username and 
-                            parts[3] == date and 
-                            parts[4] == time and 
-                            parts[5] == "confirmed"):
-                            return jsonify({"message": "Khung giờ này đã có người đặt!"}), 409
-
-        # 2. Tạo lịch hẹn mới
+        # 1. Tạo ID cuộc hẹn
         appt_id = str(uuid.uuid4())[:8]
-        # Lưu student_name vào vị trí UserID (cột thứ 2)
-        # Format: ApptID;StudentName;CounselorID;Date;Time;Status
-        new_line = f"{appt_id};{student_name};{current_user.username};{date};{time};confirmed\n"
+        
+        # 2. Format dòng dữ liệu: ID;Student;Counselor;Date;Time;Status
+        # Status mặc định là 'confirmed' vì do chuyên gia tạo
+        line = f"{appt_id};{student_username};{current_user.username};{date};{time};confirmed\n"
+
+        # 3. Lưu vào file appointments.txt
+        # Đảm bảo file tồn tại
+        if not os.path.exists(APPOINTMENTS_FILE):
+            with open(APPOINTMENTS_FILE, "w", encoding="utf-8") as f:
+                f.write("ApptID;UserID;CounselorID;Date;Time;Status\n")
 
         with open(APPOINTMENTS_FILE, "a", encoding="utf-8") as f:
-            f.write(new_line)
+            f.write(line)
 
-        return jsonify({"message": "Đã tạo cuộc hẹn thành công!", "id": appt_id}), 200
+        return jsonify({"message": "Tạo lịch thành công"}), 200
 
     except Exception as e:
         logging.error(f"Lỗi tạo lịch thủ công: {e}")
@@ -2585,6 +2578,89 @@ def get_user_latest_test_result():
     except Exception as e:
         logging.error(f"Lỗi đọc lịch sử test: {e}")
         return jsonify({"error": "Lỗi server"}), 500
+    
+# --- [THÊM VÀO main.py] ---
+# --- HỆ THỐNG ĐÁNH GIÁ (EVALUATION SYSTEM) ---
+
+EVALUATIONS_FILE = "evaluations.txt"
+
+@app.route("/api/counselor/write-evaluation", methods=["POST"])
+@login_required
+def write_evaluation():
+    """Chuyên gia viết đánh giá cho sinh viên"""
+    if not current_user.is_counselor:
+        return jsonify({"message": "Bạn không có quyền thực hiện thao tác này"}), 403
+
+    data = request.get_json()
+    student_username = data.get("student_username")
+    content = data.get("content")
+
+    if not student_username or not content:
+        return jsonify({"message": "Vui lòng nhập tên sinh viên và nội dung"}), 400
+
+    try:
+        # Tạo file nếu chưa có
+        if not os.path.exists(EVALUATIONS_FILE):
+            with open(EVALUATIONS_FILE, "w", encoding="utf-8") as f:
+                f.write("EvalID;StudentUser;CounselorUser;Content;Date\n")
+
+        eval_id = str(uuid.uuid4())[:8]
+        date_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+        
+        # Xóa ký tự xuống dòng trong content để tránh lỗi file
+        clean_content = content.replace("\n", " ").replace(";", ",")
+
+        line = f"{eval_id};{student_username};{current_user.username};{clean_content};{date_str}\n"
+
+        with open(EVALUATIONS_FILE, "a", encoding="utf-8") as f:
+            f.write(line)
+
+        return jsonify({"message": "Đã lưu đánh giá thành công!"}), 200
+
+    except Exception as e:
+        logging.error(f"Lỗi lưu đánh giá: {e}")
+        return jsonify({"message": "Lỗi server"}), 500
+
+@app.route("/api/user/evaluations", methods=["GET"])
+@login_required
+def get_evaluations():
+    """Lấy danh sách đánh giá (User xem của mình, Counselor xem các bài đã viết)"""
+    results = []
+    
+    if not os.path.exists(EVALUATIONS_FILE):
+        return jsonify({"evaluations": []}), 200
+
+    try:
+        with open(EVALUATIONS_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()[1:] # Bỏ header
+
+        for line in lines:
+            parts = line.strip().split(";")
+            if len(parts) >= 5:
+                # Nếu là User thường: Lấy bài viết VỀ mình (cột 1)
+                if not current_user.is_counselor and parts[1] == current_user.username:
+                    results.append({
+                        "id": parts[0],
+                        "author": parts[2], # Tên chuyên gia
+                        "content": parts[3],
+                        "date": parts[4]
+                    })
+                # Nếu là Counselor: Lấy bài viết DO mình viết (cột 2)
+                elif current_user.is_counselor and parts[2] == current_user.username:
+                    results.append({
+                        "id": parts[0],
+                        "student": parts[1], # Tên sinh viên
+                        "content": parts[3],
+                        "date": parts[4]
+                    })
+        
+        # Sắp xếp mới nhất
+        results.sort(key=lambda x: x['date'], reverse=True)
+        return jsonify({"evaluations": results}), 200
+
+    except Exception as e:
+        logging.error(f"Lỗi đọc file đánh giá: {e}")
+        return jsonify({"message": "Lỗi server"}), 500
 
 if __name__ == "__main__":
     start_file_watcher()

@@ -2175,213 +2175,48 @@ async function loadHomeExperts() {
     }
 }
 
-    function initializeUserDashboardLogic() {
-        if (!document.getElementById('user-view-overview')) return;
-
-        const userTabs = { 'tab-overview': 'user-view-overview', 'tab-schedule': 'user-view-booking', 'tab-history': 'user-view-history' };
-        Object.keys(userTabs).forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.onclick = (e) => {
-                e.preventDefault();
-                document.querySelectorAll('.dashboard-menu a').forEach(a => a.classList.remove('active'));
-                el.classList.add('active');
-                Object.values(userTabs).forEach(v => document.getElementById(v).style.display = 'none');
-                document.getElementById(userTabs[id]).style.display = 'block';
-                if (id === 'tab-schedule') loadAvailableCounselors();
-                if (id === 'tab-history') loadUserHistory();
-            }
-        });
-
-        async function loadUserHistory() {
-            const tbody = document.getElementById('user-history-body');
-            if (!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="4">Đang tải...</td></tr>';
-            try {
-                const res = await fetch('/api/user/appointments');
-                const data = await res.json();
-                tbody.innerHTML = '';
-                if (data.appointments?.length) {
-                    data.appointments.forEach(a => {
-                        const isConf = a.status === 'confirmed';
-                        const btn = isConf ? `<button onclick="cancelBooking('${a.id}')" style="color:red;border:1px solid red;">Hủy</button>` : '';
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `<td>${a.date}<br><b>${a.time}</b></td><td>${a.counselor}</td><td style="color:${isConf ? 'green' : 'gray'}">${isConf ? 'Đã xác nhận' : 'Đã hủy'}</td><td>${btn}</td>`;
-                        tbody.appendChild(tr);
-                    });
-                } else tbody.innerHTML = '<tr><td colspan="4">Chưa có lịch hẹn.</td></tr>';
-            } catch (e) { tbody.innerHTML = '<tr><td colspan="4">Lỗi tải.</td></tr>'; }
-        }
-    }
-
-    async function cancelBooking(id) {
-        if (!confirm("Hủy lịch hẹn này?")) return;
-        try {
-            await fetch('/api/booking/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-            document.getElementById('tab-history').click(); // Reload
-        } catch (e) { alert("Lỗi khi hủy."); }
-    }
-
 function initializeCounselorScheduleLogic() {
   const datePickerEl = document.getElementById('counselorDatePicker');
-  if (!datePickerEl) return; // Không phải trang counselor thì thoát
-
+  // Nếu không có datePicker nhưng có tab-evaluation (trường hợp load trang trực tiếp), vẫn cần chạy logic tab
+  
   let selectedDate = null;
   let currentSelectedSlot = null;
-  let fpInstance = null;
+  let fpInstance;
 
-  // Xử lý chuyển tab trong dashboard
-  const tabs = {
-       'tab-overview': 'view-overview',
-       'tab-schedule': 'view-schedule',
-       'tab-history': 'view-history'
-  };
-
-  Object.keys(tabs).forEach(tabId => {
-       const tabEl = document.getElementById(tabId);
-       if (tabEl) {
-           tabEl.addEventListener('click', function(e) {
-               e.preventDefault();
-               
-               // UI Active Tab
-               document.querySelectorAll('.dashboard-menu a').forEach(a => a.classList.remove('active'));
-               this.classList.add('active');
-               
-               // Ẩn/Hiện Views
-               Object.values(tabs).forEach(viewId => {
-                   const el = document.getElementById(viewId);
-                   if(el) el.style.display = 'none';
-               });
-               document.getElementById(tabs[tabId]).style.display = 'block';
-
-               // [FIX QUAN TRỌNG] Nếu chuyển sang tab Lịch, kiểm tra và init lịch nếu chưa có
-               if (tabId === 'tab-schedule') {
-                   initCalendar();
-               }
-               if (tabId === 'tab-history') {
-                   loadHistoryLogs();
-               }
-           });
-       }
-  });
-
-  // Hàm khởi tạo lịch (chỉ chạy 1 lần hoặc khi cần thiết)
-  function initCalendar() {
-      if (fpInstance) return; // Đã init rồi thì thôi
-      
-      if (typeof flatpickr !== 'undefined') {
-          console.log("📅 Đang khởi tạo Flatpickr...");
-          fpInstance = flatpickr("#counselorDatePicker", { 
-              minDate: "today", 
-              dateFormat: "Y-m-d", 
-              locale: "vn",
-              // [FIX] Sự kiện onChange để mở khóa vùng đặt lịch
-              onChange: function(dates, dateStr) {
-                  console.log("📅 Đã chọn ngày:", dateStr);
-                  selectedDate = dateStr;
-                  
-                  // Hiển thị vùng chọn giờ
-                  const slotArea = document.getElementById('slot-selection-area');
-                  if(slotArea) {
-                      slotArea.style.display = 'block'; 
-                      console.log("🔓 Đã mở khóa vùng đặt lịch");
-                  }
-                  
-                  // Tải dữ liệu slot
-                  document.getElementById('counselorSlotContainer').style.display = 'grid'; 
-                  loadSlotsForDate(dateStr);
-              }
-          });
-      } else {
-          console.error("❌ Thư viện Flatpickr chưa được tải!");
-      }
-  }
-
-  // Render các ô giờ
-  function renderSlots(savedSlots, bookedInfo) {
-      const container = document.getElementById('counselorSlotContainer');
-      if (!container) return;
-      container.innerHTML = ''; 
-      currentSelectedSlot = null;
-
-      const allTimeSlots = [];
-      for (let i = 8; i <= 17; i++) {
-          allTimeSlots.push((i < 10 ? '0' : '') + i + ":00");
-      }
-
-      allTimeSlots.forEach(time => {
-          const btn = document.createElement('button');
-          btn.className = 'slot-btn'; // Dùng class CSS thay vì inline style
-          // Thêm style cơ bản bằng JS để đảm bảo hiển thị nếu CSS lỗi
-          btn.style.cssText = "width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; cursor:pointer; background:white; transition:all 0.2s;";
-          
-          const studentName = bookedInfo ? bookedInfo[time] : null;
-          
-          if (studentName) {
-              // Slot đã bị đặt
-              btn.style.backgroundColor = '#fee2e2'; 
-              btn.style.borderColor = '#fca5a5';
-              btn.style.color = '#b91c1c';
-              btn.disabled = true;
-              btn.innerHTML = `${time} <br><small style="font-weight:normal">👤 ${studentName}</small>`;
-          } else {
-              // Slot trống
-              btn.innerHTML = `<strong>${time}</strong>`;
-              btn.onclick = function() {
-                  // Reset style các nút khác
-                  container.querySelectorAll('.slot-btn').forEach(b => { 
-                      if(!b.disabled) {
-                          b.style.backgroundColor = 'white'; 
-                          b.style.color = '#333';
-                          b.style.borderColor = '#ddd';
-                      }
-                  });
-                  // Highlight nút này
-                  this.style.backgroundColor = '#6366f1'; // Primary color
-                  this.style.color = 'white';
-                  this.style.borderColor = '#6366f1';
-                  currentSelectedSlot = time;
-                  console.log("⏰ Đã chọn giờ:", time);
-              };
-          }
-          container.appendChild(btn);
-      });
-  }
-
- 
-  async function loadSlotsForDate(date) {
-      const container = document.getElementById('counselorSlotContainer');
-      if (!container) return;
-      container.innerHTML = '<div class="spinner"></div>';
-      
-      try {
-          const res = await fetch(`/api/counselor/get-slots?username=${currentUserUsername}&date=${date}`);
-          const data = await res.json();
-          renderSlots(data.slots || [], data.booked || {});
-      } catch(e) { 
-          console.error(e); 
-          container.innerHTML = '<p style="color:red">Lỗi tải dữ liệu.</p>';
-      }
-  }
-
-  // Xử lý nút "Tạo cuộc hẹn"
   const btnCreate = document.getElementById('btnCreateAppointment');
+  
   if (btnCreate) {
-      // Clone để xóa event listener cũ tránh bị duplicate
+      // Clone lại nút để xóa các event listener cũ (tránh bị duplicate khi click nhiều lần)
       const newBtn = btnCreate.cloneNode(true);
       btnCreate.parentNode.replaceChild(newBtn, btnCreate);
 
-      newBtn.onclick = async () => {
-           const studentName = document.getElementById('manualStudentInput')?.value.trim();
+      newBtn.addEventListener('click', async function() {
+           // 1. Lấy dữ liệu
+           const studentNameInput = document.getElementById('manualStudentInput');
+           const studentName = studentNameInput ? studentNameInput.value.trim() : null;
            
-           if(!selectedDate) return alert("Vui lòng chọn ngày!");
-           if(!currentSelectedSlot) return alert("Vui lòng chọn một khung giờ trống!");
-           if(!studentName) return alert("Vui lòng nhập tên sinh viên!");
+           // 2. Validate (Kiểm tra dữ liệu)
+           if(!selectedDate) {
+               alert("Vui lòng chọn NGÀY trên lịch trước!");
+               return;
+           }
+           if(!currentSelectedSlot) {
+               alert("Vui lòng chọn KHUNG GIỜ muốn đặt!");
+               return;
+           }
+           if(!studentName) {
+               alert("Vui lòng nhập TÊN TÀI KHOẢN sinh viên!");
+               studentNameInput.focus();
+               return;
+           }
            
-           const originalText = newBtn.innerText;
-           newBtn.innerText = "Đang xử lý...";
+           // 3. Hiệu ứng Loading
+           const originalText = newBtn.innerHTML;
+           newBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo...';
            newBtn.disabled = true;
 
            try {
+               // 4. Gọi API
                const res = await fetch('/api/counselor/create-manual-appointment', { 
                    method: 'POST', 
                    headers: {'Content-Type': 'application/json'},
@@ -2396,8 +2231,10 @@ function initializeCounselorScheduleLogic() {
 
                if(res.ok) { 
                    alert("✅ Tạo cuộc hẹn thành công!"); 
-                   document.getElementById('manualStudentInput').value = "";
-                   loadSlotsForDate(selectedDate); // Reload lại để thấy slot đỏ
+                   // Reset ô nhập tên
+                   if(studentNameInput) studentNameInput.value = "";
+                   // Tải lại các slot để hiển thị ô vừa đặt thành màu đỏ
+                   loadSlotsForDate(selectedDate); 
                } else {
                    alert("❌ " + (data.message || "Có lỗi xảy ra"));
                }
@@ -2405,90 +2242,364 @@ function initializeCounselorScheduleLogic() {
                console.error(e);
                alert("❌ Lỗi kết nối server."); 
            } finally {
-               newBtn.innerText = originalText;
+               // 5. Trả lại trạng thái nút ban đầu
+               newBtn.innerHTML = originalText;
                newBtn.disabled = false;
            }
-      };
+      });
   }
 
-  async function loadHistoryLogs() {
-        const tbody = document.getElementById('historyTableBody');
-        if (!tbody) return;
-        
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px;">Đang tải dữ liệu...</td></tr>';
-        
-        try {
-            // Gọi API mới vừa tạo ở Bước 1
-            const res = await fetch("/api/counselor/appointments");
-            const data = await res.json();
-            
-            tbody.innerHTML = '';
-            
-            if (data.appointments && data.appointments.length > 0) {
-                data.appointments.forEach(appt => {
-                    const tr = document.createElement('tr');
-                    
-                    // Xác định màu trạng thái
-                    let statusColor = 'green';
-                    let statusText = 'Đã xác nhận';
-                    if (appt.status === 'cancelled') {
-                        statusColor = 'red';
-                        statusText = 'Đã hủy';
-                    }
+  // Render Slots View
+  function renderSlots(savedSlots, bookedInfo) {
+      const container = document.getElementById('counselorSlotContainer');
+      if (!container) return;
+      container.innerHTML = ''; 
+      currentSelectedSlot = null;
 
-                    tr.innerHTML = `
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                            <div style="font-weight:bold; color:var(--primary)">${appt.time}</div>
-                            <div style="font-size:0.9em; color:#666">${appt.date}</div>
-                        </td>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                            <i class="fas fa-user-graduate" style="color:#666; margin-right:5px;"></i>
-                            <b>${appt.student_name}</b>
-                        </td>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                            <span style="color:${statusColor}; font-weight:500; padding: 4px 8px; background: ${statusColor === 'red' ? '#fee2e2' : '#dcfce7'}; border-radius: 4px;">
-                                ${statusText}
-                            </span>
-                        </td>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                            ${appt.status === 'confirmed' ? 
-                                `<button onclick="cancelAppointment('${appt.id}')" style="color:red; background:none; border:1px solid red; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:0.8em;">
-                                    Hủy
-                                </button>` : '-'}
-                        </td> 
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } else {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px;">Chưa có cuộc hẹn nào.</td></tr>';
-            }
-        } catch (e) { 
-            console.error(e);
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Lỗi tải dữ liệu.</td></tr>'; 
+      const allTimeSlots = [];
+      for (let i = 8; i <= 17; i++) {
+          // Format giờ đẹp hơn (08:00)
+          allTimeSlots.push((i < 10 ? '0' : '') + i + ":00");
+      }
+
+      allTimeSlots.forEach(time => {
+          const btn = document.createElement('button');
+          btn.className = 'slot-btn'; // Dùng class CSS thay vì inline style
+          
+          const studentName = bookedInfo ? bookedInfo[time] : null;
+          
+          if (studentName) {
+              // Slot đã bị đặt
+              btn.disabled = true;
+              btn.innerHTML = `
+                  <span>${time}</span>
+                  <small><i class="fas fa-user"></i> ${studentName}</small>
+              `;
+              btn.title = `Đã hẹn với ${studentName}`;
+          } else {
+              // Slot trống
+              btn.textContent = time;
+              btn.onclick = function() {
+                  // Xóa active cũ
+                  container.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('active'));
+                  // Thêm active mới
+                  this.classList.add('active');
+                  currentSelectedSlot = time;
+              };
+          }
+          container.appendChild(btn);
+      });
+  }
+
+  async function loadSlotsForDate(date) {
+      const container = document.getElementById('counselorSlotContainer');
+      if (!container) return;
+      container.innerHTML = '<div class="spinner"></div>';
+      try {
+          const res = await fetch(`/api/counselor/get-slots?username=${currentUserUsername}&date=${date}`);
+          const data = await res.json();
+          renderSlots(data.slots || [], data.booked || {});
+      } catch(e) { console.error(e); }
+  }
+
+  if (typeof flatpickr !== 'undefined' && datePickerEl) {
+      fpInstance = flatpickr("#counselorDatePicker", { 
+          minDate: "today", dateFormat: "Y-m-d", locale: "vn",
+          onChange: function(dates, dateStr) {
+              selectedDate = dateStr;
+              const slotArea = document.getElementById('slot-selection-area');
+              if(slotArea) slotArea.style.display = 'block'; 
+              loadSlotsForDate(dateStr);
+          }
+      });
+  }
+  
+  // Tab Switching (Cập nhật thêm tab evaluation)
+  const tabs = {
+       'tab-overview': 'view-overview',
+       'tab-schedule': 'view-schedule',
+       'tab-history': 'view-history',
+       'tab-evaluation': 'view-evaluation' // <-- MỚI
+  };
+  Object.keys(tabs).forEach(id => {
+       const el = document.getElementById(id);
+       if (el) el.onclick = (e) => {
+           e.preventDefault();
+           document.querySelectorAll('.dashboard-menu a').forEach(a => a.classList.remove('active'));
+           el.classList.add('active');
+           Object.values(tabs).forEach(v => {
+               const view = document.getElementById(v);
+               if(view) view.style.display = 'none';
+           });
+           const activeView = document.getElementById(tabs[id]);
+           if(activeView) activeView.style.display = 'block';
+           
+           if(id === 'tab-history') loadCounselorHistoryLogs();
+           if(id === 'tab-evaluation') loadEvaluationsForCounselor(); // <-- Load danh sách đánh giá
+       }
+  });
+
+  // Load Lịch sử (ĐÃ TỐI ƯU STYLE)
+  async function loadCounselorHistoryLogs() {
+      const tbody = document.getElementById('historyTableBody');
+      if(!tbody) return;
+      
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#666;">Đang tải dữ liệu... <div class="spinner" style="width:20px; height:20px; border-width:2px; margin-top:10px;"></div></td></tr>';
+      
+      try {
+          const res = await fetch("/api/counselor/appointments");
+          const data = await res.json();
+          
+          tbody.innerHTML = '';
+          
+          if(data.appointments && data.appointments.length > 0) {
+              data.appointments.forEach(appt => {
+                  const tr = document.createElement('tr');
+                  
+                  // Style trạng thái
+                  let statusLabel = `<span style="color:#10b981; background:#dcfce7; padding:4px 8px; border-radius:4px; font-weight:500;">Đã xác nhận</span>`;
+                  let actionBtn = `<button onclick="cancelAppointment('${appt.id}')" class="btn-action-cancel"><i class="fas fa-times"></i> Hủy</button>`;
+
+                  if (appt.status === 'cancelled') {
+                      statusLabel = `<span style="color:#64748b; background:#f1f5f9; padding:4px 8px; border-radius:4px;">Đã hủy</span>`;
+                      actionBtn = '-';
+                  }
+
+                  tr.innerHTML = `
+                      <td>
+                          <div style="font-weight:bold; color:var(--primary);">${appt.time}</div>
+                          <div style="font-size:0.85em; color:#64748b;">${appt.date}</div>
+                      </td>
+                      <td>
+                          <div style="font-weight:600;">${appt.student_name}</div>
+                      </td>
+                      <td>${statusLabel}</td>
+                      <td>${actionBtn}</td>
+                  `;
+                  tbody.appendChild(tr);
+              });
+          } else {
+              tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#64748b;">Chưa có cuộc hẹn nào trong lịch sử.</td></tr>';
+          }
+      } catch(e) {
+          console.error(e);
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444;">Không thể tải dữ liệu. Vui lòng thử lại sau.</td></tr>';
+      }
+  }
+}
+
+
+// ============================================================
+// 10. USER DASHBOARD LOGIC
+// ============================================================
+
+function initializeUserDashboardLogic() {
+  if (!document.getElementById('user-view-overview')) return;
+  
+  // Thêm tab evaluation vào list
+  const userTabs = { 
+      'tab-overview': 'user-view-overview', 
+      'tab-schedule': 'user-view-booking', 
+      'tab-history': 'user-view-history',
+      'tab-evaluation': 'view-evaluation' // <-- MỚI
+  };
+
+  Object.keys(userTabs).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.onclick = (e) => {
+          e.preventDefault();
+          document.querySelectorAll('.dashboard-menu a').forEach(a => a.classList.remove('active'));
+          el.classList.add('active');
+          Object.values(userTabs).forEach(v => {
+              const view = document.getElementById(v);
+              if(view) view.style.display = 'none';
+          });
+          const activeView = document.getElementById(userTabs[id]);
+          if(activeView) activeView.style.display = 'block';
+          
+          if (id === 'tab-schedule') loadUserAppointments()();
+          if (id === 'tab-history') loadUserHistory();
+          if (id === 'tab-evaluation') loadEvaluationsForUser(); // <-- Load đánh giá
+      }
+  });
+
+  async function loadUserHistory() {
+      const tbody = document.getElementById('user-history-body');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="4">Đang tải...</td></tr>';
+      try {
+          const res = await fetch('/api/user/appointments');
+          const data = await res.json();
+          tbody.innerHTML = '';
+          if (data.appointments?.length) {
+              data.appointments.forEach(a => {
+                  const tr = document.createElement('tr');
+                  const btn = a.status === 'confirmed' ? `<button onclick="cancelBooking('${a.id}')" style="color:red;">Hủy</button>` : '';
+                  tr.innerHTML = `<td>${a.date} ${a.time}</td><td>${a.counselor}</td><td>${a.status}</td><td>${btn}</td>`;
+                  tbody.appendChild(tr);
+              });
+          } else tbody.innerHTML = '<tr><td colspan="4">Chưa có lịch sử.</td></tr>';
+      } catch (e) { tbody.innerHTML = '<tr><td colspan="4">Lỗi tải.</td></tr>'; }
+  }
+
+  async function loadUserAppointments() {
+      const tbody = document.getElementById('user-appointments-body');
+      if (!tbody) return;
+      
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Đang tải dữ liệu...</td></tr>';
+      
+      try {
+          // Gọi API lấy danh sách cuộc hẹn của user hiện tại
+          const res = await fetch('/api/user/appointments');
+          const data = await res.json();
+          
+          tbody.innerHTML = '';
+          
+          if (data.appointments && data.appointments.length > 0) {
+              data.appointments.forEach(a => {
+                  const tr = document.createElement('tr');
+                  
+                  // Style cho trạng thái
+                  let statusHtml = '';
+                  if(a.status === 'confirmed') statusHtml = `<span style="color:green; font-weight:bold;">Đã xác nhận</span>`;
+                  else if(a.status === 'cancelled') statusHtml = `<span style="color:gray;">Đã hủy</span>`;
+                  else statusHtml = `<span>${a.status}</span>`;
+
+                  // Nút hủy
+                  const btnCancel = a.status === 'confirmed' 
+                      ? `<button onclick="cancelBooking('${a.id}')" class="btn-action-cancel" style="padding:5px 10px; border:1px solid red; color:red; background:white; border-radius:5px; cursor:pointer;">Hủy</button>` 
+                      : '-';
+
+                  tr.innerHTML = `
+                      <td style="padding:12px;">
+                          <div style="font-weight:bold; color:var(--primary);">${a.time}</div>
+                          <div style="font-size:0.9em; color:#666;">${a.date}</div>
+                      </td>
+                      <td style="padding:12px;">BS. ${a.counselor}</td>
+                      <td style="padding:12px;">${statusHtml}</td>
+                      <td style="padding:12px;">${btnCancel}</td>
+                  `;
+                  tbody.appendChild(tr);
+              });
+          } else {
+              tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#666;">Bạn chưa có lịch hẹn nào.</td></tr>';
+          }
+      } catch (e) { 
+          console.error(e);
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Lỗi tải dữ liệu.</td></tr>'; 
+      }
+  }
+}
+
+// Hàm hủy lịch (Giữ nguyên, chỉ cần đảm bảo nó reload đúng chỗ)
+async function cancelAppointment(id) {
+    if (!confirm("Bạn có chắc muốn hủy lịch hẹn này?")) return;
+    try {
+        const res = await fetch('/api/booking/cancel', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ id }) 
+        });
+        
+        if (res.ok) {
+            alert("Đã hủy thành công.");
+            // Reload lại bảng bằng cách click lại vào tab hiện tại
+            document.getElementById('tab-schedule').click();
+        } else {
+            alert("Lỗi khi hủy.");
         }
+    } catch (e) { alert("Lỗi kết nối."); }
+}
+
+
+
+// ============================================================
+// 11. EVALUATION LOGIC (MỚI)
+// ============================================================
+
+// --- Dành cho Chuyên gia: Gửi đánh giá ---
+async function submitEvaluation() {
+    const studentName = document.getElementById('evalStudentName').value.trim();
+    const content = document.getElementById('evalContent').value.trim();
+
+    if (!studentName || !content) return alert("Vui lòng nhập đầy đủ thông tin!");
+
+    try {
+        const res = await fetch("/api/counselor/write-evaluation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ student_username: studentName, content: content })
+        });
+        
+        if (res.ok) {
+            alert("Đã lưu đánh giá thành công!");
+            document.getElementById('evalContent').value = ""; // Xóa nội dung
+            loadEvaluationsForCounselor(); // Tải lại danh sách
+        } else {
+            alert("Lỗi khi lưu đánh giá.");
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Lỗi kết nối.");
     }
+}
 
-    // Hàm hỗ trợ hủy lịch (Thêm vào bên ngoài hoặc bên trong initializeCounselorScheduleLogic đều được, nhưng tốt nhất để global scope để HTML gọi được)
-    window.cancelAppointment = async function(id) {
-        if(!confirm("Bạn có chắc chắn muốn hủy cuộc hẹn này không?")) return;
+// --- Dành cho Chuyên gia: Xem danh sách đã viết ---
+async function loadEvaluationsForCounselor() {
+    const container = document.getElementById('counselorEvalList');
+    if (!container) return;
+    container.innerHTML = '<p>Đang tải...</p>';
+
+    try {
+        const res = await fetch("/api/user/evaluations"); // API dùng chung logic đọc file
+        const data = await res.json();
         
-        try {
-            const res = await fetch('/api/booking/cancel', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id: id})
-            });
-            
-            if(res.ok) {
-                alert("Đã hủy thành công!");
-                loadHistoryLogs(); // Tải lại bảng
-                // Reload lại các slot ở tab Lịch
-                if(selectedDate) loadSlotsForDate(selectedDate);
-            } else {
-                alert("Lỗi khi hủy.");
-            }
-        } catch(e) {
-            alert("Lỗi kết nối.");
+        if (data.evaluations && data.evaluations.length > 0) {
+            container.innerHTML = data.evaluations.map(e => `
+                <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 10px;">
+                    <div style="font-weight: bold; color: var(--primary); display:flex; justify-content:space-between;">
+                        <span>SV: ${e.student}</span>
+                        <small style="color:#666;">${e.date}</small>
+                    </div>
+                    <p style="margin-top: 5px; color: #333;">${e.content}</p>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p style="color:#666;">Bạn chưa viết đánh giá nào.</p>';
         }
-    };
+    } catch (e) {
+        container.innerHTML = '<p style="color:red;">Lỗi tải dữ liệu.</p>';
+    }
+}
+
+// --- Dành cho User: Xem đánh giá về mình ---
+async function loadEvaluationsForUser() {
+    const container = document.getElementById('userEvalList');
+    if (!container) return;
+    container.innerHTML = '<p>Đang tải dữ liệu...</p>';
+
+    try {
+        const res = await fetch("/api/user/evaluations");
+        const data = await res.json();
+
+        if (data.evaluations && data.evaluations.length > 0) {
+            container.innerHTML = data.evaluations.map(e => `
+                <div style="background: #f9f9f9; padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid var(--primary);">
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 10px;">
+                        <span style="font-weight: bold; font-size: 1.1rem; color: var(--primary);">
+                            <i class="fas fa-user-md"></i> ${e.author}
+                        </span>
+                        <span style="color: #666; font-size: 0.9rem;">${e.date}</span>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                        ${e.content}
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p style="text-align:center; color:#666; padding: 20px;">Chưa có nhận xét nào từ chuyên gia.</p>';
+        }
+    } catch (e) {
+        container.innerHTML = '<p style="color:red; text-align:center;">Không thể tải dữ liệu.</p>';
+    }
 }

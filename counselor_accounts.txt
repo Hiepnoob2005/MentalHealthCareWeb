@@ -2,3 +2,4 @@ CounselorID;Username;Name;Email;PasswordHash;Specialties;Rating;Status;Experienc
 C001;nvan;TS. Nguyễn Văn An;nguyenvanan@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.dxuMr/uO7jqp1O4PfiroLjmD97iqxIuwa.;stress,lo_au,hoc_tap;4.9;online;5 năm;yes
 C002;ttbinh;ThS. Trần Thị Bình;tranthib@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.dxuMr/uO7jqp1O4PfiroLjmD97iqxIuwa.;tram_cam,tam_ly_xa_hoi;4.8;online;3 năm;yes  
 C003;lvcuong;BS. Lê Văn Cường;levancuong@gmail.com;$2b$12$RofXww1/g9DmI/PXn8.dxuMr/uO7jqp1O4PfiroLjmD97iqxIuwa.;roi_loan_giac_ngu,ap_luc_thi_cu;4.7;online;7 năm;yes
+
