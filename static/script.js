@@ -1664,18 +1664,17 @@ function initializeCounselorChat(expertUsername) {
                 if (data.join_url) {
                     // Tạo nội dung HTML đẹp mắt
                     const htmlContent = `
-                        <div class="zoom-invite-card">
-                            <div class="zoom-header">
-                                <i class="fas fa-video"></i> Video Call
-                            </div>
-                            <div style="font-size: 0.9em; color: #555;">
-                                Bác sĩ mời bạn tham gia cuộc họp trực tuyến.
-                            </div>
-                            <a href="${data.join_url}" target="_blank" class="zoom-btn">
-                                Tham gia ngay
-                            </a>
-                        </div>
-                    `;
+<div class="zoom-invite-card">
+<div class="zoom-header">
+<i class="fas fa-video"></i> Video Call
+</div>
+<div style="font-size: 0.9em; color: #555;">
+Bác sĩ mời bạn tham gia cuộc họp trực tuyến.
+</div>
+<a href="${data.join_url}" target="_blank" class="zoom-btn">
+Tham gia ngay
+</a>
+</div>`;
 
                     // Gửi HTML qua Socket
                     expertSocket.emit('send_expert_message', {
