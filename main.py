@@ -1495,38 +1495,51 @@ def get_all_counselors():
 
 @app.route("/api/counselor/appointments", methods=["GET"])
 @login_required
-def get_counselor_appointments_history():
-    """Lấy lịch sử cuộc hẹn của Chuyên gia (đọc từ appointments.txt)"""
+def get_counselor_appointments():
+    """
+    API lấy danh sách cuộc hẹn dành riêng cho Chuyên gia
+    (Thay thế cho history-logs cũ để hiển thị đúng thông tin người đặt)
+    """
     if not current_user.is_counselor:
-        return jsonify({"message": "Access Denied"}), 403
+        return jsonify({"error": "Unauthorized"}), 403
 
-    history = []
+    appointments = []
     
-    # Đọc file appointments.txt
+    # Kiểm tra file tồn tại
     if os.path.exists(APPOINTMENTS_FILE):
         try:
             with open(APPOINTMENTS_FILE, "r", encoding="utf-8") as f:
-                # Bỏ qua dòng header
-                lines = f.readlines()[1:] 
+                lines = f.readlines()
                 
+                # Bỏ qua header
+                if len(lines) > 0 and "ApptID" in lines[0]:
+                    lines = lines[1:]
+
                 for line in lines:
                     parts = line.strip().split(";")
-                    # Cấu trúc: ApptID;StudentName(UserID);CounselorID;Date;Time;Status
+                    # Format: ApptID(0);UserID(1);CounselorID(2);Date(3);Time(4);Status(5)
                     if len(parts) >= 6:
-                        counselor_id = parts[2]
-                        
-                        # Chỉ lấy cuộc hẹn của chuyên gia đang đăng nhập
-                        if counselor_id == current_user.username:
-                            history.append({
+                        # Chỉ lấy lịch của chính chuyên gia đang đăng nhập
+                        if parts[2] == current_user.username:
+                            appointments.append({
                                 "id": parts[0],
-                                "student_name": parts[1], # Đây là tên SV bạn nhập tay lúc tạo lịch
+                                "student_name": parts[1], # UserID của sinh viên
                                 "date": parts[3],
                                 "time": parts[4],
                                 "status": parts[5]
                             })
-        except Exception as e:  
+                            
+            # Sắp xếp: Mới nhất lên đầu (theo ngày + giờ)
+            appointments.sort(key=lambda x: f"{x['date']} {x['time']}", reverse=True)
+            
+            return jsonify({"appointments": appointments}), 200
+
+        except Exception as e:
             logging.error(f"Lỗi đọc file appointments: {e}")
             return jsonify({"appointments": []}), 500
+             
+    # Nếu chưa có file thì trả về rỗng
+    return jsonify({"appointments": []}), 200
 
     # Sắp xếp: Ngày giờ mới nhất lên đầu
     history.sort(key=lambda x: f"{x['date']} {x['time']}", reverse=True)
@@ -1743,6 +1756,7 @@ def update_availability():
                     real_status = "online" if parts[1] in online_counselors else "offline"
 
                     results.append({
+                        "id": parts[1],
                         "username": parts[1], 
                         "name": parts[2],
                         "specialties": parts[5],

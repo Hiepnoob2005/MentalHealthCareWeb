@@ -3,3 +3,4 @@ ApptID;UserID;CounselorID;Date;Time;Status
 e4324381;lkquoc1;nvan;2026-01-10;16:00;confirmed
 e8bb0be5;Trần Duy Khang;nvan;2026-01-03;08:00;confirmed 
 6f1bfa90;quốc;nvan;2026-01-04;08:00;cancelled
+cda09334;đạt;nvan;2026-01-13;09:00;confirmed
