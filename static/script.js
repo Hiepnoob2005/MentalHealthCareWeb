@@ -718,13 +718,13 @@ function showTypingIndicator() {
   const typingDiv = document.createElement("div");
   typingDiv.className = "message bot typing-message";
   typingDiv.innerHTML = `
-                <div class="message-avatar">AI</div>
-                <div class="typing-indicator">
-                    <span class="typing-dot"></span>
-                    <span class="typing-dot"></span>
-                    <span class="typing-dot"></span>
-                </div>
-            `;
+<div class="message-avatar">AI</div>
+<div class="typing-indicator">
+<span class="typing-dot"></span>
+<span class="typing-dot"></span>
+<span class="typing-dot"></span>
+</div>
+</div>`;
   messagesContainer.appendChild(typingDiv);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
