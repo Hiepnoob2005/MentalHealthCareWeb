@@ -9,6 +9,8 @@ import logging
 import threading
 import datetime
 from datetime import datetime
+from threading import RLock
+file_lock = RLock()
 
 # -------------------------
 # 🔹 Third-party Libraries
@@ -2272,27 +2274,29 @@ def load_chat_history():
         with open(CHAT_DB_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception:
+        print(f"❌ LỖI KHÁC KHI ĐỌC HISTORY: {e}")
         return []
 
 # 2. Hàm hỗ trợ: Lưu tin nhắn mới
 def save_chat_message(room, sender_id, sender_type, text, target_student_id=None):
-    history = load_chat_history()
-    
-    new_msg = {
-        "room": room, # Username của chuyên gia
-        "sender_id": sender_id,
-        "sender_type": sender_type,
-        "text": text,
-        "target_student_id": target_student_id,
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
-    
-    history.append(new_msg)
-    
-    with open(CHAT_DB_FILE, 'w', encoding='utf-8') as f:
-        json.dump(history, f, indent=4, ensure_ascii=False)
+    with file_lock:  # <--- Thêm dòng này để khóa file khi đang ghi
+        history = load_chat_history()
         
-    return new_msg
+        new_msg = {
+            "room": room,
+            "sender_id": sender_id,
+            "sender_type": sender_type,
+            "text": text,
+            "target_student_id": target_student_id,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        history.append(new_msg)
+        
+        with open(CHAT_DB_FILE, 'w', encoding='utf-8') as f:
+            json.dump(history, f, indent=4, ensure_ascii=False)
+            
+        return new_msg
 
 # 3. Hàm hỗ trợ: Lọc lịch sử cho User (Chỉ lấy tin của User này với Expert này)
 def get_history_for_user(expert_username, student_username):
