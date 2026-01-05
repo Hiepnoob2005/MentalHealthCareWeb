@@ -456,7 +456,7 @@ def check_credentials():
 # -------------------------------------------------
 # Gemini Config
 # -------------------------------------------------
-api_key_value = os.getenv("GEMINI_API_KEY")
+api_key_value = os.environ.get("GEMINI_API_KEY")
 if not api_key_value:
     logging.error("❌ GEMINI_API_KEY missing in .env")
 else:
@@ -534,7 +534,7 @@ TEST_RESULTS_FILE = "test_results.txt"
 # Khởi tạo model Chatbot một lần
 try:
     chatbot_model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash",
+        model_name="gemini-flash-lastest",
         generation_config=GENERATION_CONFIG,
         system_instruction=SYSTEM_INSTRUCTION,
         safety_settings=SAFETY_SETTINGS,
@@ -1667,7 +1667,7 @@ def handle_verification_upload():
 
 @app.route("/health", methods=["GET"])
 def health_check():
-    return jsonify({"status": "healthy", "model": "gemini-2.5-flash"})
+    return jsonify({"status": "healthy", "model": "gemini-flash-lastest"})
 
 
 # --- CÁC ROUTE CHO ADMIN ---
