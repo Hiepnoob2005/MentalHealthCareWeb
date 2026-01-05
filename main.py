@@ -1,3 +1,5 @@
+import eventlet
+eventlet.monkey_patch()
 # -------------------------
 # 🔹 Standard Library
 # -------------------------
