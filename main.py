@@ -538,7 +538,7 @@ TEST_RESULTS_FILE = "test_results.txt"
 # Khởi tạo model Chatbot một lần
 try:
     chatbot_model = genai.GenerativeModel(
-        model_name="gemini-flash-lastest",
+        model_name="gemini-flash-latest",
         generation_config=GENERATION_CONFIG,
         system_instruction=SYSTEM_INSTRUCTION,
         safety_settings=SAFETY_SETTINGS,
@@ -1671,7 +1671,7 @@ def handle_verification_upload():
 
 @app.route("/health", methods=["GET"])
 def health_check():
-    return jsonify({"status": "healthy", "model": "gemini-flash-lastest"})
+    return jsonify({"status": "healthy", "model": "gemini-flash-latest"})
 
 
 # --- CÁC ROUTE CHO ADMIN ---
