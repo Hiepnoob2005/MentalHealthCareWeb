@@ -2747,7 +2747,7 @@ def articles_page():
 
 if __name__ == "__main__":
     start_file_watcher()
-    socketio.run(app, debug=True, port=5000)
+    socketio.run(app)
     print("🚀 Starting Flask Server with REAL Zoom API")
     print("🔍 Checking credentials...")
     if not all([ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET]):
