@@ -1,3 +1,5 @@
+import eventlet
+eventlet.monkey_patch()
 # -------------------------
 # 🔹 Standard Library
 # -------------------------
@@ -9,6 +11,8 @@ import logging
 import threading
 import datetime
 from datetime import datetime
+from threading import RLock
+file_lock = RLock()
 
 # -------------------------
 # 🔹 Third-party Libraries
@@ -26,6 +30,7 @@ from datetime import datetime
 from google import generativeai as genai
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+import shutil
 # Cấu hình cơ bản
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -130,12 +135,50 @@ def start_file_watcher():
     observer.start()
     logging.info(f"👀 Started watching folder: {path}")
 
+
+PAPERWORKS_FOLDER = "paperworks"
+if not os.path.exists(PAPERWORKS_FOLDER):
+    os.makedirs(PAPERWORKS_FOLDER)
+    logging.info(f"📁 Created paperworks folder: {PAPERWORKS_FOLDER}")
+
+app.config["PAPERWORKS_FOLDER"] = PAPERWORKS_FOLDER
+
+def move_verification_files_to_paperworks(username):
+    """Di chuyển ảnh xác thực sang thư mục paperworks khi duyệt"""
+    moved_files = []
+    try:
+        if not os.path.exists(UPLOAD_FOLDER):
+            return []
+
+        files = os.listdir(UPLOAD_FOLDER)
+        for f in files:
+            # Tìm file bắt đầu bằng username_ (ví dụ: nvan_degree.jpg)
+            if f.startswith(f"{username}_"):
+                src_path = os.path.join(UPLOAD_FOLDER, f)
+                dst_path = os.path.join(PAPERWORKS_FOLDER, f)
+                
+                # Di chuyển file
+                shutil.move(src_path, dst_path)
+                logging.info(f"Moved file: {src_path} -> {dst_path}")
+                
+                # Chỉ lấy file ảnh để hiển thị (bỏ qua file json meta nếu không muốn hiện)
+                if f.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    moved_files.append(f)
+                    
+        return moved_files
+    except Exception as e:
+        logging.error(f"Error moving files for {username}: {e}")
+        return []
 # -------------------------------------------------
 # Routes
 # -------------------------------------------------
 # --- CÁC HÀM TIỆN ÍCH MỚI (Đọc/Ghi file) ---
 USER_DETAILS_FILE = 'user_details.json'
 TEST_RESULTS_FILE = 'test_results.txt'
+
+if not os.path.exists(TEST_RESULTS_FILE):
+    with open(TEST_RESULTS_FILE, "w", encoding="utf-8") as f:
+        f.write("Time;Username;Scores;Tags;RawAnswers\n")
 
 def read_user_details():
     """Đọc file user_details.json"""
@@ -150,57 +193,40 @@ def write_user_details(data):
     with open(USER_DETAILS_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
         
-import datetime  # Thêm import này ở đầu file nếu chưa có
-import json      # Thêm import này ở đầu file nếu chưa có
-from flask_login import login_required, current_user
+if not os.path.exists(TEST_RESULTS_FILE):
+    with open(TEST_RESULTS_FILE, "w", encoding="utf-8") as f:
+        f.write("Time;Username;Scores;Tags;RawAnswers\n")
 
-# (Giữ nguyên các import và code cũ của bạn...)
-
-# Định nghĩa tên file (nếu bạn chưa có)
-TEST_RESULTS_FILE = 'test_results.txt'
-
-# --- DÁN HÀM MỚI NÀY VÀO main.py ---
 @app.route('/api/save-dass21-results', methods=['POST'])
-@login_required  # Yêu cầu người dùng phải đăng nhập
+@login_required # Yêu cầu đăng nhập mới lưu được
 def save_dass21_results():
-    """
-    Nhận kết quả DASS-21 từ client và lưu vào test_results.txt
-    """
     try:
-        data = request.get_json()
-        user_id = str(current_user.id) # Lấy ID của user đang đăng nhập
+        data = request.json
+        answers = data.get('answers', [])
+        tags = data.get('problem_tags', [])
+        scores = data.get('scores', {}) # {D: ..., A: ..., S: ...}
         
-        # Lấy dữ liệu từ JavaScript
-        answers = data.get('answers')       # Đây là mảng [0, 1, 3, ...]
-        problem_tags = data.get('problem_tags') # Đây là mảng ['stress', 'lo_au']
-        scores = data.get('scores')         # Đây là object {'D': 10, 'A': 8, 'S': 15}
+        # Lấy thời gian hiện tại
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        username = current_user.username
         
-        # Lấy ngày giờ hiện tại
-        now = datetime.datetime.now()
-        test_date = now.strftime("%Y-%m-%d")
-        test_time = now.strftime("%H:%M:%S")
+        # Format dữ liệu để lưu vào file text
+        # Cấu trúc: Thời gian;User;Điểm(D-A-S);Tags;Answers
+        scores_str = f"D:{scores.get('D',0)}-A:{scores.get('A',0)}-S:{scores.get('S',0)}"
+        tags_str = ",".join(tags)
+        answers_str = ",".join(map(str, answers))
         
-        # Định dạng dữ liệu để ghi vào file
-        answers_str = json.dumps(answers) # Chuyển mảng [0,1,2] thành chuỗi "[0, 1, 2]"
-        tags_str = ",".join(problem_tags) if problem_tags else "none"
+        log_line = f"{now};{username};{scores_str};{tags_str};{answers_str}\n"
         
-        # Chúng ta sẽ lưu object scores {'D':10, 'A':8, 'S':15}
-        # vào cột Score (thay vì 1 số duy nhất)
-        scores_str = json.dumps(scores) 
-        
-        # Định dạng dòng mới theo cấu trúc file test_results.txt
-        # UserID;TestDate;TestTime;Answers;ProblemTags;Score
-        new_line = f"{user_id};{test_date};{test_time};{answers_str};{tags_str};{scores_str}\n"
-        
-        # Mở file ở chế độ 'a' (append - ghi nối tiếp)
-        with open(TEST_RESULTS_FILE, 'a', encoding='utf-8') as f:
-            f.write(new_line)
+        # Ghi vào file (mode 'a' để nối thêm vào cuối file)
+        with open(TEST_RESULTS_FILE, "a", encoding="utf-8") as f:
+            f.write(log_line)
             
-        return jsonify({"message": "Kết quả đã được lưu."}), 200
+        return jsonify({"message": "Kết quả đã được lưu thành công."}), 200
         
     except Exception as e:
-        print(f"Lỗi khi lưu kết quả DASS-21: {e}")
-        return jsonify({"message": "Lỗi máy chủ khi lưu kết quả."}), 500
+        logging.error(f"Lỗi khi lưu kết quả test: {e}")
+        return jsonify({"message": "Lỗi server khi lưu kết quả."}), 500
 
 def get_latest_tags(user_id):
     """Lấy tags từ bài test mới nhất của user"""
@@ -308,48 +334,41 @@ socket_id_to_user = {}
 
 # --- Thêm vào main.py ---
 
+# --- THÊM VÀO main.py ---
+
 @app.route("/api/counselor/create-manual-appointment", methods=["POST"])
 @login_required
 def create_manual_appointment():
-    """
-    API cho chuyên gia tự tạo lịch hẹn với sinh viên (nhập tay tên).
-    """
+    """API để chuyên gia tự tạo lịch hẹn với sinh viên"""
     if not current_user.is_counselor:
-        return jsonify({"message": "Access Denied"}), 403
+        return jsonify({"message": "Unauthorized"}), 403
 
     data = request.get_json()
+    student_username = data.get("student_name")
     date = data.get("date")
     time = data.get("time")
-    student_name = data.get("student_name") # Tên sinh viên nhập tay
 
-    if not date or not time or not student_name:
-        return jsonify({"message": "Vui lòng nhập đầy đủ thông tin"}), 400
+    if not all([student_username, date, time]):
+        return jsonify({"message": "Thiếu thông tin (Tên SV, Ngày hoặc Giờ)"}), 400
 
     try:
-        # 1. Kiểm tra xem giờ đó đã bị đặt chưa (tránh trùng lặp)
-        if os.path.exists(APPOINTMENTS_FILE):
-            with open(APPOINTMENTS_FILE, "r", encoding="utf-8") as f:
-                for line in f:
-                    parts = line.strip().split(";")
-                    # Cấu trúc: ApptID;UserID;CounselorID;Date;Time;Status
-                    if len(parts) >= 6:
-                        # Kiểm tra: Cùng Counselor, Cùng Ngày, Cùng Giờ, Trạng thái Confirmed
-                        if (parts[2] == current_user.username and 
-                            parts[3] == date and 
-                            parts[4] == time and 
-                            parts[5] == "confirmed"):
-                            return jsonify({"message": "Khung giờ này đã có người đặt!"}), 409
-
-        # 2. Tạo lịch hẹn mới
+        # 1. Tạo ID cuộc hẹn
         appt_id = str(uuid.uuid4())[:8]
-        # Lưu student_name vào vị trí UserID (cột thứ 2)
-        # Format: ApptID;StudentName;CounselorID;Date;Time;Status
-        new_line = f"{appt_id};{student_name};{current_user.username};{date};{time};confirmed\n"
+        
+        # 2. Format dòng dữ liệu: ID;Student;Counselor;Date;Time;Status
+        # Status mặc định là 'confirmed' vì do chuyên gia tạo
+        line = f"{appt_id};{student_username};{current_user.username};{date};{time};confirmed\n"
+
+        # 3. Lưu vào file appointments.txt
+        # Đảm bảo file tồn tại
+        if not os.path.exists(APPOINTMENTS_FILE):
+            with open(APPOINTMENTS_FILE, "w", encoding="utf-8") as f:
+                f.write("ApptID;UserID;CounselorID;Date;Time;Status\n")
 
         with open(APPOINTMENTS_FILE, "a", encoding="utf-8") as f:
-            f.write(new_line)
+            f.write(line)
 
-        return jsonify({"message": "Đã tạo cuộc hẹn thành công!", "id": appt_id}), 200
+        return jsonify({"message": "Tạo lịch thành công"}), 200
 
     except Exception as e:
         logging.error(f"Lỗi tạo lịch thủ công: {e}")
@@ -441,7 +460,7 @@ def check_credentials():
 # -------------------------------------------------
 # Gemini Config
 # -------------------------------------------------
-api_key_value = os.getenv("GEMINI_API_KEY")
+api_key_value = os.environ.get("GEMINI_API_KEY")
 if not api_key_value:
     logging.error("❌ GEMINI_API_KEY missing in .env")
 else:
@@ -519,7 +538,7 @@ TEST_RESULTS_FILE = "test_results.txt"
 # Khởi tạo model Chatbot một lần
 try:
     chatbot_model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash",
+        model_name="gemini-flash-latest",
         generation_config=GENERATION_CONFIG,
         system_instruction=SYSTEM_INSTRUCTION,
         safety_settings=SAFETY_SETTINGS,
@@ -1177,7 +1196,13 @@ def logout():
 @app.route("/api/status")
 def get_status():
     if current_user.is_authenticated:
-        return jsonify({"logged_in": True, "username": current_user.username})
+        # Trả về đầy đủ role để JS xử lý
+        return jsonify({
+            "logged_in": True, 
+            "username": current_user.username,
+            "is_admin": getattr(current_user, 'is_admin', False),
+            "is_counselor": getattr(current_user, 'is_counselor', False)
+        })
     else:
         return jsonify({"logged_in": False})
 
@@ -1299,7 +1324,7 @@ def find_matching_counselors():
     """
     data = request.get_json()
     problem_tags = data.get("problem_tags", [])
-    only_online = data.get("only_online", True)
+    only_online = data.get("only_online", False)
     min_rating = data.get("min_rating", 0.0)
 
     if not problem_tags:
@@ -1313,13 +1338,15 @@ def find_matching_counselors():
         # Convert to JSON-serializable format
         results = []
         for counselor in matches:
+            status = "online" if counselor.user_name in online_counselors else "offline"
             results.append(
                 {
                     "id": counselor.id,
+                    "username": counselor.user_name,
                     "name": counselor.name,
                     "specialties": counselor.specialties,
                     "rating": counselor.rating,
-                    "status": counselor.status,
+                    "status": status,
                     "experience": counselor.experience,
                     "match_score": round(counselor.match_score, 1),
                 }
@@ -1471,38 +1498,51 @@ def get_all_counselors():
 
 @app.route("/api/counselor/appointments", methods=["GET"])
 @login_required
-def get_counselor_appointments_history():
-    """Lấy lịch sử cuộc hẹn của Chuyên gia (đọc từ appointments.txt)"""
+def get_counselor_appointments():
+    """
+    API lấy danh sách cuộc hẹn dành riêng cho Chuyên gia
+    (Thay thế cho history-logs cũ để hiển thị đúng thông tin người đặt)
+    """
     if not current_user.is_counselor:
-        return jsonify({"message": "Access Denied"}), 403
+        return jsonify({"error": "Unauthorized"}), 403
 
-    history = []
+    appointments = []
     
-    # Đọc file appointments.txt
+    # Kiểm tra file tồn tại
     if os.path.exists(APPOINTMENTS_FILE):
         try:
             with open(APPOINTMENTS_FILE, "r", encoding="utf-8") as f:
-                # Bỏ qua dòng header
-                lines = f.readlines()[1:] 
+                lines = f.readlines()
                 
+                # Bỏ qua header
+                if len(lines) > 0 and "ApptID" in lines[0]:
+                    lines = lines[1:]
+
                 for line in lines:
                     parts = line.strip().split(";")
-                    # Cấu trúc: ApptID;StudentName(UserID);CounselorID;Date;Time;Status
+                    # Format: ApptID(0);UserID(1);CounselorID(2);Date(3);Time(4);Status(5)
                     if len(parts) >= 6:
-                        counselor_id = parts[2]
-                        
-                        # Chỉ lấy cuộc hẹn của chuyên gia đang đăng nhập
-                        if counselor_id == current_user.username:
-                            history.append({
+                        # Chỉ lấy lịch của chính chuyên gia đang đăng nhập
+                        if parts[2] == current_user.username:
+                            appointments.append({
                                 "id": parts[0],
-                                "student_name": parts[1], # Đây là tên SV bạn nhập tay lúc tạo lịch
+                                "student_name": parts[1], # UserID của sinh viên
                                 "date": parts[3],
                                 "time": parts[4],
                                 "status": parts[5]
                             })
-        except Exception as e:  
+                            
+            # Sắp xếp: Mới nhất lên đầu (theo ngày + giờ)
+            appointments.sort(key=lambda x: f"{x['date']} {x['time']}", reverse=True)
+            
+            return jsonify({"appointments": appointments}), 200
+
+        except Exception as e:
             logging.error(f"Lỗi đọc file appointments: {e}")
             return jsonify({"appointments": []}), 500
+             
+    # Nếu chưa có file thì trả về rỗng
+    return jsonify({"appointments": []}), 200
 
     # Sắp xếp: Ngày giờ mới nhất lên đầu
     history.sort(key=lambda x: f"{x['date']} {x['time']}", reverse=True)
@@ -1520,20 +1560,25 @@ def get_chat_partners():
         user_username = current_user.username
         
         # 1. Gọi hàm xử lý logic từ matching_system
-        # Hàm này trả về một List[Counselor] (các object Counselor)
         counselor_objects = matching_system.load_Chatted_Counselors(user_username)
         
-        # 2. Serialize dữ liệu (Chuyển Object thành Dict để trả về JSON)
+        # 2. Serialize dữ liệu
         partners_data = []
         
         for c in counselor_objects:
+            # --- [SỬA LỖI TẠI ĐÂY] ---
+            # Kiểm tra trong RAM xem người này có đang online không
+            # Lưu ý: c.user_name là ID dùng để định danh
+            real_status = "online" if c.user_name in online_counselors else "offline"
+            # -------------------------
+
             partners_data.append({
-                "id": c.user_name,       # QUAN TRỌNG: Frontend dùng user_name làm Room ID để chat
-                "real_id": c.id,         # ID số trong database (dùng để tham chiếu nếu cần)
-                "name": c.name,          # Tên hiển thị (VD: ThS. Nguyễn Văn A)
+                "id": c.user_name,       
+                "real_id": c.id,         
+                "name": c.name,          
                 "specialties": c.specialties,
                 "rating": c.rating,
-                "status": c.status,
+                "status": real_status,   # <--- Dùng real_status thay vì c.status
                 "experience": c.experience
             })
             
@@ -1626,7 +1671,7 @@ def handle_verification_upload():
 
 @app.route("/health", methods=["GET"])
 def health_check():
-    return jsonify({"status": "healthy", "model": "gemini-2.5-flash"})
+    return jsonify({"status": "healthy", "model": "gemini-flash-latest"})
 
 
 # --- CÁC ROUTE CHO ADMIN ---
@@ -1714,6 +1759,7 @@ def update_availability():
                     real_status = "online" if parts[1] in online_counselors else "offline"
 
                     results.append({
+                        "id": parts[1],
                         "username": parts[1], 
                         "name": parts[2],
                         "specialties": parts[5],
@@ -2064,17 +2110,41 @@ def check_expert_status():
 # --- CÁC HÀM XỬ LÝ SOCKET ĐÃ KHÔI PHỤC LOGIC ROLE ---
 
 
-@socketio.on("connect")
-def handle_connect():
-    # Kiểm tra đăng nhập VÀ CÓ ROLE (rất quan trọng)
-    if "user_id" not in session or "role" not in session:
-        print(f"--- KẾT NỐI BỊ TỪ CHỐI: Client chưa đăng nhập hoặc thiếu role.")
-        return False
+# --- [TÌM VÀ THAY THẾ ĐOẠN CUỐI CỦA main.py] ---
 
-    session["sid"] = request.sid  # Lưu lại SID để debug
-    print(
-        f"--- KẾT NỐI THÀNH CÔNG: Client {session.get('username')} (Role: {session.get('role')}) | SID: {request.sid}"
-    )
+# Map để biết socket_id này thuộc về user nào: {'sid_123': 'nvan'}
+# Dùng để xử lý khi disconnect (biết ai vừa thoát)
+socket_id_to_user = {}
+
+@socketio.on('connect')
+def handle_connect():
+    # Lấy socket id của kết nối hiện tại
+    sid = request.sid
+    print(f"⚡ Kết nối mới: {sid}")
+
+    if current_user.is_authenticated:
+        username = current_user.username
+        
+        # 1. Lưu ánh xạ SID -> Username
+        socket_id_to_user[sid] = username
+
+        # 2. Nếu là Chuyên gia -> Xử lý trạng thái Online
+        is_counselor = getattr(current_user, 'is_counselor', False)
+        
+        if is_counselor:
+            # Thêm vào danh sách online
+            online_counselors.add(username)
+            
+            print(f"🟢 CHUYÊN GIA ONLINE: {username} (SID: {sid})")
+            
+            # Bắn tín hiệu cho TOÀN BỘ client biết
+            emit('expert_status_change', {
+                'username': username,
+                'status': 'online'
+            }, broadcast=True)
+        else:
+            print(f"👤 User connected: {username}")
+
 
 @socketio.on("counselor_join_room")
 def handle_counselor_join(data):
@@ -2107,24 +2177,38 @@ def handle_counselor_join(data):
     
     emit("receive_message", {"text": "Hệ thống đã kết nối.", "sender_type": "system"}, to=request.sid)
 
-@socketio.on("disconnect")
-def handle_disconnect():
-    # --- [MỚI] Xử lý khi mất kết nối ---
-    if request.sid in socket_id_to_user:
-        disconnected_user = socket_id_to_user[request.sid]
-        
-        # Xóa khỏi danh sách online
-        if disconnected_user in online_counselors:
-            online_counselors.remove(disconnected_user)
-            
-        # Xóa khỏi map
-        del socket_id_to_user[request.sid]
-        
-        # Bắn sự kiện Offline cho mọi người
-        emit("expert_status_change", {"username": disconnected_user, "status": "offline"}, broadcast=True)
-        logging.info(f"Counselor {disconnected_user} disconnected (OFFLINE)")
-    # -----------------------------------
 
+@socketio.on('disconnect')
+def handle_disconnect():
+    sid = request.sid
+    
+    # 1. Tìm xem ai vừa thoát dựa trên SID
+    username = socket_id_to_user.get(sid)
+    
+    if username:
+        # Xóa SID này khỏi map
+        del socket_id_to_user[sid]
+        print(f"❌ Ngắt kết nối: {username} (SID: {sid})")
+
+        # 2. Kiểm tra xem user này còn kết nối nào khác không? (Mở nhiều tab)
+        # Nếu user vẫn còn sid khác trong socket_id_to_user -> Vẫn tính là Online
+        user_still_connected = False
+        if username in socket_id_to_user.values():
+            user_still_connected = True
+        
+        # 3. Nếu thực sự đã thoát hết tab -> Báo Offline
+        if not user_still_connected:
+            # Nếu là chuyên gia thì xóa khỏi danh sách và báo offline
+            if username in online_counselors:
+                online_counselors.remove(username)
+                
+                print(f"🔴 CHUYÊN GIA OFFLINE HOÀN TOÀN: {username}")
+                
+                # Bắn tín hiệu Offline
+                emit('expert_status_change', {
+                    'username': username,
+                    'status': 'offline'
+                }, broadcast=True)
 
 # Khi CHUYÊN GIA từ chối chat
 @socketio.on("reject_chat")
@@ -2192,27 +2276,29 @@ def load_chat_history():
         with open(CHAT_DB_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception:
+        print(f"❌ LỖI KHÁC KHI ĐỌC HISTORY: {e}")
         return []
 
 # 2. Hàm hỗ trợ: Lưu tin nhắn mới
 def save_chat_message(room, sender_id, sender_type, text, target_student_id=None):
-    history = load_chat_history()
-    
-    new_msg = {
-        "room": room, # Username của chuyên gia
-        "sender_id": sender_id,
-        "sender_type": sender_type,
-        "text": text,
-        "target_student_id": target_student_id,
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
-    
-    history.append(new_msg)
-    
-    with open(CHAT_DB_FILE, 'w', encoding='utf-8') as f:
-        json.dump(history, f, indent=4, ensure_ascii=False)
+    with file_lock:  # <--- Thêm dòng này để khóa file khi đang ghi
+        history = load_chat_history()
         
-    return new_msg
+        new_msg = {
+            "room": room,
+            "sender_id": sender_id,
+            "sender_type": sender_type,
+            "text": text,
+            "target_student_id": target_student_id,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        history.append(new_msg)
+        
+        with open(CHAT_DB_FILE, 'w', encoding='utf-8') as f:
+            json.dump(history, f, indent=4, ensure_ascii=False)
+            
+        return new_msg
 
 # 3. Hàm hỗ trợ: Lọc lịch sử cho User (Chỉ lấy tin của User này với Expert này)
 def get_history_for_user(expert_username, student_username):
@@ -2391,7 +2477,7 @@ def approve_expert():
                 f"{verified_status}\n"
             )
 
-        delete_user_files(username_to_approve)
+        move_verification_files_to_paperworks(username_to_approve)
         if not os.path.exists(COUNSELOR_FILE):
             with open(COUNSELOR_FILE, "w", encoding="utf-8") as f:
                 f.write("CounselorID;Username;Name;Email;PasswordHash;Specialties;Rating;Status;Experience;verified\n")
@@ -2408,14 +2494,267 @@ def approve_expert():
         logging.error(f"Lỗi khi duyệt chuyên gia: {e}")
         return jsonify({"message": "Lỗi server khi xử lý file"}), 500
     
+# API để xoá quyền chuyên gia (Admin only)
+@app.route("/api/admin/stats", methods=["GET"])
+@login_required
+def get_admin_stats():
+    if not current_user.is_admin:
+        return jsonify({"error": "Forbidden"}), 403
+    
+    users = []
+    counselors = []
+    
+    # Đọc User
+    if os.path.exists(USER_FILE):
+        with open(USER_FILE, "r", encoding="utf-8") as f:
+            for line in f.readlines()[1:]:
+                parts = line.strip().split(";")
+                if len(parts) >= 2:
+                    users.append({"username": parts[0], "email": parts[1]})
+                    
+    # Đọc Counselor
+    if os.path.exists(COUNSELOR_FILE):
+        with open(COUNSELOR_FILE, "r", encoding="utf-8") as f:
+            for line in f.readlines()[1:]:
+                parts = line.strip().split(";")
+                if len(parts) >= 10:
+                    counselors.append({
+                        "username": parts[1],
+                        "name": parts[2],
+                        "email": parts[3],
+                        "specialties": parts[5]
+                    })
+                    
+    return jsonify({"users": users, "counselors": counselors})
+
+@app.route("/api/admin/revoke-counselor", methods=["POST"])
+@login_required
+def revoke_counselor():
+    if not current_user.is_admin:
+        return jsonify({"message": "Forbidden"}), 403
+        
+    data = request.get_json()
+    username = data.get("username")
+    
+    target_counselor = None
+    remaining_counselors = []
+    
+    # 1. Tìm và xóa khỏi file Counselor
+    if os.path.exists(COUNSELOR_FILE):
+        with open(COUNSELOR_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            header = lines[0]
+            for line in lines[1:]:
+                parts = line.strip().split(";")
+                if len(parts) < 2: 
+                    # Nếu dòng bị lỗi hoặc dòng trống -> Bỏ qua, không xử lý
+                    continue
+                if parts[1] == username:
+                    target_counselor = {
+                        "username": parts[1],
+                        "email": parts[3],
+                        "password_hash": parts[4]
+                    }
+                else:
+                    remaining_counselors.append(line)
+                    
+    if not target_counselor:
+        return jsonify({"message": "Không tìm thấy chuyên gia"}), 404
+
+    # 2. Ghi lại file Counselor
+    with open(COUNSELOR_FILE, "w", encoding="utf-8") as f:
+        f.write(header)
+        f.writelines(remaining_counselors)
+
+    # 3. Thêm vào file User (Duy trì format 3 cột: Username;Email;PasswordHash)
+    with open(USER_FILE, "a", encoding="utf-8") as f:
+        f.write(f"{target_counselor['username']};{target_counselor['email']};{target_counselor['password_hash']}\n")
+        
+    return jsonify({"message": f"Đã hủy quyền chuyên gia của {username}"})
+
 
 @app.route('/experts')
 def all_experts():
     return render_template('all_experts.html')
 
+# API để truy cập ảnh trong thư mục paperworks
+@app.route("/paperworks/<filename>")
+def get_paperwork_image(filename):
+    return send_from_directory(app.config["PAPERWORKS_FOLDER"], filename)
+
+# API lấy thông tin chi tiết chuyên gia (bao gồm danh sách ảnh bằng cấp)
+@app.route("/api/counselor/<username>/profile", methods=["GET"])
+def get_counselor_public_profile(username):
+    profile_data = {}
+    
+    # 1. Tìm thông tin trong file text
+    found = False
+    if os.path.exists(COUNSELOR_FILE):
+        with open(COUNSELOR_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()[1:]
+            for line in lines:
+                parts = line.strip().split(";")
+                if len(parts) >= 10 and parts[1] == username:
+                    profile_data = {
+                        "id": parts[0],
+                        "username": parts[1],
+                        "name": parts[2],
+                        "email": parts[3],
+                        "specialties": parts[5],
+                        "rating": parts[6],
+                        "experience": parts[8],
+                    }
+                    found = True
+                    break
+    
+    if not found:
+        return jsonify({"error": "Counselor not found"}), 404
+
+    # 2. Quét thư mục paperworks để lấy ảnh bằng cấp của user này
+    images = []
+    if os.path.exists(PAPERWORKS_FOLDER):
+        files = os.listdir(PAPERWORKS_FOLDER)
+        for f in files:
+            # Lọc file bắt đầu bằng username và là ảnh
+            if f.startswith(f"{username}_degree") and f.lower().endswith(('.png', '.jpg', '.jpeg')):
+                images.append(f)
+    
+    profile_data["cert_images"] = images
+    return jsonify(profile_data), 200
+
+@app.route('/api/user/latest-test-result', methods=['GET'])
+@login_required
+def get_user_latest_test_result():
+    TEST_RESULTS_FILE = "test_results.txt"
+    
+    if not os.path.exists(TEST_RESULTS_FILE):
+        return jsonify({"found": False, "tags": []}), 200
+
+    try:
+        # Đọc file
+        with open(TEST_RESULTS_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            
+            # Duyệt ngược từ cuối lên đầu để lấy bài mới nhất
+            for line in reversed(lines):
+                parts = line.strip().split(";")
+                
+                # Cấu trúc dữ liệu: [0]Time; [1]User; [2]Scores; [3]Tags; [4]Answers
+                if len(parts) >= 4:
+                    log_username = parts[1] # Cột 1 là Username
+                    
+                    if log_username == current_user.username:
+                        date_time = parts[0] # Cột 0 là Thời gian
+                        tags_str = parts[3]  # Cột 3 là Tags (tram_cam,lo_au...)
+                        
+                        # Xử lý tags
+                        tags_list = []
+                        if tags_str and tags_str.lower() != "none":
+                            tags_list = tags_str.split(',')
+                            
+                        return jsonify({
+                            "found": True,
+                            "date": date_time,
+                            "tags": tags_list
+                        }), 200
+        
+        # Nếu chạy hết vòng lặp mà không thấy
+        return jsonify({"found": False}), 200
+
+    except Exception as e:
+        logging.error(f"Lỗi đọc lịch sử test: {e}")
+        return jsonify({"error": "Lỗi server"}), 500
+    
+# --- [THÊM VÀO main.py] ---
+# --- HỆ THỐNG ĐÁNH GIÁ (EVALUATION SYSTEM) ---
+
+EVALUATIONS_FILE = "evaluations.txt"
+
+@app.route("/api/counselor/write-evaluation", methods=["POST"])
+@login_required
+def write_evaluation():
+    """Chuyên gia viết đánh giá cho sinh viên"""
+    if not current_user.is_counselor:
+        return jsonify({"message": "Bạn không có quyền thực hiện thao tác này"}), 403
+
+    data = request.get_json()
+    student_username = data.get("student_username")
+    content = data.get("content")
+
+    if not student_username or not content:
+        return jsonify({"message": "Vui lòng nhập tên sinh viên và nội dung"}), 400
+
+    try:
+        # Tạo file nếu chưa có
+        if not os.path.exists(EVALUATIONS_FILE):
+            with open(EVALUATIONS_FILE, "w", encoding="utf-8") as f:
+                f.write("EvalID;StudentUser;CounselorUser;Content;Date\n")
+
+        eval_id = str(uuid.uuid4())[:8]
+        date_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+        
+        # Xóa ký tự xuống dòng trong content để tránh lỗi file
+        clean_content = content.replace("\n", " ").replace(";", ",")
+
+        line = f"{eval_id};{student_username};{current_user.username};{clean_content};{date_str}\n"
+
+        with open(EVALUATIONS_FILE, "a", encoding="utf-8") as f:
+            f.write(line)
+
+        return jsonify({"message": "Đã lưu đánh giá thành công!"}), 200
+
+    except Exception as e:
+        logging.error(f"Lỗi lưu đánh giá: {e}")
+        return jsonify({"message": "Lỗi server"}), 500
+
+@app.route("/api/user/evaluations", methods=["GET"])
+@login_required
+def get_evaluations():
+    """Lấy danh sách đánh giá (User xem của mình, Counselor xem các bài đã viết)"""
+    results = []
+    
+    if not os.path.exists(EVALUATIONS_FILE):
+        return jsonify({"evaluations": []}), 200
+
+    try:
+        with open(EVALUATIONS_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()[1:] # Bỏ header
+
+        for line in lines:
+            parts = line.strip().split(";")
+            if len(parts) >= 5:
+                # Nếu là User thường: Lấy bài viết VỀ mình (cột 1)
+                if not current_user.is_counselor and parts[1] == current_user.username:
+                    results.append({
+                        "id": parts[0],
+                        "author": parts[2], # Tên chuyên gia
+                        "content": parts[3],
+                        "date": parts[4]
+                    })
+                # Nếu là Counselor: Lấy bài viết DO mình viết (cột 2)
+                elif current_user.is_counselor and parts[2] == current_user.username:
+                    results.append({
+                        "id": parts[0],
+                        "student": parts[1], # Tên sinh viên
+                        "content": parts[3],
+                        "date": parts[4]
+                    })
+        
+        # Sắp xếp mới nhất
+        results.sort(key=lambda x: x['date'], reverse=True)
+        return jsonify({"evaluations": results}), 200
+
+    except Exception as e:
+        logging.error(f"Lỗi đọc file đánh giá: {e}")
+        return jsonify({"message": "Lỗi server"}), 500
+    
+@app.route("/articles")
+def articles_page():
+    return render_template("articles.html")
+
 if __name__ == "__main__":
     start_file_watcher()
-    socketio.run(app, debug=True, port=5000)
+    socketio.run(app)
     print("🚀 Starting Flask Server with REAL Zoom API")
     print("🔍 Checking credentials...")
     if not all([ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET]):

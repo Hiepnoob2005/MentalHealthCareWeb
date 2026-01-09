@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Góc Kiến Thức - StudentMind Connect</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  
+  <style>
+    /* CSS Riêng cho trang bài báo (bổ sung nhẹ) */
+    .page-header {
+        padding: 120px 2rem 60px;
+        background: var(--gradient-1);
+        color: white;
+        text-align: center;
+        border-radius: 0 0 50px 50px;
+        margin-bottom: 40px;
+    }
+    .page-header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+    .article-meta { color: #666; font-size: 0.85rem; margin-bottom: 10px; display: flex; gap: 15px; }
+    .article-meta i { color: var(--primary); margin-right: 5px; }
+    
+    /* Chỉnh lại ảnh bìa cho đẹp hơn */
+    .resource-image {
+        height: 200px;
+        background-size: cover;
+        background-position: center;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo">
+        <i class="fas fa-brain"></i>
+        StudentMind Connect
+      </a>
+      <ul class="nav-links">
+        <li><a href="/">Trang chủ</a></li>
+        <li><a href="/#test">Đánh giá</a></li>
+        <li><a href="/experts">Chuyên gia</a></li>
+        <li><a href="/articles" class="active">Tài nguyên</a></li> 
+        <li><a href="/#dashboard">Dashboard</a></li>
+      </ul>
+
+      <div class="navbar-actions">
+        {% if current_user.is_authenticated %}
+            <a href="#" class="btn-cta" id="navbarCtaButton">Xin chào, {{ current_user.username }}</a>
+             <div class="profile-dropdown" id="profileDropdown">
+              <ul class="dropdown-menu">
+                <li><a href="/profile"><i class="fas fa-user-circle"></i> Quản lý tài khoản</a></li>
+                <li><a href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+              </ul>
+            </div>
+        {% else %}
+            <a href="#" class="btn-cta" onclick="openLoginModal()">Đăng nhập</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <header class="page-header">
+      <div class="header-content">
+          <h1>Kho Kiến Thức Tâm Lý</h1>
+          <p>Cập nhật những bài viết, nghiên cứu và phương pháp mới nhất dành cho sinh viên.</p>
+      </div>
+  </header>
+
+  <section class="resources" style="padding-top: 0;">
+    <div class="resources-grid">
+      
+      <article class="resource-card">
+        <div class="resource-image" style="background-image: url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=800&auto=format&fit=crop');">
+          </div>
+        <div class="resource-content">
+          <div class="resource-meta">
+            <span><i class="fas fa-book-reader"></i> Học tập</span>
+            <span><i class="far fa-calendar-alt"></i> 12/01/2026</span>
+          </div>
+          <h3>Vượt qua áp lực mùa thi: Chiến lược ôn tập mà không kiệt sức</h3>
+          <p>Kỳ thi cuối kỳ đang đến gần? Hãy khám phá phương pháp Pomodoro kết hợp Mindfulness để tối ưu hóa não bộ, giúp bạn học nhanh nhớ lâu mà vẫn giữ tinh thần thoải mái.</p>
+          <a href="#" class="resource-link">Đọc chi tiết <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </article>
+
+      <article class="resource-card">
+        <div class="resource-image" style="background-image: url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=800&auto=format&fit=crop');">
+           </div>
+        <div class="resource-content">
+          <div class="resource-meta">
+            <span><i class="fas fa-users"></i> Xã hội</span>
+            <span><i class="far fa-calendar-alt"></i> 10/01/2026</span>
+          </div>
+          <h3>Hòa nhập môi trường đại học: Khi sự cô đơn không còn là rào cản</h3>
+          <p>Dành cho tân sinh viên: Bí quyết xây dựng những mối quan hệ chất lượng, vượt qua nỗi sợ giao tiếp xã hội (Social Anxiety) và tìm kiếm "bộ lạc" của riêng mình.</p>
+          <a href="#" class="resource-link">Đọc chi tiết <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </article>
+
+      <article class="resource-card">
+        <div class="resource-image" style="background-image: url('https://images.unsplash.com/photo-1470116073782-48ae2439110d?q=80&w=800&auto=format&fit=crop');">
+           </div>
+        <div class="resource-content">
+          <div class="resource-meta">
+            <span><i class="fas fa-heartbeat"></i> Sức khỏe</span>
+            <span><i class="far fa-calendar-alt"></i> 08/01/2026</span>
+          </div>
+          <h3>Burnout ở sinh viên: Dấu hiệu nhận biết và cách chữa lành</h3>
+          <p>Bạn cảm thấy kiệt quệ dù chỉ mới bắt đầu tuần học? Đây có thể là dấu hiệu của Burnout. Tìm hiểu cách nhận diện và các bài tập tâm lý để hồi phục năng lượng.</p>
+          <a href="#" class="resource-link">Đọc chi tiết <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </article>
+
+      <article class="resource-card">
+        <div class="resource-image" style="background-image: url('https://images.unsplash.com/photo-1515023115689-58247352c493?q=80&w=800&auto=format&fit=crop');">
+        </div>
+        <div class="resource-content">
+          <div class="resource-meta">
+            <span><i class="fas fa-brain"></i> Tư duy</span>
+            <span><i class="far fa-calendar-alt"></i> 05/01/2026</span>
+          </div>
+          <h3>Growth Mindset: Thay đổi tư duy để vượt qua thất bại</h3>
+          <p>Thất bại không phải là dấu chấm hết. Học cách nhìn nhận khó khăn như một cơ hội để trưởng thành với tư duy phát triển (Growth Mindset).</p>
+          <a href="#" class="resource-link">Đọc chi tiết <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>StudentMind Connect</h3>
+        <p>Nền tảng hỗ trợ sức khỏe tâm lý hàng đầu cho sinh viên Việt Nam</p>
+        </div>
+      </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 StudentMind Connect. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <script>
+    // Logic đơn giản để xử lý dropdown menu nếu chưa load script.js đầy đủ
+    function toggleProfileDropdown() {
+        document.getElementById("profileDropdown").classList.toggle("active");
+    }
+    async function handleLogout() {
+        if(confirm("Đăng xuất?")) {
+            await fetch("/api/logout", {method: "POST"});
+            window.location.href = "/";
+        }
+    }
+    // Cập nhật tên user từ server (nếu dùng template engine Jinja2 thì đã render sẵn ở trên)
+  </script>
+</body>
+</html>

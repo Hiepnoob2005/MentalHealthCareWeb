@@ -45,6 +45,16 @@ function initializeSocket() {
         }
     });
 
+    expertSocket.on('expert_status_change', (data) => {
+        console.log(`🔥 Realtime Update: ${data.username} là ${data.status}`);
+        
+        // 1. Cập nhật chấm tròn ở Sidebar
+        updateSidebarStatus(data.username, data.status);
+
+        // 2. Cập nhật Header nếu đang chat với người đó
+        updateHeaderStatus(data.username, data.status);
+    });
+
     // Lắng nghe tin nhắn (Logic cũ của bạn)
     expertSocket.on('receive_message', (data) => {
         // 1. Tin nhắn hệ thống
@@ -109,6 +119,30 @@ function initializeSocket() {
     });
 }
 
+function updateSidebarStatus(username, status) {
+    // Tìm thẻ li dựa trên ID
+    const item = document.getElementById(`expert-item-${username}`);
+    if (item) {
+        const dot = item.querySelector('.status-dot');
+        if (dot) {
+            // Xóa hết class cũ, gán class mới
+            dot.className = `status-dot ${status}`; 
+        }
+    }
+}
+
+// --- [THÊM HÀM MỚI] CẬP NHẬT GIAO DIỆN HEADER (Khung chat chính) ---
+function updateHeaderStatus(username, status) {
+    if (currentExpertRoom === username) {
+        const statusText = document.getElementById('currentExpertStatus');
+        const avatarDot = document.querySelector('#currentExpertAvatar .status-dot'); // Nếu header có dot
+        
+        if (statusText) {
+            statusText.textContent = (status === 'online') ? 'Đang hoạt động' : 'Đang ngoại tuyến';
+            statusText.style.color = (status === 'online') ? '#2ecc71' : '#95a5a6';
+        }
+    }
+}
 // --- PHẦN 2: LOGIC GIAO DIỆN (Điều chỉnh ID cho phù hợp HTML mới) ---
 
 async function loadExpertListForSidebar() {
@@ -151,7 +185,10 @@ async function loadExpertListForSidebar() {
                 li.onclick = () => openChat(exp.id, exp.name);
 
                 li.innerHTML = `
-                    <div class="avatar">${exp.name.charAt(0)}</div>
+                    <div class="avatar">
+                        ${exp.name.charAt(0)}
+                        <span class="status-dot ${exp.status}"></span> 
+                    </div>
                     <div class="info">
                         <div class="expert-name">${exp.name}</div>
                         <div class="expert-specialty">${exp.specialties}</div>

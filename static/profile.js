@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     loadProfile();
-
+    loadStudentTestResults();
     const profileForm = document.getElementById('profileForm');
     if (profileForm) {
         profileForm.addEventListener('submit', updateProfile);
@@ -132,4 +132,95 @@ async function updateProfile(e) {
         btn.innerHTML = originalText;
         btn.disabled = false;
     }
+}
+
+async function loadStudentTestResults() {
+    const section = document.getElementById('studentSection');
+    const container = document.getElementById('latestTagsContainer');
+
+    // Reset giao diện đang tải
+    if (container) container.innerHTML = '<div class="spinner"></div><p style="text-align:center">Đang tải kết quả...</p>';
+
+    try {
+        const response = await fetch('/api/user/latest-test-result');
+        const data = await response.json();
+
+        // Tìm thấy phần hiển thị
+        if (section) section.classList.remove('hidden');
+        if (container) container.innerHTML = '';
+
+        if (data.found) {
+            // Hiển thị ngày test (Option: Thêm vào tiêu đề hoặc dưới danh sách)
+            const dateInfo = document.createElement('p');
+            dateInfo.style.fontSize = '0.9rem';
+            dateInfo.style.color = '#666';
+            dateInfo.style.marginBottom = '10px';
+            dateInfo.innerHTML = `<i class="far fa-clock"></i> Kết quả ngày: <b>${data.date}</b>`;
+            container.appendChild(dateInfo);
+
+            if (data.tags && data.tags.length > 0) {
+                // Có vấn đề (Tags) -> Hiển thị Badge đỏ
+                data.tags.forEach(tag => {
+                    if(!tag) return; // Bỏ qua tag rỗng
+                    
+                    const span = document.createElement('span');
+                    span.className = 'spec-badge'; 
+                    // Style cảnh báo
+                    span.style.background = '#fee2e2'; 
+                    span.style.color = '#b91c1c';
+                    span.style.border = '1px solid #fecaca';
+                    span.style.padding = '6px 12px';
+                    span.style.margin = '0 5px 5px 0';
+                    span.style.display = 'inline-block';
+                    
+                    span.textContent = formatProblemTag(tag);
+                    container.appendChild(span);
+                });
+                
+                // Gợi ý nhỏ
+                const hint = document.createElement('div');
+                hint.style.marginTop = '15px';
+                hint.innerHTML = `<a href="/#experts" style="color: var(--primary); text-decoration: underline;">Tìm chuyên gia hỗ trợ ngay</a>`;
+                container.appendChild(hint);
+
+            } else {
+                // Không có tags -> Kết quả bình thường
+                container.innerHTML += `
+                    <div style="color: #047857; background: #d1fae5; padding: 15px; border-radius: 8px; border: 1px solid #a7f3d0;">
+                        <i class="fas fa-check-circle"></i> <strong>Tuyệt vời!</strong> Các chỉ số tâm lý của bạn đang ở mức bình thường.
+                    </div>
+                `;
+            }
+        } else {
+            // Chưa làm bài test
+            container.innerHTML = `
+                <div style="text-align: center; color: #666; padding: 20px;">
+                    <p>Bạn chưa thực hiện bài đánh giá nào.</p>
+                    <a href="/#test" class="btn-primary" style="display: inline-block; margin-top: 10px; padding: 8px 20px; font-size: 0.9rem;">Làm bài test ngay</a>
+                </div>
+            `;
+        }
+
+    } catch (error) {
+        console.error("Lỗi tải kết quả test:", error);
+        if (container) container.innerHTML = '<p style="color:red; text-align:center;">Không thể tải dữ liệu.</p>';
+    }
+}
+
+// Hàm format tên Tag cho đẹp (Tiếng Việt)
+function formatProblemTag(tag) {
+    const tagMap = {
+        'stress': 'Stress (Căng thẳng)',
+        'lo_au': 'Lo âu',
+        'tram_cam': 'Trầm cảm',
+        'hoc_tap': 'Áp lực học tập',
+        'roi_loan_giac_ngu': 'Rối loạn giấc ngủ',
+        'tam_ly_xa_hoi': 'Tâm lý xã hội',
+        'ap_luc_cong_viec': 'Áp lực công việc',
+        'quan_he_gia_dinh': 'Quan hệ gia đình',
+        'quan_he_tinh_cam': 'Quan hệ tình cảm',
+        'ap_luc_xa_hoi': 'Áp lực xã hội',
+        'ap_luc_thi_cu': 'Áp lực thi cử'
+    };
+    return tagMap[tag] || tag; // Fallback về tag gốc nếu không tìm thấy
 }

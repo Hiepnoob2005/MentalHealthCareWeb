@@ -77,8 +77,44 @@
       </div>
     </div>
   </div>
+        <div class="modal-overlay" id="expertProfileModal" style="z-index: 2000;">
+        <div class="modal-container" style="max-width: 700px; width: 90%;">
+            <button class="modal-close" type="button" onclick="closeExpertProfileModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="modal-content profile-modal-content">
+                <div class="profile-header-section" style="text-align: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px;">
+                    <div class="expert-avatar-large" style="width: 100px; height: 100px; background: #e0e7ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--primary); margin: 0 auto 15px;">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <h2 id="modalProfileName" style="margin-bottom: 5px;">Tên Chuyên Gia</h2>
+                    <p id="modalProfileExp" style="color: #666;">Kinh nghiệm: ...</p>
+                    <div id="modalProfileRating" style="margin: 10px 0; color: #fbbf24;"></div>
+                    
+                    <div class="profile-actions" style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;">
+                        <button id="modalBtnChat" class="btn-connect btn-chat">Chat ngay</button>
+                        <button id="modalBtnBook" class="btn-connect">Đặt lịch hẹn</button>
+                    </div>
+                </div>
 
+                <div class="profile-body-section">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;"><i class="fas fa-tags"></i> Lĩnh vực chuyên môn</h4>
+                        <div id="modalProfileSpecialties" class="expert-specialties"></div>
+                    </div>
+
+                    <div>
+                        <h4 style="color: var(--primary); margin-bottom: 10px;"><i class="fas fa-certificate"></i> Bằng cấp & Chứng chỉ</h4>
+                        <div id="modalProfileCerts" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script> window.isUserLoggedIn = "{{ 'true' if current_user.is_authenticated else 'false' }}" === "true";  </script>
 </body>
 </html>

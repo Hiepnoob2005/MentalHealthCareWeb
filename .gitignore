@@ -7,6 +7,3 @@ __pycache__/
 
 # File cấu hình bí mật
 .env
-
-# THÊM DÒNG NÀY: Thư mục chứa upload hồ sơ
-verification_uploads/

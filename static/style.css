@@ -728,10 +728,10 @@ body {
 .status-dot {
   width: 8px;
   height: 8px;
-  background: #10b981;
   border-radius: 50%;
   animation: pulse 2s infinite;
 }
+
 
 @keyframes pulse {
 
@@ -994,7 +994,7 @@ body {
 
 .btn-connect {
   width: 100%;
-  padding: 0.8rem;
+  padding: 10px 10px;
   background: var(--primary);
   color: white;
   border: none;
@@ -1002,7 +1002,9 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-bottom: 10px; 
 }
+
 
 .btn-connect:hover {
   background: var(--primary-dark);
@@ -1010,15 +1012,13 @@ body {
 }
 
 .btn-connect.btn-chat {
-  background-color: #ffffff;
-  /* Nền trắng */
-  color: #007bff;
-  /* Chữ màu chính (giống màu viền) */
+  background-color: #cecece;
+  color: var(--light);
+  margin-bottom: 10px; 
 }
 
 .btn-connect.btn-chat:hover {
-  background-color: #f8f9fa;
-  /* Màu nền hơi xám khi hover */
+  background-color: var(--primary-dark);
 }
 
 /* Resources Section */
@@ -2319,6 +2319,7 @@ footer {
   color: #666;
 }
 
+
 /* Notification Badge (Thông báo đỏ) */
 .badge {
   background: red;
@@ -3302,7 +3303,7 @@ footer {
   .btn-submit, 
   .btn-connect, 
   .btn-connect-counselor {
-    padding: 0.8rem;
+    padding: 0px 100px;
     font-size: 1rem;
   }
 
@@ -3616,4 +3617,368 @@ footer {
     text-overflow: ellipsis;  /* Thêm dấu ... */
     max-width: 200px;         /* Giới hạn chiều rộng */
     display: block;
+}
+
+/* --- Thêm vào style.css --- */
+
+/* Đảm bảo card cắt bo tròn các góc */
+.expert-card {
+    overflow: hidden; 
+    display: flex;
+    flex-direction: column;
+    padding: 0 !important; /* Ghi đè padding cũ nếu có */
+}
+
+/* Phần ảnh nền phía trên */
+.expert-cover {
+    height: 120px; /* Chiều cao ảnh nền */
+    background-color: #e0e7ff; /* Màu dự phòng */
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+/* Lớp phủ mờ nhẹ để text dễ đọc nếu muốn, hoặc trang trí */
+.expert-cover::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 100%);
+}
+
+/* Phần thông tin bên dưới */
+.expert-card .expert-info1 {
+    padding: 0 1.5rem 1.5rem 1.5rem !important; /* Reset padding */
+    margin-top: -40px; /* Kéo avatar đè lên ảnh nền */
+    position: relative;
+    z-index: 2; /* Nổi lên trên ảnh nền */
+    background: transparent;
+}
+
+/* 1. Thẻ bao ngoài (Wrapper): Làm mốc tọa độ và giữ kích thước */
+.expert-avatar-wrapper {
+    position: relative; /* QUAN TRỌNG: Để chấm tròn neo vào đây */
+    width: 50px;        /* Định kích thước ở đây */
+    height: 50px;
+    margin-right: 12px; /* Chuyển margin từ inner sang đây */
+    flex-shrink: 0;     /* Chống bị bóp méo trong flexbox */
+}
+
+/* 2. Phần hình tròn bên trong (Inner): Chỉ lo hiển thị màu và chữ */
+.expert-avatar-inner {
+    width: 100%; 
+    height: 100%; 
+    background: #e0e7ff; 
+    color: var(--primary); 
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-weight: bold; 
+    font-size: 1.5rem;
+}
+
+/* 3. Chấm trạng thái (Status Dot): Neo góc dưới phải */
+.expert-avatar-wrapper .status-dot {
+    position: absolute; /* Tuyệt đối so với wrapper */
+    bottom: 0px;        /* Sát đáy (hoặc -2px để lòi ra ngoài xíu) */
+    right: 0px;         /* Sát phải */
+    width: 13px;        /* Kích thước chấm */
+    height: 13px;
+    border-radius: 50%;
+    border: 2px solid white; /* Viền trắng để tách biệt với avatar */
+    z-index: 5;         /* Nằm trên avatar */
+}
+/* Thêm vào style.css */
+
+/* Modal Matching Styles */
+.matching-modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Căn giữa dọc */
+    z-index: 2000;
+    padding: 20px; /* Khoảng cách lề mobile */
+}
+
+.matching-modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    position: relative;
+    max-height: 90vh; /* Giới hạn chiều cao */
+    overflow-y: auto; /* Cho phép cuộn dọc */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    width: 100%;
+}
+
+.matching-modal-content .close-modal {
+    position: absolute;
+    top: 15px; right: 20px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    z-index: 10;
+}
+
+.matching-modal-content .close-modal:hover {
+    color: red;
+}
+
+/* Đảm bảo grid trong modal responsive */
+@media (max-width: 768px) {
+    .matching-results {
+        grid-template-columns: 1fr !important; /* 1 cột trên mobile */
+    }
+}
+
+.expert-item {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 8px;
+    /* Bo góc giống Messenger */
+    transition: background-color 0.2s;
+    margin-bottom: 2px;
+}
+
+.expert-item:hover {
+    background-color: #f2f2f2;
+}
+
+.expert-item.active {
+    background-color: rgba(45, 136, 255, 0.1);
+    /* Xanh nhạt khi active */
+}
+
+.expert-item .avatar {
+    width: 48px;
+    /* Kích thước avatar chuẩn */
+    height: 48px;
+    border-radius: 50%;
+    background: #e4e6eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 1.2rem;
+    color: #050505;
+    flex-shrink: 0;
+}
+
+.expert-item.active .avatar {
+    background: #0084ff;
+    color: white;
+}
+
+.expert-item {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    border-radius: 10px;
+    /* Bo góc mềm mại */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    /* Hiệu ứng chuyển động mượt */
+    margin-bottom: 4px;
+    position: relative;
+    /* Để căn chỉnh chấm online */
+}
+
+/* Hover effect: Nền xám nhẹ */
+.expert-item:hover {
+    background-color: #f2f2f2;
+}
+
+/* Active effect: Nền xanh nhạt + Chữ đậm */
+.expert-item.active {
+    background-color: #eaf3ff;
+    /* Màu xanh rất nhạt đặc trưng của Messenger */
+}
+
+/* Avatar Container */
+.expert-item .avatar {
+    width: 56px;
+    /* Avatar to hơn chút để nổi bật */
+    height: 56px;
+    border-radius: 50%;
+    background: #e4e6eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 1.5rem;
+    color: #555;
+    flex-shrink: 0;
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    /* Viền mỏng cho avatar */
+}
+
+/* Chấm xanh báo Online (Giả lập) */
+/* 1. Đặt Avatar là mốc tọa độ (relative) */
+.expert-item .avatar {
+    position: relative; /* Quan trọng để chấm tròn neo vào đây */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Giữ nguyên các style cũ của avatar (width, height, radius...) */
+}
+
+/* 2. Style chung cho chấm tròn (Đây là thẻ span thật trong HTML) */
+.expert-item .status-dot {
+    position: absolute; /* Tuyệt đối so với cha (.avatar) */
+    bottom: 0px;        /* Nằm sát đáy */
+    right: 0px;         /* Nằm sát phải */
+    width: 13px;
+    height: 13px;
+    border-radius: 50%; /* Tròn */
+    border: 2px solid #fff; /* Viền trắng tách biệt */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+/* 3. Màu xanh khi Online */
+.expert-item .status-dot.online {
+    background-color: #31a24c;
+}
+
+/* 4. Màu xám khi Offline */
+.expert-item .status-dot.offline {
+    background-color: #95a5a6;
+}
+
+.expert-item.active .expert-name {
+    color: #0084ff;
+}
+
+/* =========================================
+   STYLE CHO DASHBOARD LỊCH & LỊCH SỬ (FIXED)
+   ========================================= */
+
+/* --- 1. Bảng Lịch Sử (Table) --- */
+.history-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  background: white;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; /* Đảm bảo không bị co quá nhỏ trên mobile */
+}
+
+thead tr {
+  background-color: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+th {
+  text-align: left;
+  padding: 16px;
+  font-weight: 600;
+  color: var(--dark);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+td {
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #475569;
+  vertical-align: middle;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Nút Action trong bảng */
+.btn-action-cancel {
+  padding: 6px 12px;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  background: white;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-action-cancel:hover {
+  background: #fee2e2;
+}
+
+/* --- 2. Grid Chọn Giờ (Slot Grid) --- */
+#counselorSlotContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.slot-btn {
+  padding: 12px 5px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  color: var(--dark);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+}
+
+/* Trạng thái Hover (khi chưa chọn) */
+.slot-btn:not(:disabled):hover {
+  border-color: var(--primary);
+  background-color: #e0e7ff;
+  color: var(--primary);
+  transform: translateY(-2px);
+}
+
+/* Trạng thái Đang Chọn (Active) */
+.slot-btn.active {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);
+}
+
+/* Trạng thái Đã Đặt (Disabled) */
+.slot-btn:disabled {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+  color: #b91c1c;
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+.slot-btn small {
+  font-size: 0.75rem;
+  font-weight: normal;
+  margin-top: 4px;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
