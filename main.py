@@ -2546,6 +2546,9 @@ def revoke_counselor():
             header = lines[0]
             for line in lines[1:]:
                 parts = line.strip().split(";")
+                if len(parts) < 2: 
+                    # Nếu dòng bị lỗi hoặc dòng trống -> Bỏ qua, không xử lý
+                    continue
                 if parts[1] == username:
                     target_counselor = {
                         "username": parts[1],
